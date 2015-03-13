@@ -6,13 +6,7 @@ Version:			0.0.1.3
 Name:				SafeSync x64
 
 Script Function:
-Main Programm for SafeSync
-
-Information:
-Creation date:		13.02.2015
-Last change by:		TL
-Last change date:	23.02.2015
-Last changes:		Create Config File
+SafeSync Management Tool
 
 #ce ----------------------------------------------------------------------------
 
