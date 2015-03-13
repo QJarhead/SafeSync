@@ -2,7 +2,7 @@
 
 AutoIt Version: 	3.3.12.0
 Author:				Tim Christoph Lid
-Version:			0.0.1.3
+Version:			0.0.1.4
 Name:				SafeSync x64
 
 Script Function:

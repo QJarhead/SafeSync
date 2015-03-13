@@ -1,3 +1,15 @@
+#cs ----------------------------------------------------------------------------
+
+AutoIt Version: 	3.3.12.0
+Author:				Tim Christoph Lid
+Version:			0.0.1.4
+Name:				SafeCrypt x64
+
+Script Function:
+SafeCrypt Tool
+
+#ce ----------------------------------------------------------------------------
+
 #include <Array.au3>
 #include <File.au3>
 #include <MsgBoxConstants.au3>
