@@ -99,11 +99,8 @@ GUICtrlSetOnEvent($MenuBitTorrent, "MenuBitTorrent")
 GUICtrlSetOnEvent($MenuCrypt, "MenuCrypt")
 GUICtrlSetOnEvent($MenuOther, "MenuOther")
 GUICtrlSetOnEvent($MenuAbout, "MenuAbout")
-
 GUIRegisterMsg($WM_NOTIFY, "WM_NOTIFY")
-
 Local $idListview = GUICtrlCreateListView("Name|Key|Location", 10, 10, 895, 395) ;,$LVS_SORTDESCENDING)
-
 
 Func ReloadListView()
 	_GUICtrlListView_DeleteAllItems ( $idListview )
@@ -129,6 +126,7 @@ Func ReloadListView()
    StartBTSync()
 EndFunc
 
+;Initial reloading list View
 ReloadListView()
 
 _GUICtrlListView_SetColumnWidth($idListview, 0, 120)
@@ -146,6 +144,7 @@ $Button1 = GUICtrlCreateButton("Button1", 32, 140, 91, 33)
 
 GUISwitch($SafeSyncManagementTool)
 
+; Running the Gui in Loop
 While 1
 	$nMsg = GUIGetMsg(1)
 	Switch $nMsg[0] ; check which GUI sent the message
