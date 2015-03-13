@@ -34,7 +34,6 @@ Function include Everything needed for the Programm
 #include <MsgBoxConstants.au3>
 
 ;Check for Parameters
-
 ;Install CryptSync
 
 ; Import Data in .exe
@@ -63,13 +62,8 @@ $SafeSyncDataCryptFolder = IniRead($ConfigFile, "SafeSync", "DataCryptFolder", "
 
 ; End Of Declaration
 
-; Run Installation Process
 
-;If (RegRead("HKEY_CURRENT_USER\Software\CryptSync", "installed") = "" ) Then
-;	RunWait("msiexec /i " & @TempDir & "\CryptSync64-1.2.0.msi /passive")
-;EndIf
-
-
+; Create Registry, if an external file is open with command line parameter "ImportFile"
 If Not $CmdLine[0] = 0 Then
 	If $CmdLine[1] == "ImportFile" Then
 		FileOpen( $CmdLine[2] )
@@ -78,7 +72,6 @@ If Not $CmdLine[0] = 0 Then
 		Exit
 	EndIf
 EndIf
-
 
 ; Create Gui
 
