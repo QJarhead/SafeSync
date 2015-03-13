@@ -5,7 +5,7 @@ Author:				Tim Christoph Lid
 Version:			1.0
 Name:				Test.au3
 
-Script Function:
-For Testing shorter code snippets
+Description:
+Tests
 
 #ce ----------------------------------------------------------------------------
