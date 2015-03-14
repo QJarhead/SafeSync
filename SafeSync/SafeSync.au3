@@ -15,7 +15,6 @@ Autostart - support for SafeSync
 
 #ce ----------------------------------------------------------------------------
 
-
 #cs ----------------------------------------------------------------------------
 
 Including
@@ -45,7 +44,7 @@ Variables
 #ce ----------------------------------------------------------------------------
 
 ; Set variables
-$ConfigFile = "config.ini"
+$ConfigFile = "include/config.ini"
 
 ;Column with in GUI for Name
 $ColumnWitdhName = 120
@@ -108,15 +107,15 @@ $MenuInfo = GUICtrlCreateMenu("&Info")
 $MenuAbout = GUICtrlCreateMenuItem("About", $MenuInfo)
 
 ;Functions for Menu/Button
-GUICtrlSetOnEvent($MenuNew, "MenuNew")
-GUICtrlSetOnEvent($MenuDelete, "MenuDelete")
-GUICtrlSetOnEvent($MenuExport, "MenuExport")
-GUICtrlSetOnEvent($MenuExit, "MenuExit")
-GUICtrlSetOnEvent($MenuBitTorrent, "MenuBitTorrent")
-GUICtrlSetOnEvent($MenuCrypt, "MenuCrypt")
-GUICtrlSetOnEvent($MenuOther, "MenuOther")
-GUICtrlSetOnEvent($MenuAbout, "MenuAbout")
-GUIRegisterMsg($WM_NOTIFY, "WM_NOTIFY")
+;GUICtrlSetOnEvent($MenuNew, "MenuNew")
+;GUICtrlSetOnEvent($MenuDelete, "MenuDelete")
+;GUICtrlSetOnEvent($MenuExport, "MenuExport")
+;GUICtrlSetOnEvent($MenuExit, "MenuExit")
+;GUICtrlSetOnEvent($MenuBitTorrent, "MenuBitTorrent")
+;GUICtrlSetOnEvent($MenuCrypt, "MenuCrypt")
+;GUICtrlSetOnEvent($MenuOther, "MenuOther")
+;GUICtrlSetOnEvent($MenuAbout, "MenuAbout")
+;GUIRegisterMsg($WM_NOTIFY, "WM_NOTIFY")
 
 ; Create ListView
 Local $idListview = GUICtrlCreateListView("Name|Key|Location", 10, 10, 895, 395) ;,$LVS_SORTDESCENDING)
