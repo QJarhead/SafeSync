@@ -34,7 +34,7 @@ Including
 #include <MsgBoxConstants.au3>
 
 ; Including files
-FileInstall("C:\Program Files (x86)\SafeSync\include\BitTorrent_SyncX64.exe", @TempDir & "\BitTorrent_SyncX64.exe")
+FileInstall(@ScriptDir & "\include\BitTorrent_SyncX64.exe", @TempDir & "\BitTorrent_SyncX64.exe")
 
 
 #cs ----------------------------------------------------------------------------
@@ -98,7 +98,7 @@ Install Programms
 Install BitTorrent Sync 1.4 if not installed yet
 #ce ----------------------------------------------------------------------------
 If RegRead( $BTSyncUninstallRegKey, "DisplayIcon") == "" Then
-	Run( $BitTorrentSyncTemp & " /PERFORMINSTALL /AUTOMATION")
+	RunWait( '"' & $BitTorrentSyncTemp & '" /PERFORMINSTALL /AUTOMATION')
 EndIf
 
 #cs ----------------------------------------------------------------------------
@@ -237,7 +237,7 @@ Func ReloadListView()
 	  $SyncFolders[$i][0] = $SafeSyncDataFolder & $sVar
 	  $SyncFolders[$i][1] = $sVar1
    Next
-   createConfig($SyncFolders, "D://SafeSync/Config")
+   createConfig($SyncFolders, "C://SafeSync/Config")
    StopBTSync()
    Sleep(1000)
    StartBTSync()
@@ -273,7 +273,11 @@ StopBTSync
 Stop the Bittorent Sync Process
 #ce ----------------------------------------------------------------------------
 Func StopBTSync()
-	    Local $aProcessList = ProcessList("BitTorrent_SyncX64.exe")
+	Local $aProcessList = ProcessList("BitTorrent_SyncX64.exe")
+    For $i = 1 To $aProcessList[0][0]
+		ProcessClose ( $aProcessList[$i][1] )
+    Next
+	Local $aProcessList = ProcessList("BTSync.exe")
     For $i = 1 To $aProcessList[0][0]
 		ProcessClose ( $aProcessList[$i][1] )
     Next
@@ -284,6 +288,8 @@ StartBTSync
 Stop the Bittorent Sync Process with the config file
 #ce ----------------------------------------------------------------------------
 Func StartBTSync()
+
+	ConsoleWrite(@CRLF & @CRLF & '"C:\Users\Tim\Program Files\BitTorrent Sync\BTSync.exe" /config "' & $BTSyncConfigCreate & '"' & @CRLF & @CRLF)
 	Run('"C:\Users\Tim\Program Files\BitTorrent Sync\BTSync.exe" /config "' & $BTSyncConfigCreate & '"')
 EndFunc
 
@@ -293,6 +299,7 @@ Restart the BTSync with config File
 #ce ----------------------------------------------------------------------------
 Func RestartBTSync()
 	StopBTSync()
+	Sleep(1000)
 	StartBTSync()
 EndFunc
 
@@ -424,6 +431,7 @@ Func createConfig($SyncFolders, $Storage_Path)
    ; Write data to the file using the handle returned by FileOpen.
    FileWrite($hFileOpen, '{' & @CRLF)
    FileWrite($hFileOpen, '     "storage_path" : "'&$storage_Path&'",'&@CRLF)
+   FileWrite($hFileOpen, '     "check_for_updates" : false,'& @CRLF)
    FileWrite($hFileOpen, '     "use_gui" : true,'& @CRLF)
    FileWrite($hFileOpen, '     "webui" :'& @CRLF)
    FileWrite($hFileOpen, '     {'& @CRLF)
