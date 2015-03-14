@@ -18,9 +18,7 @@ SafeCrypt Tool
 #include <GUIConstantsEx.au3>
 #include <StringConstants.au3>
 
-Global $sDrive = "", $sDir = "", $sFilename = "", $sExtension = ""
-
-$Password = "Test"
+Global $Password = PasswordSkript()
 $7zLocation = "D:\Temp2\7z.exe"
 $SafeCryptFolder = "D:\SafeCrypt\"
 $DataFolderDecrypt = $SafeCryptFolder & "Decrypt\"
@@ -29,6 +27,8 @@ $LogListFolderDecrypt = $SafeCryptFolder & "FolderDecrypt.txt"
 $LogListFolderEncrypt = $SafeCryptFolder & "FolderEncrypt.txt"
 $LogListFileDecrypt = $SafeCryptFolder & "FilesDecrypt.txt"
 $LogListFileEncrypt = $SafeCryptFolder & "FilesEncrypt.txt"
+
+Global $sDrive = "", $sDir = "", $sFilename = "", $sExtension = ""
 
 Local $ListEncrypt
 Local $ListDecrypt
@@ -233,4 +233,62 @@ EndFunc
 ; Encrypt File
 Func EncryptFile($DecryptFile, $EncryptFile, $Password)
 	RunWait( @ComSpec & ' /c ' & $7zLocation &  ' a -y -t7z -p"' & $Password & '" "' & $EncryptFile & '" "' & $DecryptFile & '"', @TempDir , @SW_HIDE )
+EndFunc
+
+Func PasswordSkript()
+	$Password = ""
+
+	;Init Section
+	If Not RegRead( "HKEY_CURRENT_USER\Software\SafeCrypt", "Installed") = 1 Then
+		RegWrite("HKEY_CURRENT_USER\Software\SafeCrypt")
+		$PasswordCreateSalt = ""
+		For $i = 0 To 100 Step 1
+			$PasswordCreateSalt = $PasswordCreateSalt & Chr(Random(32,126,1))
+		Next
+		While 1
+			Local $Passwd = InputBox("Set password", "Enter your new password.", "", "*")
+			If @error = 1 Then
+				Exit
+			EndIf
+			Local $PasswdCheck = InputBox("Set password", "Retype your password.", "", "*")
+			If @error = 1 Then
+				Exit
+			EndIf
+			If Not $Passwd = $PasswdCheck Then
+				MsgBox(16, "Error", "Passwords doesn't match")
+			Else
+				If StringLen($Passwd) <= 6 Then
+					MsgBox(16,"Error", "Please choose a Password greater then 6")
+				Else
+					For $i = 0 To 3000 Step 1
+						$Passwd = _Crypt_HashData($Passwd & $PasswordCreateSalt, $CALG_SHA1)
+					Next
+					RegWrite("HKEY_CURRENT_USER\Software\SafeCrypt", "PasswordHashed", "REG_SZ", $Passwd)
+					RegWrite("HKEY_CURRENT_USER\Software\SafeCrypt", "Installed", "REG_DWORD", "1")
+					RegWrite("HKEY_CURRENT_USER\Software\SafeCrypt", "Salt", "REG_SZ", $PasswordCreateSalt)
+					MsgBox(64,"Congratulation", "Your new password is set!" & @CRLF & "Please Login, to begin the Magic")
+					ExitLoop
+				EndIf
+			EndIf
+		WEnd
+	EndIf
+
+	;Test Password for Correct
+	While 1
+		Local $Passwd = InputBox("Security Check", "Enter your password.", "", "*")
+		$Password = $Passwd
+		If @error = 1 Then
+			Exit
+		EndIf
+		$PasswordSalt = RegRead("HKEY_CURRENT_USER\Software\SafeCrypt", "Salt")
+		For $i = 0 To 3000 Step 1
+			$Passwd = _Crypt_HashData($Passwd & $PasswordSalt, $CALG_SHA1)
+		Next
+		If $Passwd = RegRead("HKEY_CURRENT_USER\Software\SafeCrypt", "PasswordHashed") Then
+			ExitLoop
+		Else
+			MsgBox(16,"Error", "Wrong password")
+		EndIf
+	WEnd
+	return $Password
 EndFunc
