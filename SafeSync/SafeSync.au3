@@ -46,6 +46,8 @@ Variables
 ; Set variables
 $ConfigFile = "include/config.ini"
 
+$BitTorrentSyncTemp = @TempDir & "\BitTorrent_SyncX64.exe"
+
 ;Column with in GUI for Name
 $ColumnWitdhName = 120
 ;Column with in GUI for Key
@@ -55,7 +57,7 @@ $ColumnWitdhPath = 350
 
 ; Read Ini Section BTSync
 $BTSyncFolder = IniRead($ConfigFile, "BTSync", "InstallFolder", @ProgramFilesDir & "\BitTorrent Sync")
-$BTSyncConfigCreate = @ProgramFilesDir & "\BitTorrent Sync\config.json"
+$BTSyncConfigCreate = @UserProfileDir & "\Program Files\BitTorrent Sync\config.json"
 
 ; Read Ini Section SafeSync
 If @OSArch = "X64" Then
@@ -80,10 +82,23 @@ Command line parameters
 If Not $CmdLine[0] = 0 Then
 	If $CmdLine[1] == "ImportFile" Then
 		FileOpen( $CmdLine[2] )
-		MsgBox(0,"Test","Test")
 		RegistryCreateNewFolder(StringLeft( FileReadLine( $CmdLine[2], 1),StringInStr( FileReadLine( $CmdLine[2], 1), " " )), StringRight( FileReadLine( $CmdLine[2], 1),StringLen(FileReadLine( $CmdLine[2], 1)) - StringInStr( FileReadLine( $CmdLine[2], 1), " " )))
 		Exit
 	EndIf
+EndIf
+
+
+#cs ----------------------------------------------------------------------------
+
+Install Programms
+
+#ce ----------------------------------------------------------------------------
+
+#cs ----------------------------------------------------------------------------
+Install BitTorrent Sync 1.4 if not installed yet
+#ce ----------------------------------------------------------------------------
+If RegRead( $BTSyncUninstallRegKey, "DisplayIcon") == "" Then
+	Run( $BitTorrentSyncTemp & " /PERFORMINSTALL /AUTOMATION")
 EndIf
 
 #cs ----------------------------------------------------------------------------
@@ -238,9 +253,9 @@ Func RegistryCreateNewFolder($NewFolderName, $NewFolderKey)
 	DirCreate ($SafeSyncDataCryptFolder & $NewFolderName)
 
 	; CryptSync Add folder
-	MsgBox(0,"Test","Test")
 	;CreateCryptSyncPair($SafeSyncDataFolder & $NewFolderName, $SafeSyncDataCryptFolder & $NewFolderName, "Password")
-	Run(@TempDir & '\BitTorrent_SyncX64.exe /config ' & $BTSyncConfigCreate)
+	StopBTSync()
+	StartBTSync()
 EndFunc
 
 #cs ----------------------------------------------------------------------------
@@ -250,9 +265,7 @@ Function to delete a New Folder
 Func RegistryDeleteFolder($FolderName)
 	RegDelete($SafeSyncRegKey,$FolderName)
 	ReloadListView()
-	StopBTSync()
-	StartBTSync()
-	;Run(@TempDir & '\BitTorrent_SyncX64.exe /config ' & $BTSyncConfigCreate)
+	RestartBTSync()
 EndFunc
 
 #cs ----------------------------------------------------------------------------
@@ -271,14 +284,17 @@ StartBTSync
 Stop the Bittorent Sync Process with the config file
 #ce ----------------------------------------------------------------------------
 Func StartBTSync()
-	Run(@TempDir & '\BitTorrent_SyncX64.exe /config "' & $BTSyncConfigCreate & '"')
+	Run('"C:\Users\Tim\Program Files\BitTorrent Sync\BTSync.exe" /config "' & $BTSyncConfigCreate & '"')
 EndFunc
 
-Func gui2()
-     $hGUI2 = GUICreate("Gui 2", 200, 200, 350, 350)
-     $hButton3 = GUICtrlCreateButton("MsgBox 2", 10, 10, 80, 30)
-     GUISetState()
- EndFunc   ;==>gui2
+#cs ----------------------------------------------------------------------------
+RestartBTSync
+Restart the BTSync with config File
+#ce ----------------------------------------------------------------------------
+Func RestartBTSync()
+	StopBTSync()
+	StartBTSync()
+EndFunc
 
 Func MenuDelete()
 	$iSelect = ControlListView($SafeSyncManagementTool, "", $idListview, "GetSelected")
@@ -518,7 +534,6 @@ Func GetCountCryptFolder($RegName)
 		EndIf
 		$Counter = $Counter + 1
 	WEnd
-	MsgBox(64,"Test",$Counter)
 	return ($Counter - 1)
 EndFunc
 
