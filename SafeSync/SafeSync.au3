@@ -8,20 +8,21 @@ Name:				SafeSync x64
 Script Function:
 SafeSync Management Tool
 
-#ce ----------------------------------------------------------------------------
+TODO:
+TODO's
+Create support SafeCrypt - Files and tasks, for autoamticly starting SafeCrypt
+Autostart - support for SafeSync
 
-; Temp
-;MsgBox(64, "Passed Parameters", "Test")
+#ce ----------------------------------------------------------------------------
 
 
 #cs ----------------------------------------------------------------------------
 
-FunctionName:		Init
+Including
 
-Function include Everything needed for the Programm
 #ce ----------------------------------------------------------------------------
 
-; Ínclude everything needed
+; Ínclude everything start
 #include <ButtonConstants.au3>
 #include <GUIConstantsEx.au3>
 #include <WindowsConstants.au3>
@@ -32,21 +33,31 @@ Function include Everything needed for the Programm
 #include <INet.au3>
 #include <Array.au3>
 #include <MsgBoxConstants.au3>
+; Include everything ends
 
-;Check for Parameters
-;Install CryptSync
-
-; Import Data in .exe
+; Including files
 FileInstall("C:\Program Files (x86)\SafeSync\include\BitTorrent_SyncX64.exe", @TempDir & "\BitTorrent_SyncX64.exe")
-;FileInstall("D:\Cloud\TimLid\Daten\Programmierung\Mittelstufenprojekt\SafeSync\include\CryptSync64-1.2.0.msi", @TempDir & "\CryptSync64-1.2.0.msi")
 
-; General variables
+
+#cs ----------------------------------------------------------------------------
+
+Variables
+
+#ce ----------------------------------------------------------------------------
+
+; Set variables
 $ConfigFile = "config.ini"
+
+;Column with in GUI for Name
+$ColumnWitdhName = 120
+;Column with in GUI for Key
+$ColumnWitdhKey = 260
+;Column with in GUI for Path
+$ColumnWitdhPath = 350
 
 ; Read Ini Section BTSync
 $BTSyncFolder = IniRead($ConfigFile, "BTSync", "InstallFolder", @ProgramFilesDir & "\BitTorrent Sync")
 $BTSyncConfigCreate = @ProgramFilesDir & "\BitTorrent Sync\config.json"
-;@TempDir&IniRead($ConfigFile, "BTSync", "ConfigFileCreate", "\ConfigFileBTSync.conf")
 
 ; Read Ini Section SafeSync
 If @OSArch = "X64" Then
@@ -56,13 +67,17 @@ Else
 	$SafeSyncRegKey = "HKEY_CURRENT_USER"&IniRead($ConfigFile, "SafeSync", "RegKey", "\SOFTWARE\SafeSync\Folders")
 	$BTSyncUninstallRegKey = "HKEY_LOCAL_MACHINE"&IniRead($ConfigFile, "BTSync", "UninstallRegKey", "\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\BitTorrent Sync")
 EndIf
-
 $SafeSyncDataFolder = IniRead($ConfigFile, "SafeSync", "DataFolder", "\SOFTWARE\SafeSync\Folders")
 $SafeSyncDataCryptFolder = IniRead($ConfigFile, "SafeSync", "DataCryptFolder", "\SOFTWARE\SafeSync\Folders")
 
-; End Of Declaration
 
+#cs ----------------------------------------------------------------------------
 
+Command line parameters
+
+#ce ----------------------------------------------------------------------------
+
+; Read command line parameters
 ; Create Registry, if an external file is open with command line parameter "ImportFile"
 If Not $CmdLine[0] = 0 Then
 	If $CmdLine[1] == "ImportFile" Then
@@ -73,10 +88,13 @@ If Not $CmdLine[0] = 0 Then
 	EndIf
 EndIf
 
-; Create Gui
+#cs ----------------------------------------------------------------------------
 
-;Opt("GUIOnEventMode", 1)
+GUI
 
+#ce ----------------------------------------------------------------------------
+
+; Settings Menu entries
 Global $SafeSyncManagementTool = GUICreate("SafeSyncManagementTool", 915, 437, 195, 124)
 $MenuFile = GUICtrlCreateMenu("&File")
 $MenuNew = GUICtrlCreateMenuItem("New", $MenuFile)
@@ -99,44 +117,19 @@ GUICtrlSetOnEvent($MenuBitTorrent, "MenuBitTorrent")
 GUICtrlSetOnEvent($MenuCrypt, "MenuCrypt")
 GUICtrlSetOnEvent($MenuOther, "MenuOther")
 GUICtrlSetOnEvent($MenuAbout, "MenuAbout")
-
 GUIRegisterMsg($WM_NOTIFY, "WM_NOTIFY")
 
+; Create ListView
 Local $idListview = GUICtrlCreateListView("Name|Key|Location", 10, 10, 895, 395) ;,$LVS_SORTDESCENDING)
 
-
-Func ReloadListView()
-	_GUICtrlListView_DeleteAllItems ( $idListview )
-   Local $FolderCounter = 0
-   For $i = 1 To 1000
-	  $sVar = RegEnumVal($SafeSyncRegKey, $i)
-	  $FolderCounter = $i
-	  If @error <> 0 Then ExitLoop
-	  $sVar1 = RegRead($SafeSyncRegKey, $sVar)
-	  Local $idItem1 = GUICtrlCreateListViewItem("" & $sVar & "| " & $sVar1 & " | " & $SafeSyncDataFolder & $sVar & " ", $idListview)
-   Next
-   Global $SyncFolders[$FolderCounter][2]
-   For $i = 1 To $FolderCounter + 1
-	  $sVar = RegEnumVal($SafeSyncRegKey, $i)
-	  If @error <> 0 Then ExitLoop
-	  $sVar1 = RegRead($SafeSyncRegKey, $sVar)
-	  $SyncFolders[$i][0] = $SafeSyncDataFolder & $sVar
-	  $SyncFolders[$i][1] = $sVar1
-   Next
-   createConfig($SyncFolders, "D://SafeSync/Config")
-   StopBTSync()
-   Sleep(1000)
-   StartBTSync()
-EndFunc
-
+;Initial reloading list View
 ReloadListView()
 
-_GUICtrlListView_SetColumnWidth($idListview, 0, 120)
-_GUICtrlListView_SetColumnWidth($idListview, 1, 240)
-_GUICtrlListView_SetColumnWidth($idListview, 2, 350)
+; Set the column witdh
+_GUICtrlListView_SetColumnWidth($idListview, 0, $ColumnWitdhName)
+_GUICtrlListView_SetColumnWidth($idListview, 1, $ColumnWitdhKey)
+_GUICtrlListView_SetColumnWidth($idListview, 2, $ColumnWitdhPath)
 GUISetState(@SW_SHOW)
-
-
 Global $Form1 = GUICreate("Form1", 165, 200, 200, 124)
 $Radio1 = GUICtrlCreateRadio("Generate new Key", 32, 20, 113, 25)
 GUICtrlSetState(-1, $GUI_CHECKED)
@@ -146,6 +139,7 @@ $Button1 = GUICtrlCreateButton("Button1", 32, 140, 91, 33)
 
 GUISwitch($SafeSyncManagementTool)
 
+; Running the Gui in Loop
 While 1
 	$nMsg = GUIGetMsg(1)
 	Switch $nMsg[0] ; check which GUI sent the message
@@ -202,6 +196,44 @@ While 1
    EndSwitch
 WEnd
 
+#cs ----------------------------------------------------------------------------
+
+Functions
+
+#ce ----------------------------------------------------------------------------
+
+#cs ----------------------------------------------------------------------------
+ReloadListView
+Reloading the list view from the registry, to see the entries in the GUI
+#ce ----------------------------------------------------------------------------
+Func ReloadListView()
+	_GUICtrlListView_DeleteAllItems ( $idListview )
+   Local $FolderCounter = 0
+   For $i = 1 To 1000
+	  $sVar = RegEnumVal($SafeSyncRegKey, $i)
+	  $FolderCounter = $i
+	  If @error <> 0 Then ExitLoop
+	  $sVar1 = RegRead($SafeSyncRegKey, $sVar)
+	  Local $idItem1 = GUICtrlCreateListViewItem("" & $sVar & "| " & $sVar1 & " | " & $SafeSyncDataFolder & $sVar & " ", $idListview)
+   Next
+   Global $SyncFolders[$FolderCounter][2]
+   For $i = 1 To $FolderCounter + 1
+	  $sVar = RegEnumVal($SafeSyncRegKey, $i)
+	  If @error <> 0 Then ExitLoop
+	  $sVar1 = RegRead($SafeSyncRegKey, $sVar)
+	  $SyncFolders[$i][0] = $SafeSyncDataFolder & $sVar
+	  $SyncFolders[$i][1] = $sVar1
+   Next
+   createConfig($SyncFolders, "D://SafeSync/Config")
+   StopBTSync()
+   Sleep(1000)
+   StartBTSync()
+EndFunc
+
+#cs ----------------------------------------------------------------------------
+RegistryCreateNewFolder
+Function to create a New Folder
+#ce ----------------------------------------------------------------------------
 Func RegistryCreateNewFolder($NewFolderName, $NewFolderKey)
 	RegWrite($SafeSyncRegKey, $NewFolderName, "REG_SZ", $NewFolderKey)
 	DirCreate ($SafeSyncDataFolder & $NewFolderName)
@@ -213,6 +245,10 @@ Func RegistryCreateNewFolder($NewFolderName, $NewFolderKey)
 	Run(@TempDir & '\BitTorrent_SyncX64.exe /config ' & $BTSyncConfigCreate)
 EndFunc
 
+#cs ----------------------------------------------------------------------------
+RegistryDeleteFolder
+Function to delete a New Folder
+#ce ----------------------------------------------------------------------------
 Func RegistryDeleteFolder($FolderName)
 	RegDelete($SafeSyncRegKey,$FolderName)
 	ReloadListView()
@@ -221,6 +257,10 @@ Func RegistryDeleteFolder($FolderName)
 	;Run(@TempDir & '\BitTorrent_SyncX64.exe /config ' & $BTSyncConfigCreate)
 EndFunc
 
+#cs ----------------------------------------------------------------------------
+StopBTSync
+Stop the Bittorent Sync Process
+#ce ----------------------------------------------------------------------------
 Func StopBTSync()
 	    Local $aProcessList = ProcessList("BitTorrent_SyncX64.exe")
     For $i = 1 To $aProcessList[0][0]
@@ -228,29 +268,12 @@ Func StopBTSync()
     Next
 EndFunc
 
+#cs ----------------------------------------------------------------------------
+StartBTSync
+Stop the Bittorent Sync Process with the config file
+#ce ----------------------------------------------------------------------------
 Func StartBTSync()
 	Run(@TempDir & '\BitTorrent_SyncX64.exe /config "' & $BTSyncConfigCreate & '"')
-EndFunc
-
-;Menu Functions
-Func MenuNew()
-
-   ; TODO Switch Case, abfrage neuer ordner, key eingeben oder datei importieren
-
-
-
- ;  $Form1 = GUICreate("Form1", 165, 145, 192, 124)
-  ; $Radio1 = GUICtrlCreateRadio("Generate new Key", 32, 20, 113, 25)
-;   GUICtrlSetState(-1, $GUI_CHECKED)
-;   $Radio2 = GUICtrlCreateRadio("Import from File", 32, 60, 113, 17)
-;   $Button1 = GUICtrlCreateButton("Button1", 32, 96, 91, 33)
-;   GUISetState(@SW_SHOW)
-;MsgBox(64, "Passed Parameters", "Test")
-	;Local $NewFolderName = InputBox("New Folder", "Enter new folder name", "", "")
-	;Local $NewFolderKey = InputBox("Folder Key", "Enter folder key", "", "")
-	;MsgBox(64, "Passed Parameters", getNewKey())
-	;RegistryCreateNewFolder($NewFolderName, $NewFolderKey)
-	;ReloadListView()
 EndFunc
 
 Func gui2()
@@ -302,8 +325,6 @@ EndFunc
 Func _Exit()
     Exit
 EndFunc
-
-; Test
 
 Func WM_NOTIFY($hWnd, $iMsg, $iwParam, $ilParam)
     #forceref $hWnd, $iMsg, $iwParam
@@ -357,30 +378,35 @@ Func WM_NOTIFY($hWnd, $iMsg, $iwParam, $ilParam)
     Return $GUI_RUNDEFMSG
 EndFunc   ;==>WM_NOTIFY
 
+#cs ----------------------------------------------------------------------------
+_DebugPrint
+Print debuggingtext in the console
+#ce ----------------------------------------------------------------------------
 Func _DebugPrint($s_text, $line = @ScriptLineNumber)
     ConsoleWrite( _
             "!===========================================================" & @LF & _
             "+======================================================" & @LF & _
             "-->Line(" & StringFormat("%04d", $line) & "):" & @TAB & $s_text & @LF & _
             "+======================================================" & @LF)
-EndFunc   ;==>_DebugPrint
+EndFunc
+
 
 Func FolderEdit()
-
    Local $iTimeout = 10
    ; Display a message box with a nested variable in its text.
 		MsgBox($MB_SYSTEMMODAL , "Title", "This message box will timeout after " & $iTimeout & " seconds or select the OK button.", $iTimeout)
 EndFunc
 
+#cs ----------------------------------------------------------------------------
+createConfig
+Function to create the config File, from the entries on the registry
+#ce ----------------------------------------------------------------------------
 Func createConfig($SyncFolders, $Storage_Path)
-   ;_ArrayDisplay($Table, "2D display") ; Note columns truncated
-
    _FileCreate($BTSyncConfigCreate)
    Local $hFileOpen = FileOpen($BTSyncConfigCreate,1)
    If $hFileOpen = -1 Then
 	   MsgBox("Test", "", "An error occurred when reading the file.")
    EndIf
-
    ; Write data to the file using the handle returned by FileOpen.
    FileWrite($hFileOpen, '{' & @CRLF)
    FileWrite($hFileOpen, '     "storage_path" : "'&$storage_Path&'",'&@CRLF)
@@ -390,15 +416,13 @@ Func createConfig($SyncFolders, $Storage_Path)
    FileWrite($hFileOpen, '          "listen" : "127.0.0.1:7878",'& @CRLF)
 ;   FileWrite($hFileOpen, '          "login" : "login",'& @CRLF)
 ;   FileWrite($hFileOpen, '          "password" : "passwd",'& @CRLF)
-   FileWrite($hFileOpen, '          "api_key" : "UPK4TNW735M6D4UERSZ7EW6A2VRRPMA5JJKFJ6JTYSPTNGTN4JGCLBUOJ46I6ZDXHRLT3PHGQD76I4SGVJWLNII7TPNFNMBOJ4J3KBAPDMVBKCXLNNSCJUMDLQTRW4BMQ6OZHPA"'& @CRLF)
-   FileWrite($hFileOpen, '     }'& @CRLF)
-   FileWrite($hFileOpen, '     ,'& @CRLF)
-   FileWrite($hFileOpen, '     "shared_folders" :'& @CRLF)
-   FileWrite($hFileOpen, '     ['& @CRLF)
-
+	FileWrite($hFileOpen, '          "api_key" : "UPK4TNW735M6D4UERSZ7EW6A2VRRPMA5JJKFJ6JTYSPTNGTN4JGCLBUOJ46I6ZDXHRLT3PHGQD76I4SGVJWLNII7TPNFNMBOJ4J3KBAPDMVBKCXLNNSCJUMDLQTRW4BMQ6OZHPA"'& @CRLF)
+	FileWrite($hFileOpen, '     }'& @CRLF)
+	FileWrite($hFileOpen, '     ,'& @CRLF)
+	FileWrite($hFileOpen, '     "shared_folders" :'& @CRLF)
+	FileWrite($hFileOpen, '     ['& @CRLF)
 	$Counter = UBound($SyncFolders, $UBOUND_ROWS) -1
-
-   For $element = 1 To $Counter
+	For $element = 1 To $Counter
 	   If $element <= $Counter And $element >= 2 Then
 		   FileWrite($hFileOpen, '     ,'& @CRLF)
 	   EndIf
@@ -416,6 +440,10 @@ Func createConfig($SyncFolders, $Storage_Path)
    FileWrite($hFileOpen, '}'& @CRLF)
 EndFunc
 
+#cs ----------------------------------------------------------------------------
+getNewKEy
+get a New BitTorrent Sync Key
+#ce ----------------------------------------------------------------------------
 Func getNewKey()
 	    ; Save the downloaded file to the temporary folder.
     Local $sFilePath = @TempDir & "\secretKey.temp"
@@ -447,8 +475,13 @@ Func getNewKey()
     FileDelete($sFilePath)
 EndFunc
 
+#cs ----------------------------------------------------------------------------
+CreateCryptSyncPair
+Create with CryptSync a Folder Pair, not neede anymore, when using of SafeCrypt
+TODO:
+Check if this needed
+#ce ----------------------------------------------------------------------------
 Func CreateCryptSyncPair($SyncFolder, $CryptFolder, $Password)
-
 	ProcessClose("CryptSync.exe")
 	sleep(100)
 	Run( "C:\Program Files\CryptSync\CryptSync.exe")
@@ -467,9 +500,14 @@ Func CreateCryptSyncPair($SyncFolder, $CryptFolder, $Password)
 	Send(".sync")
 	ControlClick( "Sync Pair", "OK", 1)
 	ControlClick( "CryptSync", "Run in", 1)
-
 EndFunc
 
+#cs ----------------------------------------------------------------------------
+GetCountCryptFolder
+Get the Count of the Crypted folder, maybe not needed anymore.
+TODO:
+Check if this is needed
+#ce ----------------------------------------------------------------------------
 Func GetCountCryptFolder($RegName)
 	$Counter = 0
 	While true
@@ -486,11 +524,12 @@ Func GetCountCryptFolder($RegName)
 	return ($Counter - 1)
 EndFunc
 
-Func RegisterFile()
-	RegWrite( "HKEY_CLASSES_ROOT\ssfile
-EndFunc
-
 #cs ----------------------------------------------------------------------------
+RegisterFile
+Register the file extension, with icon, and "open-with"-support
+TODO:
+
+Create this entries in the Registry
 
 [HKEY_CLASSES_ROOT\ssffile]
 @="KeePass Password Database"
@@ -508,3 +547,6 @@ EndFunc
 @="\"C:\\Program Files (x86)\\KeePass Password Safe 2\\KeePass.exe\" \"%1\""
 
 #ce ----------------------------------------------------------------------------
+Func RegisterFileExtension()
+	;RegWrite( "HKEY_CLASSES_ROOT\ssfile
+EndFunc
