@@ -9,6 +9,7 @@ Script Function:
 SafeSync Management Tool
 
 TODO:
+Load everything in the Registry! - No use config.ini File!
 TODO's
 Create support SafeCrypt - Files and tasks, for autoamticly starting SafeCrypt
 Autostart - support for SafeSync
@@ -34,8 +35,9 @@ Including
 #include <MsgBoxConstants.au3>
 
 ; Including files
-FileInstall("C:\Program Files (x86)\SafeSync\include\BitTorrent_SyncX64.exe", @TempDir & "\BitTorrent_SyncX64.exe")
-
+FileInstall("C:\include\BitTorrent_SyncX64.exe", @TempDir & "\BitTorrent_SyncX64.exe")
+FileInstall("C:\include\config.ini", @TempDir & "\config.ini")
+;FileInstall(@ScriptDir & "\include\SafeSync_64.ico", @TempDir & "\include\SafeSync_64.ico")
 
 #cs ----------------------------------------------------------------------------
 
@@ -44,30 +46,34 @@ Variables
 #ce ----------------------------------------------------------------------------
 
 ; Set variables
-$ConfigFile = "include/config.ini"
+$BitTorrentSyncTemp = @TempDir & "\BitTorrent_SyncX64.exe"
+$SafeSyncInstallFolder = @UserProfileDir & "\Program Files\SafeSync\"
+$ConfigFile = $SafeSyncInstallFolder & "include\config.ini"
+$SafeSyncRegistry = "HKEY_CURRENT_USER64\Software\Microsoft\Windows\CurrentVersion\Uninstall\SafeSync"
+$DisplayIcon = @UserProfileDir & "\Program Files\SafeSync\SafeSync.exe"
+$DisplayName = "SafeSync"
+$DisplayVersion = "0.0.1"
+$ConfigFileBTSync = @UserProfileDir & "\Program Files\SafeSync\config.json"
+$InstallLocation = @UserProfileDir & "\Program Files\SafeSync"
+$Publisher = "SafeSync-Team"
+$UninstallString = @UserProfileDir & "\Program Files\SafeSync\SafeSync.exe /UNINSTALL"
 
 ;Column with in GUI for Name
 $ColumnWitdhName = 120
 ;Column with in GUI for Key
-$ColumnWitdhKey = 260
+$ColumnWitdhKey = 280
 ;Column with in GUI for Path
-$ColumnWitdhPath = 350
+$ColumnWitdhPath = 300
 
 ; Read Ini Section BTSync
-$BTSyncFolder = IniRead($ConfigFile, "BTSync", "InstallFolder", @ProgramFilesDir & "\BitTorrent Sync")
-$BTSyncConfigCreate = @ProgramFilesDir & "\BitTorrent Sync\config.json"
+$BTSyncFolder = @UserProfileDir & "\BitTorrent Sync"
+$BTSyncConfigCreate = @UserProfileDir & "\Program Files\BitTorrent Sync\config.json"
+$BTSyncUninstallRegKey = "HKEY_LOCAL_MACHINE64\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\BitTorrent Sync"
+$SafeSyncRegKey = "HKEY_CURRENT_USER"&IniRead($ConfigFile, "SafeSync", "RegKey", "\SOFTWARE\SafeSync\Folders")
 
 ; Read Ini Section SafeSync
-If @OSArch = "X64" Then
-	$SafeSyncRegKey = "HKEY_CURRENT_USER"&IniRead($ConfigFile, "SafeSync", "RegKey", "\SOFTWARE\SafeSync\Folders")
-	$BTSyncUninstallRegKey = "HKEY_LOCAL_MACHINE64"&IniRead($ConfigFile, "BTSync", "UninstallRegKey", "\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\BitTorrent Sync")
-Else
-	$SafeSyncRegKey = "HKEY_CURRENT_USER"&IniRead($ConfigFile, "SafeSync", "RegKey", "\SOFTWARE\SafeSync\Folders")
-	$BTSyncUninstallRegKey = "HKEY_LOCAL_MACHINE"&IniRead($ConfigFile, "BTSync", "UninstallRegKey", "\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\BitTorrent Sync")
-EndIf
-$SafeSyncDataFolder = IniRead($ConfigFile, "SafeSync", "DataFolder", "\SOFTWARE\SafeSync\Folders")
-$SafeSyncDataCryptFolder = IniRead($ConfigFile, "SafeSync", "DataCryptFolder", "\SOFTWARE\SafeSync\Folders")
-
+$SafeSyncDataFolder = RegRead( $SafeSyncRegistry, "DataFolder") & "\"
+$SafeSyncDataCryptFolder = RegRead( $SafeSyncRegistry, "DataCryptFolder") & "\"
 
 #cs ----------------------------------------------------------------------------
 
@@ -80,11 +86,43 @@ Command line parameters
 If Not $CmdLine[0] = 0 Then
 	If $CmdLine[1] == "ImportFile" Then
 		FileOpen( $CmdLine[2] )
-		MsgBox(0,"Test","Test")
 		RegistryCreateNewFolder(StringLeft( FileReadLine( $CmdLine[2], 1),StringInStr( FileReadLine( $CmdLine[2], 1), " " )), StringRight( FileReadLine( $CmdLine[2], 1),StringLen(FileReadLine( $CmdLine[2], 1)) - StringInStr( FileReadLine( $CmdLine[2], 1), " " )))
 		Exit
 	EndIf
 EndIf
+
+#cs ----------------------------------------------------------------------------
+
+Install Programms
+
+#ce ----------------------------------------------------------------------------
+
+#cs ----------------------------------------------------------------------------
+Install BitTorrent Sync 1.4 if not installed yet
+#ce ----------------------------------------------------------------------------
+If RegRead( $BTSyncUninstallRegKey, "DisplayIcon") == "" Then
+	RunWait( '"' & $BitTorrentSyncTemp & '" /PERFORMINSTALL /AUTOMATION')
+EndIf
+
+#cs ----------------------------------------------------------------------------
+Install SafeSync if not installed yes
+#ce ----------------------------------------------------------------------------
+If Not StringCompare( $DisplayName, RegRead( $SafeSyncRegistry, "DisplayName")) = 0 Then
+	Install()
+EndIf
+
+#cs ----------------------------------------------------------------------------
+
+CopyFiles
+
+#ce ----------------------------------------------------------------------------
+
+#cs ----------------------------------------------------------------------------
+Copy Files
+#ce ----------------------------------------------------------------------------
+;If Not FileExists( $SafeSyncInstallFolder & "SafeSync_16") Then
+;	CopyFiles( @TempDir & "\include\SafeSync_64.ico", $SafeSyncInstallFolder
+;EndIf
 
 #cs ----------------------------------------------------------------------------
 
@@ -136,6 +174,7 @@ $Radio3 = GUICtrlCreateRadio("Manual", 32, 100, 113, 17)
 $Button1 = GUICtrlCreateButton("Button1", 32, 140, 91, 33)
 
 GUISwitch($SafeSyncManagementTool)
+
 
 ; Running the Gui in Loop
 While 1
@@ -201,6 +240,61 @@ Functions
 #ce ----------------------------------------------------------------------------
 
 #cs ----------------------------------------------------------------------------
+Install
+Install - Process
+#ce ----------------------------------------------------------------------------
+Func Install()
+    ; Create a GUI with various controls.
+    Local $InstallationDialog = GUICreate("SafeSync - Installation", 430,220)
+    Local $InstallButton = GUICtrlCreateButton("Install", 320, 180, 85, 25)
+    Local $InstallDirectory = GUICtrlCreateLabel("Installation dir:",10,20)
+	Local $InstallDir = GUICtrlCreateInput($InstallLocation, 10, 38, 300)
+	Local $InstallDirSelect = GUICtrlCreateButton( "SelectFolder", 320,36,100)
+	Local $DataDirectory = GUICtrlCreateLabel("DataDirectory:",10,70)
+	Local $DataDir = GUICtrlCreateInput($InstallLocation & "\Data", 10, 88, 300)
+	Local $DataDirSelect = GUICtrlCreateButton( "SelectFolder", 320,86,100)
+	Local $DataCryptDirectory = GUICtrlCreateLabel("CryptDirectory:",10,120)
+	Local $DataCryptDir = GUICtrlCreateInput($InstallLocation & "\Crypt", 10, 138, 300)
+	Local $DataCryptDirSelect = GUICtrlCreateButton( "SelectFolder", 320,136,100)
+
+    ; Display the GUI.
+    GUISetState(@SW_SHOW, $InstallationDialog)
+
+    ; Loop until the user exits.
+    While 1
+        Switch GUIGetMsg()
+            Case $GUI_EVENT_CLOSE
+                ExitLoop
+			Case $InstallButton
+				RegWrite( $SafeSyncRegistry)
+				RegWrite( $SafeSyncRegistry, "DisplayIcon", "REG_SZ", $DisplayIcon)
+				RegWrite( $SafeSyncRegistry, "DisplayName", "REG_SZ", $DisplayName)
+				RegWrite( $SafeSyncRegistry, "DisplayVersion", "REG_SZ", $DisplayVersion)
+				RegWrite( $SafeSyncRegistry, "InstallLocation", "REG_SZ", GUICtrlRead($InstallDir) )
+				RegWrite( $SafeSyncRegistry, "Publisher", "REG_SZ", $Publisher)
+				RegWrite( $SafeSyncRegistry, "UninstallString", "REG_SZ", $UninstallString)
+				RegWrite( $SafeSyncRegistry, "DataFolder", "REG_SZ", GUICtrlRead($DataDir))
+				RegWrite( $SafeSyncRegistry, "DataCryptFolder", "REG_SZ", GUICtrlRead($DataCryptDir))
+				DirCreate(GUICtrlRead($DataCryptDir))
+				DirCreate(GUICtrlRead($DataDir))
+				DirCreate(GUICtrlRead($InstallDir))
+				$SafeSyncDataFolder = RegRead( $SafeSyncRegistry, "DataFolder")
+				$SafeSyncDataCryptFolder = RegRead( $SafeSyncRegistry, "DataCryptFolder")
+				; TODO Copy other files and create folder
+				ExitLoop
+			Case $InstallDirSelect
+				GUICtrlSetData( $InstallDir, FileSelectFolder( "Choose the destination folder", $InstallLocation))
+			Case $DataDirSelect
+				GUICtrlSetData( $DataDir, FileSelectFolder( "Choose the destination folder", $InstallLocation))
+			Case $DataCryptDirSelect
+				GUICtrlSetData( $DataCryptDir, FileSelectFolder( "Choose the destination folder", $InstallLocation))
+        EndSwitch
+    WEnd
+    ; Delete the previous GUI and all controls.
+    GUIDelete($InstallationDialog)
+EndFunc
+
+#cs ----------------------------------------------------------------------------
 ReloadListView
 Reloading the list view from the registry, to see the entries in the GUI
 #ce ----------------------------------------------------------------------------
@@ -219,13 +313,11 @@ Func ReloadListView()
 	  $sVar = RegEnumVal($SafeSyncRegKey, $i)
 	  If @error <> 0 Then ExitLoop
 	  $sVar1 = RegRead($SafeSyncRegKey, $sVar)
-	  $SyncFolders[$i][0] = $SafeSyncDataFolder & $sVar
+	  $SyncFolders[$i][0] = $SafeSyncDataCryptFolder & $sVar
 	  $SyncFolders[$i][1] = $sVar1
    Next
-   createConfig($SyncFolders, "D://SafeSync/Config")
-   StopBTSync()
-   Sleep(1000)
-   StartBTSync()
+   createConfig($SyncFolders, "C://SafeSync/Config")
+   RestartBTSync()
 EndFunc
 
 #cs ----------------------------------------------------------------------------
@@ -238,9 +330,9 @@ Func RegistryCreateNewFolder($NewFolderName, $NewFolderKey)
 	DirCreate ($SafeSyncDataCryptFolder & $NewFolderName)
 
 	; CryptSync Add folder
-	MsgBox(0,"Test","Test")
 	;CreateCryptSyncPair($SafeSyncDataFolder & $NewFolderName, $SafeSyncDataCryptFolder & $NewFolderName, "Password")
-	Run(@TempDir & '\BitTorrent_SyncX64.exe /config ' & $BTSyncConfigCreate)
+	StopBTSync()
+	StartBTSync()
 EndFunc
 
 #cs ----------------------------------------------------------------------------
@@ -250,9 +342,7 @@ Function to delete a New Folder
 Func RegistryDeleteFolder($FolderName)
 	RegDelete($SafeSyncRegKey,$FolderName)
 	ReloadListView()
-	StopBTSync()
-	StartBTSync()
-	;Run(@TempDir & '\BitTorrent_SyncX64.exe /config ' & $BTSyncConfigCreate)
+	RestartBTSync()
 EndFunc
 
 #cs ----------------------------------------------------------------------------
@@ -260,7 +350,11 @@ StopBTSync
 Stop the Bittorent Sync Process
 #ce ----------------------------------------------------------------------------
 Func StopBTSync()
-	    Local $aProcessList = ProcessList("BitTorrent_SyncX64.exe")
+	Local $aProcessList = ProcessList("BitTorrent_SyncX64.exe")
+    For $i = 1 To $aProcessList[0][0]
+		ProcessClose ( $aProcessList[$i][1] )
+    Next
+	Local $aProcessList = ProcessList("BTSync.exe")
     For $i = 1 To $aProcessList[0][0]
 		ProcessClose ( $aProcessList[$i][1] )
     Next
@@ -271,14 +365,19 @@ StartBTSync
 Stop the Bittorent Sync Process with the config file
 #ce ----------------------------------------------------------------------------
 Func StartBTSync()
-	Run(@TempDir & '\BitTorrent_SyncX64.exe /config "' & $BTSyncConfigCreate & '"')
+	ConsoleWrite(@CRLF & @CRLF & '"C:\Users\Tim\Program Files\BitTorrent Sync\BTSync.exe" /config "' & $BTSyncConfigCreate & '"' & @CRLF & @CRLF)
+	Run('"C:\Users\Tim\Program Files\BitTorrent Sync\BTSync.exe" /config "' & $BTSyncConfigCreate & '"')
 EndFunc
 
-Func gui2()
-     $hGUI2 = GUICreate("Gui 2", 200, 200, 350, 350)
-     $hButton3 = GUICtrlCreateButton("MsgBox 2", 10, 10, 80, 30)
-     GUISetState()
- EndFunc   ;==>gui2
+#cs ----------------------------------------------------------------------------
+RestartBTSync
+Restart the BTSync with config File
+#ce ----------------------------------------------------------------------------
+Func RestartBTSync()
+	StopBTSync()
+	Sleep(1000)
+	StartBTSync()
+EndFunc
 
 Func MenuDelete()
 	$iSelect = ControlListView($SafeSyncManagementTool, "", $idListview, "GetSelected")
@@ -408,7 +507,8 @@ Func createConfig($SyncFolders, $Storage_Path)
    ; Write data to the file using the handle returned by FileOpen.
    FileWrite($hFileOpen, '{' & @CRLF)
    FileWrite($hFileOpen, '     "storage_path" : "'&$storage_Path&'",'&@CRLF)
-   FileWrite($hFileOpen, '     "use_gui" : true,'& @CRLF)
+   FileWrite($hFileOpen, '     "check_for_updates" : false,'& @CRLF)
+   FileWrite($hFileOpen, '     "use_gui" : false,'& @CRLF)
    FileWrite($hFileOpen, '     "webui" :'& @CRLF)
    FileWrite($hFileOpen, '     {'& @CRLF)
    FileWrite($hFileOpen, '          "listen" : "127.0.0.1:7878",'& @CRLF)
@@ -518,7 +618,6 @@ Func GetCountCryptFolder($RegName)
 		EndIf
 		$Counter = $Counter + 1
 	WEnd
-	MsgBox(64,"Test",$Counter)
 	return ($Counter - 1)
 EndFunc
 
