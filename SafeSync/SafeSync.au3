@@ -10,18 +10,14 @@ SafeSync Management Tool
 
 #ce ----------------------------------------------------------------------------
 
-; Temp
-;MsgBox(64, "Passed Parameters", "Test")
-
 
 #cs ----------------------------------------------------------------------------
 
-FunctionName:		Init
+Including
 
-Function include Everything needed for the Programm
 #ce ----------------------------------------------------------------------------
 
-; Ínclude everything needed
+; Ínclude everything start
 #include <ButtonConstants.au3>
 #include <GUIConstantsEx.au3>
 #include <WindowsConstants.au3>
@@ -32,21 +28,31 @@ Function include Everything needed for the Programm
 #include <INet.au3>
 #include <Array.au3>
 #include <MsgBoxConstants.au3>
+; Include everything ends
 
-;Check for Parameters
-;Install CryptSync
-
-; Import Data in .exe
+; Including files
 FileInstall("C:\Program Files (x86)\SafeSync\include\BitTorrent_SyncX64.exe", @TempDir & "\BitTorrent_SyncX64.exe")
-;FileInstall("D:\Cloud\TimLid\Daten\Programmierung\Mittelstufenprojekt\SafeSync\include\CryptSync64-1.2.0.msi", @TempDir & "\CryptSync64-1.2.0.msi")
 
-; General variables
+
+#cs ----------------------------------------------------------------------------
+
+Variables
+
+#ce ----------------------------------------------------------------------------
+
+; Set variables
 $ConfigFile = "config.ini"
+
+;Column with in GUI for Name
+$ColumnWitdhName = 120
+;Column with in GUI for Key
+$ColumnWitdhKey = 260
+;Column with in GUI for Path
+$ColumnWitdhPath = 350
 
 ; Read Ini Section BTSync
 $BTSyncFolder = IniRead($ConfigFile, "BTSync", "InstallFolder", @ProgramFilesDir & "\BitTorrent Sync")
 $BTSyncConfigCreate = @ProgramFilesDir & "\BitTorrent Sync\config.json"
-;@TempDir&IniRead($ConfigFile, "BTSync", "ConfigFileCreate", "\ConfigFileBTSync.conf")
 
 ; Read Ini Section SafeSync
 If @OSArch = "X64" Then
@@ -56,13 +62,17 @@ Else
 	$SafeSyncRegKey = "HKEY_CURRENT_USER"&IniRead($ConfigFile, "SafeSync", "RegKey", "\SOFTWARE\SafeSync\Folders")
 	$BTSyncUninstallRegKey = "HKEY_LOCAL_MACHINE"&IniRead($ConfigFile, "BTSync", "UninstallRegKey", "\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\BitTorrent Sync")
 EndIf
-
 $SafeSyncDataFolder = IniRead($ConfigFile, "SafeSync", "DataFolder", "\SOFTWARE\SafeSync\Folders")
 $SafeSyncDataCryptFolder = IniRead($ConfigFile, "SafeSync", "DataCryptFolder", "\SOFTWARE\SafeSync\Folders")
 
-; End Of Declaration
 
+#cs ----------------------------------------------------------------------------
 
+Command line parameters
+
+#ce ----------------------------------------------------------------------------
+
+; Read command line parameters
 ; Create Registry, if an external file is open with command line parameter "ImportFile"
 If Not $CmdLine[0] = 0 Then
 	If $CmdLine[1] == "ImportFile" Then
@@ -73,10 +83,13 @@ If Not $CmdLine[0] = 0 Then
 	EndIf
 EndIf
 
-; Create Gui
+#cs ----------------------------------------------------------------------------
 
-;Opt("GUIOnEventMode", 1)
+GUI
 
+#ce ----------------------------------------------------------------------------
+
+; Settings Menu entries
 Global $SafeSyncManagementTool = GUICreate("SafeSyncManagementTool", 915, 437, 195, 124)
 $MenuFile = GUICtrlCreateMenu("&File")
 $MenuNew = GUICtrlCreateMenuItem("New", $MenuFile)
@@ -100,38 +113,17 @@ GUICtrlSetOnEvent($MenuCrypt, "MenuCrypt")
 GUICtrlSetOnEvent($MenuOther, "MenuOther")
 GUICtrlSetOnEvent($MenuAbout, "MenuAbout")
 GUIRegisterMsg($WM_NOTIFY, "WM_NOTIFY")
-Local $idListview = GUICtrlCreateListView("Name|Key|Location", 10, 10, 895, 395) ;,$LVS_SORTDESCENDING)
 
-Func ReloadListView()
-	_GUICtrlListView_DeleteAllItems ( $idListview )
-   Local $FolderCounter = 0
-   For $i = 1 To 1000
-	  $sVar = RegEnumVal($SafeSyncRegKey, $i)
-	  $FolderCounter = $i
-	  If @error <> 0 Then ExitLoop
-	  $sVar1 = RegRead($SafeSyncRegKey, $sVar)
-	  Local $idItem1 = GUICtrlCreateListViewItem("" & $sVar & "| " & $sVar1 & " | " & $SafeSyncDataFolder & $sVar & " ", $idListview)
-   Next
-   Global $SyncFolders[$FolderCounter][2]
-   For $i = 1 To $FolderCounter + 1
-	  $sVar = RegEnumVal($SafeSyncRegKey, $i)
-	  If @error <> 0 Then ExitLoop
-	  $sVar1 = RegRead($SafeSyncRegKey, $sVar)
-	  $SyncFolders[$i][0] = $SafeSyncDataFolder & $sVar
-	  $SyncFolders[$i][1] = $sVar1
-   Next
-   createConfig($SyncFolders, "D://SafeSync/Config")
-   StopBTSync()
-   Sleep(1000)
-   StartBTSync()
-EndFunc
+; Create ListView
+Local $idListview = GUICtrlCreateListView("Name|Key|Location", 10, 10, 895, 395) ;,$LVS_SORTDESCENDING)
 
 ;Initial reloading list View
 ReloadListView()
 
-_GUICtrlListView_SetColumnWidth($idListview, 0, 120)
-_GUICtrlListView_SetColumnWidth($idListview, 1, 240)
-_GUICtrlListView_SetColumnWidth($idListview, 2, 350)
+; Set the column witdh
+_GUICtrlListView_SetColumnWidth($idListview, 0, $ColumnWitdhName)
+_GUICtrlListView_SetColumnWidth($idListview, 1, $ColumnWitdhKey)
+_GUICtrlListView_SetColumnWidth($idListview, 2, $ColumnWitdhPath)
 GUISetState(@SW_SHOW)
 
 
@@ -200,6 +192,41 @@ While 1
         EndSelect
    EndSwitch
 WEnd
+
+#cs ----------------------------------------------------------------------------
+
+Functions
+
+#ce ----------------------------------------------------------------------------
+
+
+#cs ----------------------------------------------------------------------------
+ReloadListView
+Reloading the list view from the registry, to see the entries in the GUI
+#ce ----------------------------------------------------------------------------
+Func ReloadListView()
+	_GUICtrlListView_DeleteAllItems ( $idListview )
+   Local $FolderCounter = 0
+   For $i = 1 To 1000
+	  $sVar = RegEnumVal($SafeSyncRegKey, $i)
+	  $FolderCounter = $i
+	  If @error <> 0 Then ExitLoop
+	  $sVar1 = RegRead($SafeSyncRegKey, $sVar)
+	  Local $idItem1 = GUICtrlCreateListViewItem("" & $sVar & "| " & $sVar1 & " | " & $SafeSyncDataFolder & $sVar & " ", $idListview)
+   Next
+   Global $SyncFolders[$FolderCounter][2]
+   For $i = 1 To $FolderCounter + 1
+	  $sVar = RegEnumVal($SafeSyncRegKey, $i)
+	  If @error <> 0 Then ExitLoop
+	  $sVar1 = RegRead($SafeSyncRegKey, $sVar)
+	  $SyncFolders[$i][0] = $SafeSyncDataFolder & $sVar
+	  $SyncFolders[$i][1] = $sVar1
+   Next
+   createConfig($SyncFolders, "D://SafeSync/Config")
+   StopBTSync()
+   Sleep(1000)
+   StartBTSync()
+EndFunc
 
 ; Function to Create a New Folder
 Func RegistryCreateNewFolder($NewFolderName, $NewFolderKey)
