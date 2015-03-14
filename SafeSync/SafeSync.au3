@@ -8,6 +8,11 @@ Name:				SafeSync x64
 Script Function:
 SafeSync Management Tool
 
+TODO:
+TODO's
+Create support SafeCrypt - Files and tasks, for autoamticly starting SafeCrypt
+Autostart - support for SafeSync
+
 #ce ----------------------------------------------------------------------------
 
 
@@ -470,7 +475,12 @@ Func getNewKey()
     FileDelete($sFilePath)
 EndFunc
 
-; Function to Create with CryptSync a Folder Pair, not neede anymore, when using of SafeCrypt
+#cs ----------------------------------------------------------------------------
+CreateCryptSyncPair
+Create with CryptSync a Folder Pair, not neede anymore, when using of SafeCrypt
+TODO:
+Check if this needed
+#ce ----------------------------------------------------------------------------
 Func CreateCryptSyncPair($SyncFolder, $CryptFolder, $Password)
 	ProcessClose("CryptSync.exe")
 	sleep(100)
@@ -490,10 +500,14 @@ Func CreateCryptSyncPair($SyncFolder, $CryptFolder, $Password)
 	Send(".sync")
 	ControlClick( "Sync Pair", "OK", 1)
 	ControlClick( "CryptSync", "Run in", 1)
-
 EndFunc
 
-; Function to Get the Count of the Crypted folder, maybe not needed anymore.
+#cs ----------------------------------------------------------------------------
+GetCountCryptFolder
+Get the Count of the Crypted folder, maybe not needed anymore.
+TODO:
+Check if this is needed
+#ce ----------------------------------------------------------------------------
 Func GetCountCryptFolder($RegName)
 	$Counter = 0
 	While true
@@ -510,12 +524,12 @@ Func GetCountCryptFolder($RegName)
 	return ($Counter - 1)
 EndFunc
 
-; TODO
-Func RegisterFile()
-	;RegWrite( "HKEY_CLASSES_ROOT\ssfile
-EndFunc
-
 #cs ----------------------------------------------------------------------------
+RegisterFile
+Register the file extension, with icon, and "open-with"-support
+TODO:
+
+Create this entries in the Registry
 
 [HKEY_CLASSES_ROOT\ssffile]
 @="KeePass Password Database"
@@ -533,3 +547,6 @@ EndFunc
 @="\"C:\\Program Files (x86)\\KeePass Password Safe 2\\KeePass.exe\" \"%1\""
 
 #ce ----------------------------------------------------------------------------
+Func RegisterFileExtension()
+	;RegWrite( "HKEY_CLASSES_ROOT\ssfile
+EndFunc
