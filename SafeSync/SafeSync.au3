@@ -49,6 +49,13 @@ Variables
 $BitTorrentSyncTemp = @TempDir & "\BitTorrent_SyncX64.exe"
 $SafeSyncInstallFolder = @UserProfileDir & "\Program Files\SafeSync\"
 $ConfigFile = $SafeSyncInstallFolder & "include\config.ini"
+$SafeSyncRegistry = "HKEY_CURRENT_USER64\Software\Microsoft\Windows\CurrentVersion\Uninstall\SafeSync"
+$DisplayIcon = @UserProfileDir & "\Program Files\SafeSync\SafeSync.exe"
+$DisplayName = "SafeSync"
+$DisplayVersion = "0.0.1"
+$InstallLocation = @UserProfileDir & "\Program Files\SafeSync"
+$Publisher = "SafeSync-Team"
+$UninstallString = @UserProfileDir & "\Program Files\SafeSync\SafeSync.exe /UNINSTALL"
 
 ;Column with in GUI for Name
 $ColumnWitdhName = 120
@@ -71,8 +78,6 @@ Else
 EndIf
 $SafeSyncDataFolder = IniRead($ConfigFile, "SafeSync", "DataFolder", "\SOFTWARE\SafeSync\Folders")
 $SafeSyncDataCryptFolder = IniRead($ConfigFile, "SafeSync", "DataCryptFolder", "\SOFTWARE\SafeSync\Folders")
-
-MsgBox( 0, "Test", $SafeSyncDataFolder )
 
 #cs ----------------------------------------------------------------------------
 
@@ -102,6 +107,13 @@ Install BitTorrent Sync 1.4 if not installed yet
 #ce ----------------------------------------------------------------------------
 If RegRead( $BTSyncUninstallRegKey, "DisplayIcon") == "" Then
 	RunWait( '"' & $BitTorrentSyncTemp & '" /PERFORMINSTALL /AUTOMATION')
+EndIf
+
+#cs ----------------------------------------------------------------------------
+Install SafeSync if not installed yes
+#ce ----------------------------------------------------------------------------
+If Not StringCompare( $DisplayName, RegRead( $SafeSyncRegistry, "DisplayName")) = 0 Then
+	Install()
 EndIf
 
 #cs ----------------------------------------------------------------------------
@@ -230,6 +242,44 @@ WEnd
 Functions
 
 #ce ----------------------------------------------------------------------------
+
+#cs ----------------------------------------------------------------------------
+Install
+Install - Process
+#ce ----------------------------------------------------------------------------
+Func Install()
+    ; Create a GUI with various controls.
+    Local $InstallationDialog = GUICreate("SafeSync - Installation", 470,150)
+    Local $InstallButton = GUICtrlCreateButton("Install", 350, 100, 85, 25)
+    Local $InstallDirectory = GUICtrlCreateLabel("Installation dir;",10,20)
+	Local $InstallDir = GUICtrlCreateInput($InstallLocation, 10, 38, 300)
+	Local $InstallDirSelect = GUICtrlCreateButton( "SelectFolder", 320,35,100)
+
+    ; Display the GUI.
+    GUISetState(@SW_SHOW, $InstallationDialog)
+
+    ; Loop until the user exits.
+    While 1
+        Switch GUIGetMsg()
+            Case $GUI_EVENT_CLOSE
+                ExitLoop
+			Case $InstallButton
+				RegWrite( $SafeSyncRegistry)
+				RegWrite( $SafeSyncRegistry, "DisplayIcon", "REG_SZ", $DisplayIcon)
+				RegWrite( $SafeSyncRegistry, "DisplayName", "REG_SZ", $DisplayName)
+				RegWrite( $SafeSyncRegistry, "DisplayVersion", "REG_SZ", $DisplayVersion)
+				RegWrite( $SafeSyncRegistry, "InstallLocation", "REG_SZ", $InstallLocation)
+				RegWrite( $SafeSyncRegistry, "Publisher", "REG_SZ", $Publisher)
+				RegWrite( $SafeSyncRegistry, "UninstallString", "REG_SZ", $UninstallString)
+				; TODO Copy other files and create folder
+				ExitLoop
+			Case $InstallDirSelect
+				GUICtrlSetData( $InstallDir, FileSelectFolder( "Choose the destination folder", $InstallLocation))
+        EndSwitch
+    WEnd
+    ; Delete the previous GUI and all controls.
+    GUIDelete($InstallationDialog)
+EndFunc
 
 #cs ----------------------------------------------------------------------------
 ReloadListView
