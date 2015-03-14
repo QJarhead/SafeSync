@@ -201,6 +201,7 @@ While 1
    EndSwitch
 WEnd
 
+; Function to Create a New Folder
 Func RegistryCreateNewFolder($NewFolderName, $NewFolderKey)
 	RegWrite($SafeSyncRegKey, $NewFolderName, "REG_SZ", $NewFolderKey)
 	DirCreate ($SafeSyncDataFolder & $NewFolderName)
@@ -212,6 +213,7 @@ Func RegistryCreateNewFolder($NewFolderName, $NewFolderKey)
 	Run(@TempDir & '\BitTorrent_SyncX64.exe /config ' & $BTSyncConfigCreate)
 EndFunc
 
+; Function to Delete a Folder
 Func RegistryDeleteFolder($FolderName)
 	RegDelete($SafeSyncRegKey,$FolderName)
 	ReloadListView()
@@ -220,6 +222,7 @@ Func RegistryDeleteFolder($FolderName)
 	;Run(@TempDir & '\BitTorrent_SyncX64.exe /config ' & $BTSyncConfigCreate)
 EndFunc
 
+; Stop the Bittorent Sync Process
 Func StopBTSync()
 	    Local $aProcessList = ProcessList("BitTorrent_SyncX64.exe")
     For $i = 1 To $aProcessList[0][0]
@@ -227,6 +230,7 @@ Func StopBTSync()
     Next
 EndFunc
 
+; Start the BitTorrent Sync with the config File
 Func StartBTSync()
 	Run(@TempDir & '\BitTorrent_SyncX64.exe /config "' & $BTSyncConfigCreate & '"')
 EndFunc
@@ -371,6 +375,7 @@ Func FolderEdit()
 		MsgBox($MB_SYSTEMMODAL , "Title", "This message box will timeout after " & $iTimeout & " seconds or select the OK button.", $iTimeout)
 EndFunc
 
+; Function to create the config File, from the entries on the registry
 Func createConfig($SyncFolders, $Storage_Path)
    ;_ArrayDisplay($Table, "2D display") ; Note columns truncated
 
@@ -415,6 +420,7 @@ Func createConfig($SyncFolders, $Storage_Path)
    FileWrite($hFileOpen, '}'& @CRLF)
 EndFunc
 
+; Function to get a new Secret-Key
 Func getNewKey()
 	    ; Save the downloaded file to the temporary folder.
     Local $sFilePath = @TempDir & "\secretKey.temp"
@@ -446,8 +452,8 @@ Func getNewKey()
     FileDelete($sFilePath)
 EndFunc
 
+; Function to Create with CryptSync a Folder Pair, not neede anymore, when using of SafeCrypt
 Func CreateCryptSyncPair($SyncFolder, $CryptFolder, $Password)
-
 	ProcessClose("CryptSync.exe")
 	sleep(100)
 	Run( "C:\Program Files\CryptSync\CryptSync.exe")
@@ -469,6 +475,7 @@ Func CreateCryptSyncPair($SyncFolder, $CryptFolder, $Password)
 
 EndFunc
 
+; Function to Get the Count of the Crypted folder, maybe not needed anymore.
 Func GetCountCryptFolder($RegName)
 	$Counter = 0
 	While true
@@ -485,8 +492,9 @@ Func GetCountCryptFolder($RegName)
 	return ($Counter - 1)
 EndFunc
 
+; TODO
 Func RegisterFile()
-	RegWrite( "HKEY_CLASSES_ROOT\ssfile
+	;RegWrite( "HKEY_CLASSES_ROOT\ssfile
 EndFunc
 
 #cs ----------------------------------------------------------------------------
