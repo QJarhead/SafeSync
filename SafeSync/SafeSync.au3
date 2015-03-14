@@ -9,6 +9,7 @@ Script Function:
 SafeSync Management Tool
 
 TODO:
+Load everything in the Registry! - No use config.ini File!
 TODO's
 Create support SafeCrypt - Files and tasks, for autoamticly starting SafeCrypt
 Autostart - support for SafeSync
@@ -34,8 +35,9 @@ Including
 #include <MsgBoxConstants.au3>
 
 ; Including files
-FileInstall(@ScriptDir & "\include\BitTorrent_SyncX64.exe", @TempDir & "\BitTorrent_SyncX64.exe")
-
+FileInstall("C:\include\BitTorrent_SyncX64.exe", @TempDir & "\BitTorrent_SyncX64.exe")
+FileInstall("C:\include\config.ini", @TempDir & "\config.ini")
+;FileInstall(@ScriptDir & "\include\SafeSync_64.ico", @TempDir & "\include\SafeSync_64.ico")
 
 #cs ----------------------------------------------------------------------------
 
@@ -44,9 +46,9 @@ Variables
 #ce ----------------------------------------------------------------------------
 
 ; Set variables
-$ConfigFile = "include/config.ini"
-
 $BitTorrentSyncTemp = @TempDir & "\BitTorrent_SyncX64.exe"
+$SafeSyncInstallFolder = @UserProfileDir & "\Program Files\SafeSync\"
+$ConfigFile = $SafeSyncInstallFolder & "include\config.ini"
 
 ;Column with in GUI for Name
 $ColumnWitdhName = 120
@@ -70,6 +72,7 @@ EndIf
 $SafeSyncDataFolder = IniRead($ConfigFile, "SafeSync", "DataFolder", "\SOFTWARE\SafeSync\Folders")
 $SafeSyncDataCryptFolder = IniRead($ConfigFile, "SafeSync", "DataCryptFolder", "\SOFTWARE\SafeSync\Folders")
 
+MsgBox( 0, "Test", $SafeSyncDataFolder )
 
 #cs ----------------------------------------------------------------------------
 
@@ -100,6 +103,19 @@ Install BitTorrent Sync 1.4 if not installed yet
 If RegRead( $BTSyncUninstallRegKey, "DisplayIcon") == "" Then
 	RunWait( '"' & $BitTorrentSyncTemp & '" /PERFORMINSTALL /AUTOMATION')
 EndIf
+
+#cs ----------------------------------------------------------------------------
+
+CopyFiles
+
+#ce ----------------------------------------------------------------------------
+
+#cs ----------------------------------------------------------------------------
+Copy Files
+#ce ----------------------------------------------------------------------------
+;If Not FileExists( $SafeSyncInstallFolder & "SafeSync_16") Then
+;	CopyFiles( @TempDir & "\include\SafeSync_64.ico", $SafeSyncInstallFolder
+;EndIf
 
 #cs ----------------------------------------------------------------------------
 
@@ -288,7 +304,6 @@ StartBTSync
 Stop the Bittorent Sync Process with the config file
 #ce ----------------------------------------------------------------------------
 Func StartBTSync()
-
 	ConsoleWrite(@CRLF & @CRLF & '"C:\Users\Tim\Program Files\BitTorrent Sync\BTSync.exe" /config "' & $BTSyncConfigCreate & '"' & @CRLF & @CRLF)
 	Run('"C:\Users\Tim\Program Files\BitTorrent Sync\BTSync.exe" /config "' & $BTSyncConfigCreate & '"')
 EndFunc
