@@ -53,6 +53,7 @@ $SafeSyncRegistry = "HKEY_CURRENT_USER64\Software\Microsoft\Windows\CurrentVersi
 $DisplayIcon = @UserProfileDir & "\Program Files\SafeSync\SafeSync.exe"
 $DisplayName = "SafeSync"
 $DisplayVersion = "0.0.1"
+$ConfigFileBTSync = @UserProfileDir & "\Program Files\SafeSync\config.json"
 $InstallLocation = @UserProfileDir & "\Program Files\SafeSync"
 $Publisher = "SafeSync-Team"
 $UninstallString = @UserProfileDir & "\Program Files\SafeSync\SafeSync.exe /UNINSTALL"
@@ -60,24 +61,19 @@ $UninstallString = @UserProfileDir & "\Program Files\SafeSync\SafeSync.exe /UNIN
 ;Column with in GUI for Name
 $ColumnWitdhName = 120
 ;Column with in GUI for Key
-$ColumnWitdhKey = 260
+$ColumnWitdhKey = 280
 ;Column with in GUI for Path
-$ColumnWitdhPath = 350
+$ColumnWitdhPath = 300
 
 ; Read Ini Section BTSync
-$BTSyncFolder = IniRead($ConfigFile, "BTSync", "InstallFolder", @ProgramFilesDir & "\BitTorrent Sync")
+$BTSyncFolder = @UserProfileDir & "\BitTorrent Sync"
 $BTSyncConfigCreate = @UserProfileDir & "\Program Files\BitTorrent Sync\config.json"
+$BTSyncUninstallRegKey = "HKEY_LOCAL_MACHINE64\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\BitTorrent Sync"
+$SafeSyncRegKey = "HKEY_CURRENT_USER"&IniRead($ConfigFile, "SafeSync", "RegKey", "\SOFTWARE\SafeSync\Folders")
 
 ; Read Ini Section SafeSync
-If @OSArch = "X64" Then
-	$SafeSyncRegKey = "HKEY_CURRENT_USER"&IniRead($ConfigFile, "SafeSync", "RegKey", "\SOFTWARE\SafeSync\Folders")
-	$BTSyncUninstallRegKey = "HKEY_LOCAL_MACHINE64"&IniRead($ConfigFile, "BTSync", "UninstallRegKey", "\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\BitTorrent Sync")
-Else
-	$SafeSyncRegKey = "HKEY_CURRENT_USER"&IniRead($ConfigFile, "SafeSync", "RegKey", "\SOFTWARE\SafeSync\Folders")
-	$BTSyncUninstallRegKey = "HKEY_LOCAL_MACHINE"&IniRead($ConfigFile, "BTSync", "UninstallRegKey", "\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\BitTorrent Sync")
-EndIf
-$SafeSyncDataFolder = IniRead($ConfigFile, "SafeSync", "DataFolder", "\SOFTWARE\SafeSync\Folders")
-$SafeSyncDataCryptFolder = IniRead($ConfigFile, "SafeSync", "DataCryptFolder", "\SOFTWARE\SafeSync\Folders")
+$SafeSyncDataFolder = RegRead( $SafeSyncRegistry, "DataFolder") & "\"
+$SafeSyncDataCryptFolder = RegRead( $SafeSyncRegistry, "DataCryptFolder") & "\"
 
 #cs ----------------------------------------------------------------------------
 
@@ -94,7 +90,6 @@ If Not $CmdLine[0] = 0 Then
 		Exit
 	EndIf
 EndIf
-
 
 #cs ----------------------------------------------------------------------------
 
@@ -180,6 +175,7 @@ $Button1 = GUICtrlCreateButton("Button1", 32, 140, 91, 33)
 
 GUISwitch($SafeSyncManagementTool)
 
+
 ; Running the Gui in Loop
 While 1
 	$nMsg = GUIGetMsg(1)
@@ -249,11 +245,17 @@ Install - Process
 #ce ----------------------------------------------------------------------------
 Func Install()
     ; Create a GUI with various controls.
-    Local $InstallationDialog = GUICreate("SafeSync - Installation", 470,150)
-    Local $InstallButton = GUICtrlCreateButton("Install", 350, 100, 85, 25)
-    Local $InstallDirectory = GUICtrlCreateLabel("Installation dir;",10,20)
+    Local $InstallationDialog = GUICreate("SafeSync - Installation", 430,220)
+    Local $InstallButton = GUICtrlCreateButton("Install", 320, 180, 85, 25)
+    Local $InstallDirectory = GUICtrlCreateLabel("Installation dir:",10,20)
 	Local $InstallDir = GUICtrlCreateInput($InstallLocation, 10, 38, 300)
-	Local $InstallDirSelect = GUICtrlCreateButton( "SelectFolder", 320,35,100)
+	Local $InstallDirSelect = GUICtrlCreateButton( "SelectFolder", 320,36,100)
+	Local $DataDirectory = GUICtrlCreateLabel("DataDirectory:",10,70)
+	Local $DataDir = GUICtrlCreateInput($InstallLocation & "\Data", 10, 88, 300)
+	Local $DataDirSelect = GUICtrlCreateButton( "SelectFolder", 320,86,100)
+	Local $DataCryptDirectory = GUICtrlCreateLabel("CryptDirectory:",10,120)
+	Local $DataCryptDir = GUICtrlCreateInput($InstallLocation & "\Crypt", 10, 138, 300)
+	Local $DataCryptDirSelect = GUICtrlCreateButton( "SelectFolder", 320,136,100)
 
     ; Display the GUI.
     GUISetState(@SW_SHOW, $InstallationDialog)
@@ -268,13 +270,24 @@ Func Install()
 				RegWrite( $SafeSyncRegistry, "DisplayIcon", "REG_SZ", $DisplayIcon)
 				RegWrite( $SafeSyncRegistry, "DisplayName", "REG_SZ", $DisplayName)
 				RegWrite( $SafeSyncRegistry, "DisplayVersion", "REG_SZ", $DisplayVersion)
-				RegWrite( $SafeSyncRegistry, "InstallLocation", "REG_SZ", $InstallLocation)
+				RegWrite( $SafeSyncRegistry, "InstallLocation", "REG_SZ", GUICtrlRead($InstallDir) )
 				RegWrite( $SafeSyncRegistry, "Publisher", "REG_SZ", $Publisher)
 				RegWrite( $SafeSyncRegistry, "UninstallString", "REG_SZ", $UninstallString)
+				RegWrite( $SafeSyncRegistry, "DataFolder", "REG_SZ", GUICtrlRead($DataDir))
+				RegWrite( $SafeSyncRegistry, "DataCryptFolder", "REG_SZ", GUICtrlRead($DataCryptDir))
+				DirCreate(GUICtrlRead($DataCryptDir))
+				DirCreate(GUICtrlRead($DataDir))
+				DirCreate(GUICtrlRead($InstallDir))
+				$SafeSyncDataFolder = RegRead( $SafeSyncRegistry, "DataFolder")
+				$SafeSyncDataCryptFolder = RegRead( $SafeSyncRegistry, "DataCryptFolder")
 				; TODO Copy other files and create folder
 				ExitLoop
 			Case $InstallDirSelect
 				GUICtrlSetData( $InstallDir, FileSelectFolder( "Choose the destination folder", $InstallLocation))
+			Case $DataDirSelect
+				GUICtrlSetData( $DataDir, FileSelectFolder( "Choose the destination folder", $InstallLocation))
+			Case $DataCryptDirSelect
+				GUICtrlSetData( $DataCryptDir, FileSelectFolder( "Choose the destination folder", $InstallLocation))
         EndSwitch
     WEnd
     ; Delete the previous GUI and all controls.
@@ -300,13 +313,11 @@ Func ReloadListView()
 	  $sVar = RegEnumVal($SafeSyncRegKey, $i)
 	  If @error <> 0 Then ExitLoop
 	  $sVar1 = RegRead($SafeSyncRegKey, $sVar)
-	  $SyncFolders[$i][0] = $SafeSyncDataFolder & $sVar
+	  $SyncFolders[$i][0] = $SafeSyncDataCryptFolder & $sVar
 	  $SyncFolders[$i][1] = $sVar1
    Next
    createConfig($SyncFolders, "C://SafeSync/Config")
-   StopBTSync()
-   Sleep(1000)
-   StartBTSync()
+   RestartBTSync()
 EndFunc
 
 #cs ----------------------------------------------------------------------------
@@ -497,7 +508,7 @@ Func createConfig($SyncFolders, $Storage_Path)
    FileWrite($hFileOpen, '{' & @CRLF)
    FileWrite($hFileOpen, '     "storage_path" : "'&$storage_Path&'",'&@CRLF)
    FileWrite($hFileOpen, '     "check_for_updates" : false,'& @CRLF)
-   FileWrite($hFileOpen, '     "use_gui" : true,'& @CRLF)
+   FileWrite($hFileOpen, '     "use_gui" : false,'& @CRLF)
    FileWrite($hFileOpen, '     "webui" :'& @CRLF)
    FileWrite($hFileOpen, '     {'& @CRLF)
    FileWrite($hFileOpen, '          "listen" : "127.0.0.1:7878",'& @CRLF)

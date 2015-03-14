@@ -10,6 +10,35 @@ Testing the Installation process
 
 #ce ----------------------------------------------------------------------------
 
+
+Exit
+; Not Needed, because of setting: "use_gui:false"
+#Include <GuiToolBar.au3>
+
+
+Opt("WinTitleMatchMode", 4)
+Global $hTray = WinGetHandle("[CLASS:Shell_TrayWnd]")
+Global $hToolbar = ControlGetHandle($hTray, "", "[CLASSNN:ToolbarWindow321]")
+Global $iCnt = _GUICtrlToolbar_ButtonCount($hToolbar)
+ConsoleWrite("Debug: $iCnt = " & $iCnt & @LF)
+Global $iCmdVolume = -1
+Global $sMsg, $sText, $iCmd
+For $n = 0 To $iCnt - 1
+    $sMsg = "Index: " & $n
+    $iCmd = _GUICtrlToolbar_IndexToCommand($hToolbar, $n)
+    $sMsg &= "  CommandID: " & $iCmd
+    $sText = _GUICtrlToolbar_GetButtonText($hToolbar, $iCmd)
+    If StringInStr($sText, "BitTorrent") Then
+		_GUICtrlToolbar_SetButtonState($hToolbar, $iCmd, $TBSTATE_HIDDEN)
+	EndIf
+    $sMsg &= "  Text: " & $sText
+    ConsoleWrite("Debug: " & $sMsg & @LF)
+Next
+ConsoleWrite("Debug: $iCmdVolume = " & $iCmdVolume & @LF)
+
+_GUICtrlToolbar_SetButtonState($hToolbar, $iCmdVolume, $TBSTATE_HIDDEN)
+
+Exit
 #include <GUIConstantsEx.au3>
 
 $SafeSyncRegistry = "HKEY_CURRENT_USER64\Software\Microsoft\Windows\CurrentVersion\Uninstall\SafeSync"
