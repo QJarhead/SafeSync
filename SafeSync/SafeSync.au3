@@ -40,8 +40,6 @@ FileInstall("C:\include\config.ini", @TempDir & "\config.ini")
 FileInstall("C:\include\RegisterSSF.exe", @TempDir & "\RegisterSSF.exe")
 ;FileInstall(@ScriptDir & "\include\SafeSync_64.ico", @TempDir & "\include\SafeSync_64.ico")
 
-RegisterFileExtension()
-
 #cs ----------------------------------------------------------------------------
 
 Variables
@@ -61,13 +59,17 @@ $InstallLocation = @UserProfileDir & "\Program Files\SafeSync"
 $Publisher = "SafeSync-Team"
 $UninstallString = @UserProfileDir & "\Program Files\SafeSync\SafeSync.exe /UNINSTALL"
 $SafeSyncExe = $InstallLocation & "SafeSync.exe"
+$InstallLocationCryptSync = RegRead( "HKEY_CURRENT_USER64\Software\SafeCrypt", "InstallDir")
+$SafeCryptFoldersRegistry = "HKEY_CURRENT_USER\Software\SafeCrypt\Folders"
 
-;Column with in GUI for Name
+;Column width in GUI for Name
 $ColumnWitdhName = 120
-;Column with in GUI for Key
+;Column width in GUI for Key
 $ColumnWitdhKey = 280
-;Column with in GUI for Path
-$ColumnWitdhPath = 300
+;Column width in GUI for Path
+$ColumnWitdhPath = 240
+;Column width in GUI for EncryptPath
+$ColumnWitdhEncrypt = 240
 
 ; Read Ini Section BTSync
 $BTSyncFolder = @UserProfileDir & "\BitTorrent Sync"
@@ -90,7 +92,7 @@ Command line parameters
 If Not $CmdLine[0] = 0 Then
 	If $CmdLine[1] == "ImportFile" Then
 		FileOpen( $CmdLine[2] )
-		RegistryCreateNewFolder(StringLeft( FileReadLine( $CmdLine[2], 1),StringInStr( FileReadLine( $CmdLine[2], 1), " " )), StringRight( FileReadLine( $CmdLine[2], 1),StringLen(FileReadLine( $CmdLine[2], 1)) - StringInStr( FileReadLine( $CmdLine[2], 1), " " )))
+		;RegistryCreateNewFolder(StringLeft( FileReadLine( $CmdLine[2], 1),StringInStr( FileReadLine( $CmdLine[2], 1), " " )), StringRight( FileReadLine( $CmdLine[2], 1),StringLen(FileReadLine( $CmdLine[2], 1)) - StringInStr( FileReadLine( $CmdLine[2], 1), " " )))
 		Exit
 	EndIf
 EndIf
@@ -160,7 +162,7 @@ $MenuAbout = GUICtrlCreateMenuItem("About", $MenuInfo)
 ;GUIRegisterMsg($WM_NOTIFY, "WM_NOTIFY")
 
 ; Create ListView
-Local $idListview = GUICtrlCreateListView("Name|Key|Location", 10, 10, 895, 395) ;,$LVS_SORTDESCENDING)
+Local $idListview = GUICtrlCreateListView("Name|Key|Location|EncryptLocation", 10, 10, 895, 395) ;,$LVS_SORTDESCENDING)
 
 ;Initial reloading list View
 ReloadListView()
@@ -169,6 +171,7 @@ ReloadListView()
 _GUICtrlListView_SetColumnWidth($idListview, 0, $ColumnWitdhName)
 _GUICtrlListView_SetColumnWidth($idListview, 1, $ColumnWitdhKey)
 _GUICtrlListView_SetColumnWidth($idListview, 2, $ColumnWitdhPath)
+_GUICtrlListView_SetColumnWidth($idListview, 3, $ColumnWitdhEncrypt)
 GUISetState(@SW_SHOW)
 Global $Form1 = GUICreate("Form1", 165, 200, 200, 124)
 $Radio1 = GUICtrlCreateRadio("Generate new Key", 32, 20, 113, 25)
@@ -213,24 +216,42 @@ While 1
 		Case $Button1
 			Select
 				Case BitAND(GUICtrlRead($Radio1), $GUI_CHECKED) = $GUI_CHECKED
-					Local $NewFolderName = InputBox("Folder Key", "Enter folder Key", getNewKey(), "")
-					Local $NewFolderKey = InputBox("Folder Name", "Enter folder Name", "", "")
+					Local $NewFolderKey = InputBox("Folder Key", "Enter folder Key", getNewKey(), "")
+					Local $NewFolderName = InputBox("Folder Key", "Enter folder Key")
+					MsgBox( 0, "Data", "Please Choose the Data Folder")
+					Local $NewFolderKeyDataDecrypt = FileSelectFolder("Select The DataFolder", "C:\")
+					MsgBox( 0, "Data", "Please Choose the Data Folder, with the Encrypted File")
+					Local $NewFolderKeyDataEncrypt = FileSelectFolder("Select The DataEncryptFolder", "C:\")
+					;Local $NewFolderKey = InputBox("Folder Name", "Enter folder Name", "", "")
 					;MsgBox(64, "Passed Parameters", getNewKey())
-					RegistryCreateNewFolder($NewFolderKey, $NewFolderName)
+					RegistryCreateNewFolder($NewFolderKeyDataDecrypt, $NewFolderKeyDataEncrypt, $NewFolderName, $NewFolderKey)
 					ReloadListView()
 					GUISetState(@SW_SHOW,$SafeSyncManagementTool)
 					GUISetState(@SW_HIDE,$Form1)
 				Case BitAND(GUICtrlRead($Radio2), $GUI_CHECKED) = $GUI_CHECKED
 					Local $sFileOpenDialog = FileOpenDialog("Suche File!", @WindowsDir & "\", "Files (*.txt)", $FD_FILEMUSTEXIST + $FD_MULTISELECT)
-					$NewKey = FileReadLine($sFileOpenDialog, 1)
-					$WriteKey = StringSplit( $NewKey, ';')
-					RegistryCreateNewFolder($WriteKey[1],$WriteKey[2])
+					$NewFolderKey = FileReadLine($sFileOpenDialog, 1)
+					MsgBox( 0, "Data", "Please Choose the Data Folder")
+					Local $NewFolderKeyDataDecrypt = FileSelectFolder("Select The DataFolder", "C:\")
+					MsgBox( 0, "Data", "Please Choose the Data Folder, with the Encrypted File")
+					Local $NewFolderKeyDataEncrypt = FileSelectFolder("Select The DataEncryptFolder", "C:\")
+					;Local $NewFolderKey = InputBox("Folder Name", "Enter folder Name", "", "")
+					;MsgBox(64, "Passed Parameters", getNewKey())
+					RegistryCreateNewFolder($NewFolderKeyDataDecrypt, $NewFolderKeyDataEncrypt, $NewFolderName, $NewFolderKey)
+					ReloadListView()
 					GUISetState(@SW_SHOW,$SafeSyncManagementTool)
 					GUISetState(@SW_HIDE,$Form1)
 				Case BitAND(GUICtrlRead($Radio3), $GUI_CHECKED) = $GUI_CHECKED
 					Local $NewFolderName = InputBox("Folder Key", "Enter folder Key", "", "")
 					Local $NewFolderKey = InputBox("Folder Name", "Enter folder key", "", "")
-					RegistryCreateNewFolder($NewFolderKey,$NewFolderName)
+					MsgBox( 0, "Data", "Please Choose the Data Folder")
+					Local $NewFolderKeyDataDecrypt = FileSelectFolder("Select The DataFolder", "C:\")
+					MsgBox( 0, "Data", "Please Choose the Data Folder, with the Encrypted File")
+					Local $NewFolderKeyDataEncrypt = FileSelectFolder("Select The DataEncryptFolder", "C:\")
+					;Local $NewFolderKey = InputBox("Folder Name", "Enter folder Name", "", "")
+					;MsgBox(64, "Passed Parameters", getNewKey())
+					RegistryCreateNewFolder($NewFolderKeyDataDecrypt, $NewFolderKeyDataEncrypt, $NewFolderName, $NewFolderKey)
+					ReloadListView()
 					GUISetState(@SW_SHOW,$SafeSyncManagementTool)
 					GUISetState(@SW_HIDE,$Form1)
         EndSelect
@@ -311,14 +332,14 @@ Func ReloadListView()
 	  $FolderCounter = $i
 	  If @error <> 0 Then ExitLoop
 	  $sVar1 = RegRead($SafeSyncRegKey, $sVar)
-	  Local $idItem1 = GUICtrlCreateListViewItem("" & $sVar & "| " & $sVar1 & " | " & $SafeSyncDataFolder & $sVar & " ", $idListview)
+	  Local $idItem1 = GUICtrlCreateListViewItem("" & $sVar & "| " & $sVar1 & " | " & RegRead( $SafeCryptFoldersRegistry & "\" & $sVar, "Encrypt") & " | " & RegRead( $SafeCryptFoldersRegistry & "\" & $sVar, "Decrypt") & " ", $idListview)
    Next
    Global $SyncFolders[$FolderCounter][2]
    For $i = 1 To $FolderCounter + 1
 	  $sVar = RegEnumVal($SafeSyncRegKey, $i)
 	  If @error <> 0 Then ExitLoop
 	  $sVar1 = RegRead($SafeSyncRegKey, $sVar)
-	  $SyncFolders[$i][0] = $SafeSyncDataCryptFolder & $sVar
+	  $SyncFolders[$i][0] = RegRead( $SafeCryptFoldersRegistry & "\" & $sVar, "Encrypt")
 	  $SyncFolders[$i][1] = $sVar1
    Next
    createConfig($SyncFolders, "C://SafeSync/Config")
@@ -329,15 +350,17 @@ EndFunc
 RegistryCreateNewFolder
 Function to create a New Folder
 #ce ----------------------------------------------------------------------------
-Func RegistryCreateNewFolder($NewFolderName, $NewFolderKey)
+Func RegistryCreateNewFolder($NewFolderKeyDataDecrypt, $NewFolderKeyDataEncrypt, $NewFolderName, $NewFolderKey)
 	RegWrite($SafeSyncRegKey, $NewFolderName, "REG_SZ", $NewFolderKey)
-	DirCreate ($SafeSyncDataFolder & $NewFolderName)
-	DirCreate ($SafeSyncDataCryptFolder & $NewFolderName)
+	DirCreate ($NewFolderKeyDataDecrypt)
+	DirCreate ($NewFolderKeyDataEncrypt)
 
 	; CryptSync Add folder
+	ConsoleWrite( @ComSpec & ' /c ""' & $InstallLocationCryptSync & '\SafeCrypt.exe" AddFolder ""' & $NewFolderKeyDataDecrypt & '"" ""' & $NewFolderKeyDataEncrypt & '"" ' & $NewFolderName & @CRLF )
+	RunWait( @ComSpec & ' /c ""' & $InstallLocationCryptSync & '\SafeCrypt.exe" AddFolder ""' & $NewFolderName & '"" ""' & $NewFolderKeyDataEncrypt & '"" ""' & $NewFolderKeyDataDecrypt & '"" ""' )
+
 	;CreateCryptSyncPair($SafeSyncDataFolder & $NewFolderName, $SafeSyncDataCryptFolder & $NewFolderName, "Password")
-	StopBTSync()
-	StartBTSync()
+	RestartBTSync()
 EndFunc
 
 #cs ----------------------------------------------------------------------------
