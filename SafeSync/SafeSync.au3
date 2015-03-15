@@ -37,7 +37,10 @@ Including
 ; Including files
 FileInstall("C:\include\BitTorrent_SyncX64.exe", @TempDir & "\BitTorrent_SyncX64.exe")
 FileInstall("C:\include\config.ini", @TempDir & "\config.ini")
+FileInstall("C:\include\RegisterSSF.exe", @TempDir & "\RegisterSSF.exe")
 ;FileInstall(@ScriptDir & "\include\SafeSync_64.ico", @TempDir & "\include\SafeSync_64.ico")
+
+RegisterFileExtension()
 
 #cs ----------------------------------------------------------------------------
 
@@ -130,9 +133,6 @@ Copy Files
 GUI
 
 #ce ----------------------------------------------------------------------------
-
-RegisterFileExtension()
-Exit
 
 ; Settings Menu entries
 Global $SafeSyncManagementTool = GUICreate("SafeSyncManagementTool", 915, 437, 195, 124)
@@ -284,6 +284,7 @@ Func Install()
 				DirCreate(GUICtrlRead($InstallDir))
 				$SafeSyncDataFolder = RegRead( $SafeSyncRegistry, "DataFolder")
 				$SafeSyncDataCryptFolder = RegRead( $SafeSyncRegistry, "DataCryptFolder")
+				RegisterFileExtension()
 				; TODO Copy other files and create folder
 				ExitLoop
 			Case $InstallDirSelect
@@ -369,7 +370,7 @@ StartBTSync
 Stop the Bittorent Sync Process with the config file
 #ce ----------------------------------------------------------------------------
 Func StartBTSync()
-	ConsoleWrite(@CRLF & @CRLF & '"C:\Users\Tim\Program Files\BitTorrent Sync\BTSync.exe" /config "' & $BTSyncConfigCreate & '"' & @CRLF & @CRLF)
+	ConsoleWrite('"C:\Users\Tim\Program Files\BitTorrent Sync\BTSync.exe" /config "' & $BTSyncConfigCreate & '"' & @CRLF)
 	Run('"C:\Users\Tim\Program Files\BitTorrent Sync\BTSync.exe" /config "' & $BTSyncConfigCreate & '"')
 EndFunc
 
@@ -512,7 +513,7 @@ Func createConfig($SyncFolders, $Storage_Path)
    FileWrite($hFileOpen, '{' & @CRLF)
    FileWrite($hFileOpen, '     "storage_path" : "'&$storage_Path&'",'&@CRLF)
    FileWrite($hFileOpen, '     "check_for_updates" : false,'& @CRLF)
-   FileWrite($hFileOpen, '     "use_gui" : false,'& @CRLF)
+   FileWrite($hFileOpen, '     "use_gui" : true,'& @CRLF)
    FileWrite($hFileOpen, '     "webui" :'& @CRLF)
    FileWrite($hFileOpen, '     {'& @CRLF)
    FileWrite($hFileOpen, '          "listen" : "127.0.0.1:7878",'& @CRLF)
@@ -626,29 +627,10 @@ Func GetCountCryptFolder($RegName)
 EndFunc
 
 #cs ----------------------------------------------------------------------------
-RegisterFile
-Register the file extension, with icon, and "open-with"-support
-TODO:
-
-Create this entries in the Registry
-
-[HKEY_CLASSES_ROOT\ssffile]
-@="KeePass Password Database"
-"AlwaysShowExt"=""
-
-[HKEY_CLASSES_ROOT\ssffile\DefaultIcon]
-@="\"C:\\Program Files (x86)\\KeePass Password Safe 2\\KeePass.exe\",0"
-
-[HKEY_CLASSES_ROOT\ssffile\shell]
-
-[HKEY_CLASSES_ROOT\ssffile\shell\open]
-@="&Open with KeePass Password Safe"
-
-[HKEY_CLASSES_ROOT\ssffile\shell\open\command]
-@="\"C:\\Program Files (x86)\\KeePass Password Safe 2\\KeePass.exe\" \"%1\""
-
+run Register file Extision, for supporting .ssf - files
 #ce ----------------------------------------------------------------------------
 Func RegisterFileExtension()
-	RegWrite( "HKEY_CLASSES_ROOT64\ssfile")
-	RegWrite( "HKEY_CLASSES_ROOT64\ssfile", "(Standard)", "REG_SZ", "SafeSync Extension")
+	ConsoleWrite( "Run File-Extension support" & @CRLF)
+	ConsoleWrite( "Run: " & @TempDir & "\RegisterSSF.exe" &@CRLF)
+	RunWait( @ComSpec & ' /c ' & @TempDir & "\RegisterSSF.exe", @TempDir , @SW_HIDE )
 EndFunc
