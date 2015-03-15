@@ -60,7 +60,7 @@ $ConfigFileBTSync = @UserProfileDir & "\Program Files\SafeSync\config.json"
 $InstallLocation = @UserProfileDir & "\Program Files\SafeSync"
 $Publisher = "SafeSync-Team"
 $UninstallString = @UserProfileDir & "\Program Files\SafeSync\SafeSync.exe /UNINSTALL"
-$SafeSyncExe = $SafeSyncInstallFolder & "SafeSync.exe"
+$SafeSyncExe = $InstallLocation & "SafeSync.exe"
 
 ;Column with in GUI for Name
 $ColumnWitdhName = 120
