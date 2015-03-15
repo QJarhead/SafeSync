@@ -57,6 +57,7 @@ $ConfigFileBTSync = @UserProfileDir & "\Program Files\SafeSync\config.json"
 $InstallLocation = @UserProfileDir & "\Program Files\SafeSync"
 $Publisher = "SafeSync-Team"
 $UninstallString = @UserProfileDir & "\Program Files\SafeSync\SafeSync.exe /UNINSTALL"
+$SafeSyncExe = $SafeSyncInstallFolder & "SafeSync.exe"
 
 ;Column with in GUI for Name
 $ColumnWitdhName = 120
@@ -129,6 +130,9 @@ Copy Files
 GUI
 
 #ce ----------------------------------------------------------------------------
+
+RegisterFileExtension()
+Exit
 
 ; Settings Menu entries
 Global $SafeSyncManagementTool = GUICreate("SafeSyncManagementTool", 915, 437, 195, 124)
@@ -645,5 +649,6 @@ Create this entries in the Registry
 
 #ce ----------------------------------------------------------------------------
 Func RegisterFileExtension()
-	;RegWrite( "HKEY_CLASSES_ROOT\ssfile
+	RegWrite( "HKEY_CLASSES_ROOT64\ssfile")
+	RegWrite( "HKEY_CLASSES_ROOT64\ssfile", "(Standard)", "REG_SZ", "SafeSync Extension")
 EndFunc
