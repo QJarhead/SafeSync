@@ -62,6 +62,9 @@ $SafeSyncExe = $InstallLocation & "SafeSync.exe"
 $InstallLocationCryptSync = RegRead( "HKEY_CURRENT_USER64\Software\SafeCrypt", "InstallDir")
 $SafeCryptFoldersRegistry = "HKEY_CURRENT_USER\Software\SafeCrypt\Folders"
 
+Global $sDrive = "", $sDir = "", $sFilename = "", $sExtension = ""
+
+
 ;Column width in GUI for Name
 $ColumnWitdhName = 120
 ;Column width in GUI for Key
@@ -93,6 +96,9 @@ If Not $CmdLine[0] = 0 Then
 	If $CmdLine[1] == "ImportFile" Then
 		FileOpen( $CmdLine[2] )
 		;RegistryCreateNewFolder(StringLeft( FileReadLine( $CmdLine[2], 1),StringInStr( FileReadLine( $CmdLine[2], 1), " " )), StringRight( FileReadLine( $CmdLine[2], 1),StringLen(FileReadLine( $CmdLine[2], 1)) - StringInStr( FileReadLine( $CmdLine[2], 1), " " )))
+		Exit
+	ElseIf $CmdLine[1] == "SyncNewFolder" Then
+		SyncNewFolder($CmdLine[2])
 		Exit
 	EndIf
 EndIf
@@ -226,6 +232,7 @@ While 1
 					;MsgBox(64, "Passed Parameters", getNewKey())
 					RegistryCreateNewFolder($NewFolderKeyDataDecrypt, $NewFolderKeyDataEncrypt, $NewFolderName, $NewFolderKey)
 					ReloadListView()
+					RestartBTSync()
 					GUISetState(@SW_SHOW,$SafeSyncManagementTool)
 					GUISetState(@SW_HIDE,$Form1)
 				Case BitAND(GUICtrlRead($Radio2), $GUI_CHECKED) = $GUI_CHECKED
@@ -239,6 +246,7 @@ While 1
 					;MsgBox(64, "Passed Parameters", getNewKey())
 					RegistryCreateNewFolder($NewFolderKeyDataDecrypt, $NewFolderKeyDataEncrypt, $NewFolderName, $NewFolderKey)
 					ReloadListView()
+					RestartBTSync()
 					GUISetState(@SW_SHOW,$SafeSyncManagementTool)
 					GUISetState(@SW_HIDE,$Form1)
 				Case BitAND(GUICtrlRead($Radio3), $GUI_CHECKED) = $GUI_CHECKED
@@ -252,6 +260,7 @@ While 1
 					;MsgBox(64, "Passed Parameters", getNewKey())
 					RegistryCreateNewFolder($NewFolderKeyDataDecrypt, $NewFolderKeyDataEncrypt, $NewFolderName, $NewFolderKey)
 					ReloadListView()
+					RestartBTSync()
 					GUISetState(@SW_SHOW,$SafeSyncManagementTool)
 					GUISetState(@SW_HIDE,$Form1)
         EndSelect
@@ -324,6 +333,67 @@ EndFunc
 ReloadListView
 Reloading the list view from the registry, to see the entries in the GUI
 #ce ----------------------------------------------------------------------------
+Func SyncNewFolder($NewFolderName)
+	Global $ChooseForm = GUICreate("Form1", 165, 200, 200, 124)
+	$Radio1 = GUICtrlCreateRadio("Generate new Key", 32, 20, 113, 25)
+	GUICtrlSetState(-1, $GUI_CHECKED)
+	$Radio2 = GUICtrlCreateRadio("Import from File", 32, 60, 113, 17)
+	$Radio3 = GUICtrlCreateRadio("Manual", 32, 100, 113, 17)
+	$Button1 = GUICtrlCreateButton("Button1", 32, 140, 91, 33)
+
+	GUISetState(@SW_SHOW)
+
+	ConsoleWrite( "SyncNewFolder: " & $NewFolderName)
+
+	$PathSplit = _PathSplit($NewFolderName, $sDrive, $sDir, $sFilename, $sExtension)
+
+; Running the Gui in Loop
+While 1
+	$nMsg = GUIGetMsg(1)
+	Switch $nMsg[0] ; check which GUI sent the message
+		Case $GUI_EVENT_CLOSE
+			Switch $nMsg[1]
+				Case $Form1
+					ExitLoop
+			EndSwitch
+		Case $Button1
+			Select
+				Case BitAND(GUICtrlRead($Radio1), $GUI_CHECKED) = $GUI_CHECKED
+					Local $NewFolderKey = InputBox("Folder Key", "Enter folder Key", getNewKey(), "")
+					MsgBox( 0, "Data", "Please Choose the Data Folder, with the Encrypted File")
+					Local $NewFolderKeyDataEncrypt = FileSelectFolder("Select The DataEncryptFolder", "C:\")
+					;Local $NewFolderKey = InputBox("Folder Name", "Enter folder Name", "", "")
+					;MsgBox(64, "Passed Parameters", getNewKey())
+					RegistryCreateNewFolder($NewFolderName, $NewFolderKeyDataEncrypt, $PathSplit[3], $NewFolderKey)
+					MsgBox(0,"Durch","Hier")
+					Exit
+				Case BitAND(GUICtrlRead($Radio2), $GUI_CHECKED) = $GUI_CHECKED
+					Local $sFileOpenDialog = FileOpenDialog("Suche File!", @WindowsDir & "\", "Files (*.txt)", $FD_FILEMUSTEXIST + $FD_MULTISELECT)
+					$NewFolderKey = FileReadLine($sFileOpenDialog, 1)
+					MsgBox( 0, "Data", "Please Choose the Data Folder, with the Encrypted File")
+					Local $NewFolderKeyDataEncrypt = FileSelectFolder("Select The DataEncryptFolder", "C:\")
+					;Local $NewFolderKey = InputBox("Folder Name", "Enter folder Name", "", "")
+					;MsgBox(64, "Passed Parameters", getNewKey())
+					RegistryCreateNewFolder($NewFolderName, $NewFolderKeyDataEncrypt, $PathSplit[3], $NewFolderKey)
+					Exit
+				Case BitAND(GUICtrlRead($Radio3), $GUI_CHECKED) = $GUI_CHECKED
+					Local $NewFolderKey = InputBox("Folder Name", "Enter folder key", "", "")
+					MsgBox( 0, "Data", "Please Choose the Data Folder, with the Encrypted File")
+					Local $NewFolderKeyDataEncrypt = FileSelectFolder("Select The DataEncryptFolder", "C:\")
+					;Local $NewFolderKey = InputBox("Folder Name", "Enter folder Name", "", "")
+					;MsgBox(64, "Passed Parameters", getNewKey())
+					RegistryCreateNewFolder($NewFolderName, $NewFolderKeyDataEncrypt, $PathSplit[3], $NewFolderKey)
+					Exit
+        EndSelect
+   EndSwitch
+WEnd
+
+EndFunc
+
+#cs ----------------------------------------------------------------------------
+ReloadListView
+Reloading the list view from the registry, to see the entries in the GUI
+#ce ----------------------------------------------------------------------------
 Func ReloadListView()
 	_GUICtrlListView_DeleteAllItems ( $idListview )
    Local $FolderCounter = 0
@@ -350,7 +420,7 @@ EndFunc
 RegistryCreateNewFolder
 Function to create a New Folder
 #ce ----------------------------------------------------------------------------
-Func RegistryCreateNewFolder($NewFolderKeyDataDecrypt, $NewFolderKeyDataEncrypt, $NewFolderName, $NewFolderKey)
+Func RegistryCreateNewFolder($NewFolderKeyDataEncrypt, $NewFolderKeyDataDecrypt, $NewFolderName, $NewFolderKey)
 	RegWrite($SafeSyncRegKey, $NewFolderName, "REG_SZ", $NewFolderKey)
 	DirCreate ($NewFolderKeyDataDecrypt)
 	DirCreate ($NewFolderKeyDataEncrypt)
@@ -360,7 +430,7 @@ Func RegistryCreateNewFolder($NewFolderKeyDataDecrypt, $NewFolderKeyDataEncrypt,
 	RunWait( @ComSpec & ' /c ""' & $InstallLocationCryptSync & '\SafeCrypt.exe" AddFolder ""' & $NewFolderName & '"" ""' & $NewFolderKeyDataEncrypt & '"" ""' & $NewFolderKeyDataDecrypt & '"" ""' )
 
 	;CreateCryptSyncPair($SafeSyncDataFolder & $NewFolderName, $SafeSyncDataCryptFolder & $NewFolderName, "Password")
-	RestartBTSync()
+	;RestartBTSync()
 EndFunc
 
 #cs ----------------------------------------------------------------------------
