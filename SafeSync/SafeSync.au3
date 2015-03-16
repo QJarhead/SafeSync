@@ -9,10 +9,10 @@ Script Function:
 SafeSync Management Tool
 
 TODO:
-Load everything in the Registry! - No use config.ini File!
-TODO's
-Create support SafeCrypt - Files and tasks, for autoamticly starting SafeCrypt
-Autostart - support for SafeSync
+Commentation
+Check every Variable
+Uninstall-Function!
+Testing (Another Installation)
 
 #ce ----------------------------------------------------------------------------
 
@@ -38,7 +38,40 @@ Including
 FileInstall("C:\include\BitTorrent_SyncX64.exe", @TempDir & "\BitTorrent_SyncX64.exe")
 FileInstall("C:\include\config.ini", @TempDir & "\config.ini")
 FileInstall("C:\include\RegisterSSF.exe", @TempDir & "\RegisterSSF.exe")
-;FileInstall(@ScriptDir & "\include\SafeSync_64.ico", @TempDir & "\include\SafeSync_64.ico")
+FileInstall("C:\include\SafeCrypt.exe", @TempDir & "\SafeCrypt.exe")
+
+#cs ----------------------------------------------------------------------------
+
+Static-Variables
+
+#ce ----------------------------------------------------------------------------
+
+; Programs and Features Key
+Global $SafeSyncRegistry = "HKEY_CURRENT_USER64\Software\Microsoft\Windows\CurrentVersion\Uninstall\SafeSync"
+; SafeCrypt Registry Uninstall
+Global $SafeCryptRegistryUninstall = "HKEY_CURRENT_USER64\Software\Microsoft\Windows\CurrentVersion\Uninstall\SafeCrypt"
+; SafeCrypt Registry
+Global $SafeCryptRegistry = "HKEY_CURRENT_USER\Software\SafeCrypt"
+; SafeCrypt Folders
+Global $SafeCryptFoldersRegistry = $SafeCryptRegistry & "\Folders"
+; SafeSync Folders
+Global $SafeSyncRegKey = "HKEY_CURRENT_USER\Software\SafeSync\Folders"
+; DisplayName for installation
+Global $DisplayName = "SafeSync"
+; DisplayVersion for installation
+Global $DisplayVersion = "0.0.1"
+; ConfigFile for BitTorrent Sync
+Global $ConfigFileBTSync = @UserProfileDir & "\Program Files\BitTorrent Sync\config.json"
+; Publisher for installation
+Global $Publisher = "SafeSync-Team"
+; For running _PathSplit()
+Global $sDrive = "", $sDir = "", $sFilename = "", $sExtension = ""
+; InstallationLocationBTSync
+$InstallationLocationBTSync = @UserProfileDir & "\BitTorrent Sync"
+; BTSync Config File Location
+$BTSyncConfigCreate = $InstallationLocationBTSync & "\config.json"
+; Bittorent Sync Uninstall String
+$BTSyncUninstallRegKey = "HKEY_LOCAL_MACHINE64\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\BitTorrent Sync"
 
 #cs ----------------------------------------------------------------------------
 
@@ -46,25 +79,17 @@ Variables
 
 #ce ----------------------------------------------------------------------------
 
-; Set variables
+; Read SafeCrypt Location from Registry
+$InstallLocationSafeCrypt = RegRead( "HKEY_CURRENT_USER64\Software\SafeCrypt", "InstallDir")
+; Read SafeCrypt Location from Registry
+$InstallLocationSafeSync = RegRead( "HKEY_CURRENT_USER64\Software\SafeSync", "InstallDir")
+; Temp Dir for BitTorrent_SyncX64.exe
 $BitTorrentSyncTemp = @TempDir & "\BitTorrent_SyncX64.exe"
-$SafeSyncInstallFolder = @UserProfileDir & "\Program Files\SafeSync\"
-$ConfigFile = $SafeSyncInstallFolder & "include\config.ini"
-$SafeSyncRegistry = "HKEY_CURRENT_USER64\Software\Microsoft\Windows\CurrentVersion\Uninstall\SafeSync"
-$DisplayIcon = @UserProfileDir & "\Program Files\SafeSync\SafeSync.exe"
-$DisplayName = "SafeSync"
-$DisplayVersion = "0.0.1"
-$ConfigFileBTSync = @UserProfileDir & "\Program Files\SafeSync\config.json"
-$InstallLocation = @UserProfileDir & "\Program Files\SafeSync"
-$Publisher = "SafeSync-Team"
-$UninstallString = @UserProfileDir & "\Program Files\SafeSync\SafeSync.exe /UNINSTALL"
-$SafeSyncExe = $InstallLocation & "SafeSync.exe"
-$InstallLocationCryptSync = RegRead( "HKEY_CURRENT_USER64\Software\SafeCrypt", "InstallDir")
-$SafeCryptFoldersRegistry = "HKEY_CURRENT_USER\Software\SafeCrypt\Folders"
-
-Global $sDrive = "", $sDir = "", $sFilename = "", $sExtension = ""
-
-
+; SafeSyncExe
+$SafeSyncExe = $InstallLocationSafeSync & "SafeSync.exe"
+; DisplayIcon for
+$DisplayIcon = $SafeSyncExe
+$UninstallString = $SafeSyncExe & "/UNINSTALL"
 ;Column width in GUI for Name
 $ColumnWitdhName = 120
 ;Column width in GUI for Key
@@ -73,16 +98,6 @@ $ColumnWitdhKey = 280
 $ColumnWitdhPath = 240
 ;Column width in GUI for EncryptPath
 $ColumnWitdhEncrypt = 240
-
-; Read Ini Section BTSync
-$BTSyncFolder = @UserProfileDir & "\BitTorrent Sync"
-$BTSyncConfigCreate = @UserProfileDir & "\Program Files\BitTorrent Sync\config.json"
-$BTSyncUninstallRegKey = "HKEY_LOCAL_MACHINE64\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\BitTorrent Sync"
-$SafeSyncRegKey = "HKEY_CURRENT_USER"&IniRead($ConfigFile, "SafeSync", "RegKey", "\SOFTWARE\SafeSync\Folders")
-
-; Read Ini Section SafeSync
-$SafeSyncDataFolder = RegRead( $SafeSyncRegistry, "DataFolder") & "\"
-$SafeSyncDataCryptFolder = RegRead( $SafeSyncRegistry, "DataCryptFolder") & "\"
 
 #cs ----------------------------------------------------------------------------
 
@@ -99,6 +114,10 @@ If Not $CmdLine[0] = 0 Then
 		Exit
 	ElseIf $CmdLine[1] == "SyncNewFolder" Then
 		SyncNewFolder($CmdLine[2])
+		Exit
+	EndIf
+	If $CmdLine[1] == "/UNINSTALL" Then
+		Uninstall()
 		Exit
 	EndIf
 EndIf
@@ -121,6 +140,14 @@ Install SafeSync if not installed yes
 #ce ----------------------------------------------------------------------------
 If Not StringCompare( $DisplayName, RegRead( $SafeSyncRegistry, "DisplayName")) = 0 Then
 	Install()
+EndIf
+
+#cs ----------------------------------------------------------------------------
+Install SafeCrypt if not installed yes
+#ce ----------------------------------------------------------------------------
+$SafeCryptName = "SafeCrypt"
+If Not StringCompare( $SafeCryptName, RegRead( $SafeCryptRegistryUninstall, "DisplayName")) = 0 Then
+	RunWait(@TempDir & "\SafeCrypt.exe /Install")
 EndIf
 
 #cs ----------------------------------------------------------------------------
@@ -188,7 +215,6 @@ $Button1 = GUICtrlCreateButton("Button1", 32, 140, 91, 33)
 
 GUISwitch($SafeSyncManagementTool)
 
-
 ; Running the Gui in Loop
 While 1
 	$nMsg = GUIGetMsg(1)
@@ -232,7 +258,6 @@ While 1
 					;MsgBox(64, "Passed Parameters", getNewKey())
 					RegistryCreateNewFolder($NewFolderKeyDataDecrypt, $NewFolderKeyDataEncrypt, $NewFolderName, $NewFolderKey)
 					ReloadListView()
-					RestartBTSync()
 					GUISetState(@SW_SHOW,$SafeSyncManagementTool)
 					GUISetState(@SW_HIDE,$Form1)
 				Case BitAND(GUICtrlRead($Radio2), $GUI_CHECKED) = $GUI_CHECKED
@@ -246,7 +271,6 @@ While 1
 					;MsgBox(64, "Passed Parameters", getNewKey())
 					RegistryCreateNewFolder($NewFolderKeyDataDecrypt, $NewFolderKeyDataEncrypt, $NewFolderName, $NewFolderKey)
 					ReloadListView()
-					RestartBTSync()
 					GUISetState(@SW_SHOW,$SafeSyncManagementTool)
 					GUISetState(@SW_HIDE,$Form1)
 				Case BitAND(GUICtrlRead($Radio3), $GUI_CHECKED) = $GUI_CHECKED
@@ -260,7 +284,6 @@ While 1
 					;MsgBox(64, "Passed Parameters", getNewKey())
 					RegistryCreateNewFolder($NewFolderKeyDataDecrypt, $NewFolderKeyDataEncrypt, $NewFolderName, $NewFolderKey)
 					ReloadListView()
-					RestartBTSync()
 					GUISetState(@SW_SHOW,$SafeSyncManagementTool)
 					GUISetState(@SW_HIDE,$Form1)
         EndSelect
@@ -277,40 +300,38 @@ Functions
 Install
 Install - Process
 #ce ----------------------------------------------------------------------------
+
 Func Install()
     ; Create a GUI with various controls.
-    Local $InstallationDialog = GUICreate("SafeSync - Installation", 430,220)
-    Local $InstallButton = GUICtrlCreateButton("Install", 320, 180, 85, 25)
+    Local $InstallationDialog = GUICreate("SafeSync - Installation", 430,120)
+    Local $InstallButton = GUICtrlCreateButton("Install", 320, 80, 85, 25)
     Local $InstallDirectory = GUICtrlCreateLabel("Installation dir:",10,20)
-	Local $InstallDir = GUICtrlCreateInput($InstallLocation, 10, 38, 300)
+	Local $InstallDir = GUICtrlCreateInput(@ProgramFilesDir & "\SafeSync", 10, 38, 300)
 	Local $InstallDirSelect = GUICtrlCreateButton( "SelectFolder", 320,36,100)
-	Local $DataDirectory = GUICtrlCreateLabel("DataDirectory:",10,70)
-	Local $DataDir = GUICtrlCreateInput($InstallLocation & "\Data", 10, 88, 300)
-	Local $DataDirSelect = GUICtrlCreateButton( "SelectFolder", 320,86,100)
-	Local $DataCryptDirectory = GUICtrlCreateLabel("CryptDirectory:",10,120)
-	Local $DataCryptDir = GUICtrlCreateInput($InstallLocation & "\Crypt", 10, 138, 300)
-	Local $DataCryptDirSelect = GUICtrlCreateButton( "SelectFolder", 320,136,100)
-
+	;Local $DataDirectory = GUICtrlCreateLabel("DataDirectory:",10,70)
+	;Local $DataDir = GUICtrlCreateInput($InstallLocationSafeSync & "\Data", 10, 88, 300)
+	;Local $DataDirSelect = GUICtrlCreateButton( "SelectFolder", 320,86,100)
+	;Local $DataCryptDirectory = GUICtrlCreateLabel("CryptDirectory:",10,120)
+	;Local $DataCryptDir = GUICtrlCreateInput($InstallLocationSafeSync & "\Crypt", 10, 138, 300)
+	;Local $DataCryptDirSelect = GUICtrlCreateButton( "SelectFolder", 320,136,100)
     ; Display the GUI.
     GUISetState(@SW_SHOW, $InstallationDialog)
 
     ; Loop until the user exits.
     While 1
         Switch GUIGetMsg()
-            Case $GUI_EVENT_CLOSE
+			Case $GUI_EVENT_CLOSE
+				Exit
                 ExitLoop
 			Case $InstallButton
 				RegWrite( $SafeSyncRegistry)
-				RegWrite( $SafeSyncRegistry, "DisplayIcon", "REG_SZ", $DisplayIcon)
+				RegWrite( $SafeSyncRegistry, "DisplayIcon", "REG_SZ", $InstallDir & "\SafeSync.exe")
 				RegWrite( $SafeSyncRegistry, "DisplayName", "REG_SZ", $DisplayName)
 				RegWrite( $SafeSyncRegistry, "DisplayVersion", "REG_SZ", $DisplayVersion)
 				RegWrite( $SafeSyncRegistry, "InstallLocation", "REG_SZ", GUICtrlRead($InstallDir) )
+				RegWrite( "HKEY_CURRENT_USER64\Software\SafeSync", "InstallDir", "REG_SZ", GUICtrlRead($InstallDir) )
 				RegWrite( $SafeSyncRegistry, "Publisher", "REG_SZ", $Publisher)
 				RegWrite( $SafeSyncRegistry, "UninstallString", "REG_SZ", $UninstallString)
-				RegWrite( $SafeSyncRegistry, "DataFolder", "REG_SZ", GUICtrlRead($DataDir))
-				RegWrite( $SafeSyncRegistry, "DataCryptFolder", "REG_SZ", GUICtrlRead($DataCryptDir))
-				DirCreate(GUICtrlRead($DataCryptDir))
-				DirCreate(GUICtrlRead($DataDir))
 				DirCreate(GUICtrlRead($InstallDir))
 				$SafeSyncDataFolder = RegRead( $SafeSyncRegistry, "DataFolder")
 				$SafeSyncDataCryptFolder = RegRead( $SafeSyncRegistry, "DataCryptFolder")
@@ -318,20 +339,39 @@ Func Install()
 				; TODO Copy other files and create folder
 				ExitLoop
 			Case $InstallDirSelect
-				GUICtrlSetData( $InstallDir, FileSelectFolder( "Choose the destination folder", $InstallLocation))
-			Case $DataDirSelect
-				GUICtrlSetData( $DataDir, FileSelectFolder( "Choose the destination folder", $InstallLocation))
-			Case $DataCryptDirSelect
-				GUICtrlSetData( $DataCryptDir, FileSelectFolder( "Choose the destination folder", $InstallLocation))
+				GUICtrlSetData( $InstallDir, FileSelectFolder( "Choose the destination folder", $InstallLocationSafeSync))
         EndSwitch
     WEnd
+
+	; Read SafeCrypt Location from Registry
+	$InstallLocationSafeCrypt = RegRead( "HKEY_CURRENT_USER64\Software\SafeCrypt", "InstallDir")
+	; Read SafeCrypt Location from Registry
+	$InstallLocationSafeSync = RegRead( "HKEY_CURRENT_USER64\Software\SafeSync", "InstallDir")
+	; Temp Dir for BitTorrent_SyncX64.exe
+
     ; Delete the previous GUI and all controls.
     GUIDelete($InstallationDialog)
 EndFunc
 
 #cs ----------------------------------------------------------------------------
-ReloadListView
-Reloading the list view from the registry, to see the entries in the GUI
+Uninstall
+The Uninstall Process
+#ce ----------------------------------------------------------------------------
+Func Uninstall()
+	; Registry Cleanup
+	If MsgBox(4, "Uninstall?", "Uninstall SafeSync?") <> 6 Then
+		Exit
+	Else
+		RunWait(RegRead($BTSyncUninstallRegKey, "UninstallString"))
+		; Registry Cleanup!
+	EndIf
+	Exit
+EndFunc
+
+
+#cs ----------------------------------------------------------------------------
+SyncNewFolder
+Create new Folder by clicking Sync with SafeSync from Context menu
 #ce ----------------------------------------------------------------------------
 Func SyncNewFolder($NewFolderName)
 	Global $ChooseForm = GUICreate("Form1", 165, 200, 200, 124)
@@ -425,9 +465,9 @@ Func RegistryCreateNewFolder($NewFolderKeyDataEncrypt, $NewFolderKeyDataDecrypt,
 	DirCreate ($NewFolderKeyDataDecrypt)
 	DirCreate ($NewFolderKeyDataEncrypt)
 
-	; CryptSync Add folder
-	ConsoleWrite( @ComSpec & ' /c ""' & $InstallLocationCryptSync & '\SafeCrypt.exe" AddFolder ""' & $NewFolderKeyDataDecrypt & '"" ""' & $NewFolderKeyDataEncrypt & '"" ' & $NewFolderName & @CRLF )
-	RunWait( @ComSpec & ' /c ""' & $InstallLocationCryptSync & '\SafeCrypt.exe" AddFolder ""' & $NewFolderName & '"" ""' & $NewFolderKeyDataEncrypt & '"" ""' & $NewFolderKeyDataDecrypt & '"" ""' )
+	; SafeCrypt Add folder
+	ConsoleWrite( @ComSpec & ' /c ""' & $InstallLocationSafeCrypt & '\SafeCrypt.exe" AddFolder ""' & $NewFolderKeyDataDecrypt & '"" ""' & $NewFolderKeyDataEncrypt & '"" ' & $NewFolderName & @CRLF )
+	RunWait( @ComSpec & ' /c ""' & $InstallLocationSafeCrypt & '\SafeCrypt.exe" AddFolder ""' & $NewFolderName & '"" ""' & $NewFolderKeyDataEncrypt & '"" ""' & $NewFolderKeyDataDecrypt & '"" ""' )
 
 	;CreateCryptSyncPair($SafeSyncDataFolder & $NewFolderName, $SafeSyncDataCryptFolder & $NewFolderName, "Password")
 	;RestartBTSync()
@@ -666,7 +706,6 @@ Func getNewKey()
 	$WriteKey = StringSplit( $NewKey, '"')
 
 	return $WriteKey[8]
-
     ; Delete the file.
     FileDelete($sFilePath)
 EndFunc
