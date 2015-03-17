@@ -67,7 +67,12 @@ Global $Publisher = "SafeSync-Team"
 ; For running _PathSplit()
 Global $sDrive = "", $sDir = "", $sFilename = "", $sExtension = ""
 ; InstallationLocationBTSync
-$InstallationLocationBTSync = @UserProfileDir & "\BitTorrent Sync"
+$InstallationLocationBTSync = @UserProfileDir & "\Program Files\BitTorrent Sync"
+; BitTorrent Config Location
+$InstallationLocationBTSyncSplit = _PathSplit($InstallationLocationBTSync, $sDrive,$sDir,$sFilename,$sExtension)
+;ConfigLocationBTSync
+$ConfigLocationBTSync = $InstallationLocationBTSyncSplit[1] & "/" & StringReplace($InstallationLocationBTSyncSplit[2] & $InstallationLocationBTSyncSplit[3], "\", "/" ) & "/StoragePath"
+
 ; BTSync Config File Location
 $BTSyncConfigCreate = $InstallationLocationBTSync & "\config.json"
 ; Bittorent Sync Uninstall String
@@ -110,7 +115,16 @@ Command line parameters
 If Not $CmdLine[0] = 0 Then
 	If $CmdLine[1] == "ImportFile" Then
 		FileOpen( $CmdLine[2] )
-		;RegistryCreateNewFolder(StringLeft( FileReadLine( $CmdLine[2], 1),StringInStr( FileReadLine( $CmdLine[2], 1), " " )), StringRight( FileReadLine( $CmdLine[2], 1),StringLen(FileReadLine( $CmdLine[2], 1)) - StringInStr( FileReadLine( $CmdLine[2], 1), " " )))
+		Local $NewFolderKey = StringRight( FileReadLine( $CmdLine[2], 1),StringLen(FileReadLine( $CmdLine[2], 1)) - StringInStr( FileReadLine( $CmdLine[2], 1), " " ))
+		Local $NewFolderNameWithSpace = StringLeft( FileReadLine( $CmdLine[2], 1),StringInStr( FileReadLine( $CmdLine[2], 1), " " ))
+		Local $NewFolderName = StringLeft($NewFolderNameWithSpace,StringLen($NewFolderNameWithSpace)-1)
+		MsgBox( 0, "Data", "Please Choose the Data Folder")
+		Local $NewFolderKeyDataDecrypt = FileSelectFolder("Select The DataFolder", "C:\")
+		MsgBox( 0, "Data", "Please Choose the Data Folder, with the Encrypted File")
+		Local $NewFolderKeyDataEncrypt = FileSelectFolder("Select The DataEncryptFolder", "C:\")
+		;Local $NewFolderKey = InputBox("Folder Name", "Enter folder Name", "", "")
+		;MsgBox(64, "Passed Parameters", getNewKey())
+		RegistryCreateNewFolder($NewFolderKeyDataDecrypt, $NewFolderKeyDataEncrypt, $NewFolderName, $NewFolderKey)
 		Exit
 	ElseIf $CmdLine[1] == "SyncNewFolder" Then
 		SyncNewFolder($CmdLine[2])
@@ -133,6 +147,7 @@ Install BitTorrent Sync 1.4 if not installed yet
 #ce ----------------------------------------------------------------------------
 If RegRead( $BTSyncUninstallRegKey, "DisplayIcon") == "" Then
 	RunWait( '"' & $BitTorrentSyncTemp & '" /PERFORMINSTALL /AUTOMATION')
+	DirCreate($ConfigLocationBTSync)
 EndIf
 
 #cs ----------------------------------------------------------------------------
@@ -404,8 +419,7 @@ While 1
 					Local $NewFolderKeyDataEncrypt = FileSelectFolder("Select The DataEncryptFolder", "C:\")
 					;Local $NewFolderKey = InputBox("Folder Name", "Enter folder Name", "", "")
 					;MsgBox(64, "Passed Parameters", getNewKey())
-					RegistryCreateNewFolder($NewFolderName, $NewFolderKeyDataEncrypt, $PathSplit[3], $NewFolderKey)
-					MsgBox(0,"Durch","Hier")
+					RegistryCreateNewFolder($PathSplit[3], $NewFolderKeyDataEncrypt, $NewFolderName, $NewFolderKey)
 					Exit
 				Case BitAND(GUICtrlRead($Radio2), $GUI_CHECKED) = $GUI_CHECKED
 					Local $sFileOpenDialog = FileOpenDialog("Suche File!", @WindowsDir & "\", "Files (*.txt)", $FD_FILEMUSTEXIST + $FD_MULTISELECT)
@@ -414,7 +428,7 @@ While 1
 					Local $NewFolderKeyDataEncrypt = FileSelectFolder("Select The DataEncryptFolder", "C:\")
 					;Local $NewFolderKey = InputBox("Folder Name", "Enter folder Name", "", "")
 					;MsgBox(64, "Passed Parameters", getNewKey())
-					RegistryCreateNewFolder($NewFolderName, $NewFolderKeyDataEncrypt, $PathSplit[3], $NewFolderKey)
+					RegistryCreateNewFolder($PathSplit[3], $NewFolderKeyDataEncrypt, $NewFolderName, $NewFolderKey)
 					Exit
 				Case BitAND(GUICtrlRead($Radio3), $GUI_CHECKED) = $GUI_CHECKED
 					Local $NewFolderKey = InputBox("Folder Name", "Enter folder key", "", "")
@@ -422,7 +436,7 @@ While 1
 					Local $NewFolderKeyDataEncrypt = FileSelectFolder("Select The DataEncryptFolder", "C:\")
 					;Local $NewFolderKey = InputBox("Folder Name", "Enter folder Name", "", "")
 					;MsgBox(64, "Passed Parameters", getNewKey())
-					RegistryCreateNewFolder($NewFolderName, $NewFolderKeyDataEncrypt, $PathSplit[3], $NewFolderKey)
+					RegistryCreateNewFolder($PathSplit[3], $NewFolderKeyDataEncrypt, $NewFolderName, $NewFolderKey)
 					Exit
         EndSelect
    EndSwitch
@@ -452,7 +466,7 @@ Func ReloadListView()
 	  $SyncFolders[$i][0] = RegRead( $SafeCryptFoldersRegistry & "\" & $sVar, "Encrypt")
 	  $SyncFolders[$i][1] = $sVar1
    Next
-   createConfig($SyncFolders, "C://SafeSync/Config")
+   createConfig($SyncFolders, $ConfigLocationBTSync)
    RestartBTSync()
 EndFunc
 
@@ -466,10 +480,7 @@ Func RegistryCreateNewFolder($NewFolderKeyDataEncrypt, $NewFolderKeyDataDecrypt,
 	DirCreate ($NewFolderKeyDataEncrypt)
 
 	; SafeCrypt Add folder
-	ConsoleWrite( @ComSpec & ' /c ""' & $InstallLocationSafeCrypt & '\SafeCrypt.exe" AddFolder ""' & $NewFolderKeyDataDecrypt & '"" ""' & $NewFolderKeyDataEncrypt & '"" ' & $NewFolderName & @CRLF )
 	RunWait( @ComSpec & ' /c ""' & $InstallLocationSafeCrypt & '\SafeCrypt.exe" AddFolder ""' & $NewFolderName & '"" ""' & $NewFolderKeyDataEncrypt & '"" ""' & $NewFolderKeyDataDecrypt & '"" ""' )
-
-	;CreateCryptSyncPair($SafeSyncDataFolder & $NewFolderName, $SafeSyncDataCryptFolder & $NewFolderName, "Password")
 	;RestartBTSync()
 EndFunc
 
@@ -637,6 +648,8 @@ createConfig
 Function to create the config File, from the entries on the registry
 #ce ----------------------------------------------------------------------------
 Func createConfig($SyncFolders, $Storage_Path)
+	MsgBox(0,"","CreatConfig")
+	MsgBox(0,"",$BTSyncConfigCreate)
    _FileCreate($BTSyncConfigCreate)
    Local $hFileOpen = FileOpen($BTSyncConfigCreate,1)
    If $hFileOpen = -1 Then
