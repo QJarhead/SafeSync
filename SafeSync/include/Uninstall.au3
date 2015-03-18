@@ -12,8 +12,6 @@
 #RequireAdmin
 
 ; Delete Registry
-$BTSyncUninstallRegKey = "HKEY_LOCAL_MACHINE64\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\BitTorrent Sync"
-RunWait(RegRead($BTSyncUninstallRegKey, "UninstallString"))
 RegDelete("HKEY_CURRENT_USER64\Software\Microsoft\Windows\CurrentVersion\Uninstall\SafeSync")
 RegDelete("HKEY_CURRENT_USER64\Software\Microsoft\Windows\CurrentVersion\Uninstall\SafeCrypt")
 RegDelete("HKEY_CURRENT_USER\Software\SafeCrypt")

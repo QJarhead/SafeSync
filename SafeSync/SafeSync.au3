@@ -39,6 +39,12 @@ FileInstall("C:\include\BitTorrent_SyncX64.exe", @TempDir & "\BitTorrent_SyncX64
 FileInstall("C:\include\config.ini", @TempDir & "\config.ini")
 FileInstall("C:\include\RegisterSSF.exe", @TempDir & "\RegisterSSF.exe")
 FileInstall("C:\include\SafeCrypt.exe", @TempDir & "\SafeCrypt.exe")
+FileInstall("C:\include\SafeCrypt.exe", @TempDir & "\Uninstall.exe")
+
+#cs -------Test---------
+
+#ce --------------------
+
 
 #cs ----------------------------------------------------------------------------
 
@@ -91,10 +97,10 @@ $InstallLocationSafeSync = RegRead( "HKEY_CURRENT_USER64\Software\SafeSync", "In
 ; Temp Dir for BitTorrent_SyncX64.exe
 $BitTorrentSyncTemp = @TempDir & "\BitTorrent_SyncX64.exe"
 ; SafeSyncExe
-$SafeSyncExe = $InstallLocationSafeSync & "SafeSync.exe"
+$SafeSyncExe = $InstallLocationSafeSync & "\SafeSync.exe"
 ; DisplayIcon for
 $DisplayIcon = $SafeSyncExe
-$UninstallString = $SafeSyncExe & "/UNINSTALL"
+$UninstallString = $SafeSyncExe & " /UNINSTALL"
 ;Column width in GUI for Name
 $ColumnWitdhName = 120
 ;Column width in GUI for Key
@@ -264,7 +270,7 @@ While 1
 			Select
 				Case BitAND(GUICtrlRead($Radio1), $GUI_CHECKED) = $GUI_CHECKED
 					Local $NewFolderKey = InputBox("Folder Key", "Enter folder Key", getNewKey(), "")
-					Local $NewFolderName = InputBox("Folder Key", "Enter folder Key")
+					Local $NewFolderName = InputBox("Folder Name", "Enter new foldername")
 					MsgBox( 0, "Data", "Please Choose the Data Folder")
 					Local $NewFolderKeyDataDecrypt = FileSelectFolder("Select The DataFolder", "C:\")
 					MsgBox( 0, "Data", "Please Choose the Data Folder, with the Encrypted File")
@@ -346,11 +352,11 @@ Func Install()
 				RegWrite( $SafeSyncRegistry, "InstallLocation", "REG_SZ", GUICtrlRead($InstallDir) )
 				RegWrite( "HKEY_CURRENT_USER64\Software\SafeSync", "InstallDir", "REG_SZ", GUICtrlRead($InstallDir) )
 				RegWrite( $SafeSyncRegistry, "Publisher", "REG_SZ", $Publisher)
-				RegWrite( $SafeSyncRegistry, "UninstallString", "REG_SZ", $UninstallString)
-				DirCreate(GUICtrlRead($InstallDir))
+				RegWrite( $SafeSyncRegistry, "UninstallString", "REG_SZ", GUICtrlRead($InstallDir) & "/SafeSync.exe /UNINSTALL")
 				$SafeSyncDataFolder = RegRead( $SafeSyncRegistry, "DataFolder")
 				$SafeSyncDataCryptFolder = RegRead( $SafeSyncRegistry, "DataCryptFolder")
-				RegisterFileExtension()
+				RegisterFileExtension(GUICtrlRead($InstallDir))
+				FileCopy( @TempDir & "/InstallSafeSync.exe", GUICtrlRead($InstallDir) & "/")
 				; TODO Copy other files and create folder
 				ExitLoop
 			Case $InstallDirSelect
@@ -648,8 +654,6 @@ createConfig
 Function to create the config File, from the entries on the registry
 #ce ----------------------------------------------------------------------------
 Func createConfig($SyncFolders, $Storage_Path)
-	MsgBox(0,"","CreatConfig")
-	MsgBox(0,"",$BTSyncConfigCreate)
    _FileCreate($BTSyncConfigCreate)
    Local $hFileOpen = FileOpen($BTSyncConfigCreate,1)
    If $hFileOpen = -1 Then
@@ -774,8 +778,10 @@ EndFunc
 #cs ----------------------------------------------------------------------------
 run Register file Extision, for supporting .ssf - files
 #ce ----------------------------------------------------------------------------
-Func RegisterFileExtension()
+Func RegisterFileExtension($InstallPath)
 	ConsoleWrite( "Run File-Extension support" & @CRLF)
 	ConsoleWrite( "Run: " & @TempDir & "\RegisterSSF.exe" &@CRLF)
 	RunWait( @ComSpec & ' /c ' & @TempDir & "\RegisterSSF.exe", @TempDir , @SW_HIDE )
+	ConsoleWrite( "Run CreateFolder" & @CRLF)
+	RunWait( @ComSpec & ' /c ' & @TempDir & '\InstallSafeSync.exe "' & $InstallPath & '" "' & @ScriptFullPath & '"', @SW_HIDE )
 EndFunc
