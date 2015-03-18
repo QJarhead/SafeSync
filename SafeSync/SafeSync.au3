@@ -13,9 +13,6 @@ SafeSync Management Tool
 
 TODO:
 Commentation
-Check every Variable
-Uninstall-Function!
-Testing (Another Installation)
 
 #ce ----------------------------------------------------------------------------
 
@@ -240,6 +237,14 @@ $Button1 = GUICtrlCreateButton("Button1", 32, 140, 91, 33)
 
 GUISwitch($SafeSyncManagementTool)
 
+Local $aProcessList = ProcessList("SafeCrypt.exe")
+For $i = 1 To $aProcessList[0][0]
+	ProcessClose ( $aProcessList[$i][1] )
+Next
+
+;Start SafeCrypt
+Run( $InstallLocationSafeCrypt & "/SafeCrypt.exe")
+
 ; Running the Gui in Loop
 While 1
 	$nMsg = GUIGetMsg(1)
@@ -251,6 +256,8 @@ While 1
 					GUISetState(@SW_HIDE,$Form1)
 					GUISwitch($SafeSyncManagementTool)
 				Case $SafeSyncManagementTool
+					StopBTSync()
+					StopProcess("SafeCrypt.exe")
 					ExitLoop
 			EndSwitch
 		Case $MenuNew
@@ -341,7 +348,6 @@ Func Install()
 	;Local $DataCryptDirSelect = GUICtrlCreateButton( "SelectFolder", 320,136,100)
     ; Display the GUI.
     GUISetState(@SW_SHOW, $InstallationDialog)
-
     ; Loop until the user exits.
     While 1
         Switch GUIGetMsg()
@@ -508,14 +514,9 @@ StopBTSync
 Stop the Bittorent Sync Process
 #ce ----------------------------------------------------------------------------
 Func StopBTSync()
-	Local $aProcessList = ProcessList("BitTorrent_SyncX64.exe")
-    For $i = 1 To $aProcessList[0][0]
-		ProcessClose ( $aProcessList[$i][1] )
-    Next
-	Local $aProcessList = ProcessList("BTSync.exe")
-    For $i = 1 To $aProcessList[0][0]
-		ProcessClose ( $aProcessList[$i][1] )
-    Next
+	;Stopping both processes, for better compatibility
+	StopProcess("BitTorrent_SyncX64.exe")
+	StopProcess("BTSync.exe")
 EndFunc
 
 #cs ----------------------------------------------------------------------------
@@ -776,6 +777,19 @@ Func GetCountCryptFolder($RegName)
 		$Counter = $Counter + 1
 	WEnd
 	return ($Counter - 1)
+EndFunc
+
+#cs ----------------------------------------------------------------------------
+GetCountCryptFolder
+Get the Count of the Crypted folder, maybe not needed anymore.
+TODO:
+Check if this is needed
+#ce ----------------------------------------------------------------------------
+Func StopProcess($ProcessName)
+	Local $aProcessList = ProcessList($ProcessName)
+    For $i = 1 To $aProcessList[0][0]
+		ProcessClose ( $aProcessList[$i][1] )
+    Next
 EndFunc
 
 #cs ----------------------------------------------------------------------------
