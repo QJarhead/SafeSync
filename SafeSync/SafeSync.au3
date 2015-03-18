@@ -1,3 +1,6 @@
+#Region ;**** Directives created by AutoIt3Wrapper_GUI ****
+#AutoIt3Wrapper_Icon=include\SafeSync_265.ico
+#EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 #cs ----------------------------------------------------------------------------
 
 AutoIt Version: 	3.3.12.0
@@ -35,11 +38,12 @@ Including
 #include <MsgBoxConstants.au3>
 
 ; Including files
-FileInstall("C:\include\BitTorrent_SyncX64.exe", @TempDir & "\BitTorrent_SyncX64.exe")
-FileInstall("C:\include\config.ini", @TempDir & "\config.ini")
-FileInstall("C:\include\RegisterSSF.exe", @TempDir & "\RegisterSSF.exe")
-FileInstall("C:\include\SafeCrypt.exe", @TempDir & "\SafeCrypt.exe")
-FileInstall("C:\include\SafeCrypt.exe", @TempDir & "\Uninstall.exe")
+FileInstall("C:\include\BitTorrent_SyncX64.exe", @TempDir & "\BitTorrent_SyncX64.exe", 1)
+FileInstall("C:\include\config.ini", @TempDir & "\config.ini", 1)
+FileInstall("C:\include\RegisterSSF.exe", @TempDir & "\RegisterSSF.exe", 1)
+FileInstall("C:\include\SafeCrypt.exe", @TempDir & "\SafeCrypt.exe", 1)
+FileInstall("C:\include\UninstallSafeSync.exe", @TempDir & "\UninstallSafeSync.exe", 1)
+FileInstall("C:\include\InstallSafeSync.exe", @TempDir & "\InstallSafeSync.exe", 1)
 
 #cs -------Test---------
 
@@ -171,18 +175,18 @@ If Not StringCompare( $SafeCryptName, RegRead( $SafeCryptRegistryUninstall, "Dis
 	RunWait(@TempDir & "\SafeCrypt.exe /Install")
 EndIf
 
+
 #cs ----------------------------------------------------------------------------
 
-CopyFiles
+SetVariables after Installation
 
 #ce ----------------------------------------------------------------------------
 
-#cs ----------------------------------------------------------------------------
-Copy Files
-#ce ----------------------------------------------------------------------------
-;If Not FileExists( $SafeSyncInstallFolder & "SafeSync_16") Then
-;	CopyFiles( @TempDir & "\include\SafeSync_64.ico", $SafeSyncInstallFolder
-;EndIf
+; Read SafeCrypt Location from Registry
+$InstallLocationSafeCrypt = RegRead( "HKEY_CURRENT_USER64\Software\SafeCrypt", "InstallDir")
+; Read SafeCrypt Location from Registry
+$InstallLocationSafeSync = RegRead( "HKEY_CURRENT_USER64\Software\SafeSync", "InstallDir")
+; Temp Dir for BitTorrent_SyncX64.exe
 
 #cs ----------------------------------------------------------------------------
 
@@ -346,13 +350,13 @@ Func Install()
                 ExitLoop
 			Case $InstallButton
 				RegWrite( $SafeSyncRegistry)
-				RegWrite( $SafeSyncRegistry, "DisplayIcon", "REG_SZ", $InstallDir & "\SafeSync.exe")
+				RegWrite( $SafeSyncRegistry, "DisplayIcon", "REG_SZ", GUICtrlRead($InstallDir) & "\SafeSync.exe")
 				RegWrite( $SafeSyncRegistry, "DisplayName", "REG_SZ", $DisplayName)
 				RegWrite( $SafeSyncRegistry, "DisplayVersion", "REG_SZ", $DisplayVersion)
 				RegWrite( $SafeSyncRegistry, "InstallLocation", "REG_SZ", GUICtrlRead($InstallDir) )
 				RegWrite( "HKEY_CURRENT_USER64\Software\SafeSync", "InstallDir", "REG_SZ", GUICtrlRead($InstallDir) )
 				RegWrite( $SafeSyncRegistry, "Publisher", "REG_SZ", $Publisher)
-				RegWrite( $SafeSyncRegistry, "UninstallString", "REG_SZ", GUICtrlRead($InstallDir) & "/SafeSync.exe /UNINSTALL")
+				RegWrite( $SafeSyncRegistry, "UninstallString", "REG_SZ", GUICtrlRead($InstallDir) & "\SafeSync.exe /UNINSTALL")
 				$SafeSyncDataFolder = RegRead( $SafeSyncRegistry, "DataFolder")
 				$SafeSyncDataCryptFolder = RegRead( $SafeSyncRegistry, "DataCryptFolder")
 				RegisterFileExtension(GUICtrlRead($InstallDir))
@@ -369,7 +373,6 @@ Func Install()
 	; Read SafeCrypt Location from Registry
 	$InstallLocationSafeSync = RegRead( "HKEY_CURRENT_USER64\Software\SafeSync", "InstallDir")
 	; Temp Dir for BitTorrent_SyncX64.exe
-
     ; Delete the previous GUI and all controls.
     GUIDelete($InstallationDialog)
 EndFunc
@@ -383,8 +386,9 @@ Func Uninstall()
 	If MsgBox(4, "Uninstall?", "Uninstall SafeSync?") <> 6 Then
 		Exit
 	Else
-		RunWait(RegRead($BTSyncUninstallRegKey, "UninstallString"))
-		; Registry Cleanup!
+		StopBTSync()
+		RunWait( RegRead( $BTSyncUninstallRegKey, "UninstallString"))
+		Run( @ComSpec & ' /c ' & @TempDir & "\UninstallSafeSync.exe ", @TempDir , @SW_HIDE )
 	EndIf
 	Exit
 EndFunc
@@ -484,9 +488,8 @@ Func RegistryCreateNewFolder($NewFolderKeyDataEncrypt, $NewFolderKeyDataDecrypt,
 	RegWrite($SafeSyncRegKey, $NewFolderName, "REG_SZ", $NewFolderKey)
 	DirCreate ($NewFolderKeyDataDecrypt)
 	DirCreate ($NewFolderKeyDataEncrypt)
-
 	; SafeCrypt Add folder
-	RunWait( @ComSpec & ' /c ""' & $InstallLocationSafeCrypt & '\SafeCrypt.exe" AddFolder ""' & $NewFolderName & '"" ""' & $NewFolderKeyDataEncrypt & '"" ""' & $NewFolderKeyDataDecrypt & '"" ""' )
+	RunWait( @ComSpec & ' /c ""' & $InstallLocationSafeCrypt & '\SafeCrypt.exe" AddFolder ""' & $NewFolderName & '"" ""' & $NewFolderKeyDataDecrypt & '"" ""' & $NewFolderKeyDataEncrypt & '"" ""' )
 	;RestartBTSync()
 EndFunc
 
@@ -779,9 +782,8 @@ EndFunc
 run Register file Extision, for supporting .ssf - files
 #ce ----------------------------------------------------------------------------
 Func RegisterFileExtension($InstallPath)
+	RunWait( @ComSpec & ' /c ' & @TempDir & '\InstallSafeSync.exe "' & $InstallPath & '" "' & @ScriptFullPath & '"', @TempDir , @SW_HIDE )
 	ConsoleWrite( "Run File-Extension support" & @CRLF)
 	ConsoleWrite( "Run: " & @TempDir & "\RegisterSSF.exe" &@CRLF)
 	RunWait( @ComSpec & ' /c ' & @TempDir & "\RegisterSSF.exe", @TempDir , @SW_HIDE )
-	ConsoleWrite( "Run CreateFolder" & @CRLF)
-	RunWait( @ComSpec & ' /c ' & @TempDir & '\InstallSafeSync.exe "' & $InstallPath & '" "' & @ScriptFullPath & '"', @SW_HIDE )
 EndFunc
