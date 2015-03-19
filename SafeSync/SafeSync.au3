@@ -102,11 +102,11 @@ $DisplayIcon = $SafeSyncExe
 ; UninstallString for Registry
 $UninstallString = $SafeSyncExe & " /UNINSTALL"
 ;Column width in GUI for Name
-$ColumnWitdhName = 120
+$ColumnWitdhName = 80
 ;Column width in GUI for Key
 $ColumnWitdhKey = 280
 ;Column width in GUI for Path
-$ColumnWitdhPath = 240
+$ColumnWitdhPath = 250
 ;Column width in GUI for EncryptPath
 $ColumnWitdhEncrypt = 240
 
@@ -125,15 +125,8 @@ If Not $CmdLine[0] = 0 Then
 		Local $NewFolderKey = StringRight( FileReadLine( $CmdLine[2], 1),StringLen(FileReadLine( $CmdLine[2], 1)) - StringInStr( FileReadLine( $CmdLine[2], 1), " " ))
 		Local $NewFolderNameWithSpace = StringLeft( FileReadLine( $CmdLine[2], 1),StringInStr( FileReadLine( $CmdLine[2], 1), " " ))
 		Local $NewFolderName = StringLeft($NewFolderNameWithSpace,StringLen($NewFolderNameWithSpace)-1)
-
 		Local $arr[2]
-
-		$arr = ChooseDecryptEncryptFolder($NewFolderName)
-
-;		MsgBox( 0, "Data", "Please Choose the Data Folder")
-;		Local $NewFolderKeyDataDecrypt = FileSelectFolder("Select The DataFolder", "C:\")
-;		MsgBox( 0, "Data", "Please Choose the Data Folder, with the Encrypted File")
-;		Local $NewFolderKeyDataEncrypt = FileSelectFolder("Select The DataEncryptFolder", "C:\")
+		$arr = ChooseDecryptEncryptFolder($NewFolderName, "")
 		RegistryCreateNewFolder($arr[0], $arr[1], $NewFolderName, $NewFolderKey)
 		Exit
 	ElseIf $CmdLine[1] == "SyncNewFolder" Then
@@ -155,7 +148,6 @@ Install Programms
 Install BitTorrent Sync 1.4 if not installed yet
 #ce ----------------------------------------------------------------------------
 If RegRead( $BTSyncUninstallRegKey, "DisplayIcon") == "" Then
-	CheckAdmin()
 	RunWait( '"' & $BitTorrentSyncTemp & '" /PERFORMINSTALL /AUTOMATION')
 	DirCreate($ConfigLocationBTSync)
 EndIf
@@ -231,7 +223,7 @@ $MenuAbout = GUICtrlCreateMenuItem("About", $MenuInfo)
 ;GUIRegisterMsg($WM_NOTIFY, "WM_NOTIFY")
 
 ; Create ListView
-Local $idListview = GUICtrlCreateListView("Name|Key|Location|EncryptLocation", 10, 10, 895, 395) ;,$LVS_SORTDESCENDING)
+Local $idListview = GUICtrlCreateListView("Name|Key|EncryptLocation|Location", 10, 10, 895, 395) ;,$LVS_SORTDESCENDING)
 
 ;Initial reloading list View
 ReloadListView()
@@ -242,12 +234,11 @@ _GUICtrlListView_SetColumnWidth($idListview, 1, $ColumnWitdhKey)
 _GUICtrlListView_SetColumnWidth($idListview, 2, $ColumnWitdhPath)
 _GUICtrlListView_SetColumnWidth($idListview, 3, $ColumnWitdhEncrypt)
 GUISetState(@SW_SHOW)
-Global $Form1 = GUICreate("Form1", 165, 200, 200, 124)
+Global $Form1 = GUICreate("Form1", 165, 160, 200, 124)
 $Radio1 = GUICtrlCreateRadio("Generate new Key", 32, 20, 113, 25)
 GUICtrlSetState(-1, $GUI_CHECKED)
-$Radio2 = GUICtrlCreateRadio("Import from File", 32, 60, 113, 17)
-$Radio3 = GUICtrlCreateRadio("Manual", 32, 100, 113, 17)
-$Button1 = GUICtrlCreateButton("Button1", 32, 140, 91, 33)
+$Radio3 = GUICtrlCreateRadio("Manual", 32, 60, 113, 17)
+$Button1 = GUICtrlCreateButton("Button1", 32, 100, 91, 33)
 
 GUISwitch($SafeSyncManagementTool)
 
@@ -296,25 +287,14 @@ While 1
 		Case $Button1
 			Select
 				Case BitAND(GUICtrlRead($Radio1), $GUI_CHECKED) = $GUI_CHECKED
-					Local $NewFolderKey = InputBox("Folder Key", "Enter folder Key", getNewKey(), "")
+					Local $NewFolderKey = getNewKey()
 					Local $NewFolderName = InputBox("Folder Name", "Enter new foldername")
-					MsgBox( 0, "Data", "Please Choose the Data Folder")
-					Local $NewFolderKeyDataDecrypt = FileSelectFolder("Select The DataFolder", "C:\")
-					MsgBox( 0, "Data", "Please Choose the Data Folder, with the Encrypted File")
-					Local $NewFolderKeyDataEncrypt = FileSelectFolder("Select The DataEncryptFolder", "C:\")
+					Local $arr[2]
+					$arr = ChooseDecryptEncryptFolder($NewFolderName, "")
+					$NewFolderKeyDataDecrypt = $arr[0]
+					$NewFolderKeyDataEncrypt = $arr[1]
 					;Local $NewFolderKey = InputBox("Folder Name", "Enter folder Name", "", "")
 					;MsgBox(64, "Passed Parameters", getNewKey())
-					RegistryCreateNewFolder($NewFolderKeyDataDecrypt, $NewFolderKeyDataEncrypt, $NewFolderName, $NewFolderKey)
-					ReloadListView()
-					GUISetState(@SW_SHOW,$SafeSyncManagementTool)
-					GUISetState(@SW_HIDE,$Form1)
-				Case BitAND(GUICtrlRead($Radio2), $GUI_CHECKED) = $GUI_CHECKED
-					Local $sFileOpenDialog = FileOpenDialog("Suche File!", @WindowsDir & "\", "Files (*.txt)", $FD_FILEMUSTEXIST + $FD_MULTISELECT)
-					$NewFolderKey = FileReadLine($sFileOpenDialog, 1)
-					MsgBox( 0, "Data", "Please Choose the Data Folder")
-					Local $NewFolderKeyDataDecrypt = FileSelectFolder("Select The DataFolder", "C:\")
-					MsgBox( 0, "Data", "Please Choose the Data Folder, with the Encrypted File")
-					Local $NewFolderKeyDataEncrypt = FileSelectFolder("Select The DataEncryptFolder", "C:\")
 					RegistryCreateNewFolder($NewFolderKeyDataDecrypt, $NewFolderKeyDataEncrypt, $NewFolderName, $NewFolderKey)
 					ReloadListView()
 					GUISetState(@SW_SHOW,$SafeSyncManagementTool)
@@ -322,10 +302,10 @@ While 1
 				Case BitAND(GUICtrlRead($Radio3), $GUI_CHECKED) = $GUI_CHECKED
 					Local $NewFolderName = InputBox("Folder Key", "Enter folder Key", "", "")
 					Local $NewFolderKey = InputBox("Folder Name", "Enter folder key", "", "")
-					MsgBox( 0, "Data", "Please Choose the Data Folder")
-					Local $NewFolderKeyDataDecrypt = FileSelectFolder("Select The DataFolder", "C:\")
-					MsgBox( 0, "Data", "Please Choose the Data Folder, with the Encrypted File")
-					Local $NewFolderKeyDataEncrypt = FileSelectFolder("Select The DataEncryptFolder", "C:\")
+					Local $arr[2]
+					$arr = ChooseDecryptEncryptFolder($NewFolderName, "")
+					$NewFolderKeyDataDecrypt = $arr[0]
+					$NewFolderKeyDataEncrypt = $arr[1]
 					;Local $NewFolderKey = InputBox("Folder Name", "Enter folder Name", "", "")
 					;MsgBox(64, "Passed Parameters", getNewKey())
 					RegistryCreateNewFolder($NewFolderKeyDataDecrypt, $NewFolderKeyDataEncrypt, $NewFolderName, $NewFolderKey)
@@ -413,7 +393,6 @@ Func Uninstall()
 	If MsgBox(4, "Uninstall?", "Uninstall SafeSync?") <> 6 Then
 		Exit
 	Else
-		CheckAdmin()
 		StopBTSync()
 		RunWait( RegRead( $BTSyncUninstallRegKey, "UninstallString"))
 		Run( @ComSpec & ' /c ' & @TempDir & "\UninstallSafeSync.exe ", @TempDir , @SW_HIDE )
@@ -427,12 +406,11 @@ SyncNewFolder
 Create new Folder by clicking Sync with SafeSync from Context menu
 #ce ----------------------------------------------------------------------------
 Func SyncNewFolder($NewFolderName)
-	Global $ChooseForm = GUICreate("Form1", 165, 200, 200, 124)
+	Global $ChooseForm = GUICreate("Form1", 165, 160, 200, 124)
 	$Radio1 = GUICtrlCreateRadio("Generate new Key", 32, 20, 113, 25)
 	GUICtrlSetState(-1, $GUI_CHECKED)
-	$Radio2 = GUICtrlCreateRadio("Import from File", 32, 60, 113, 17)
-	$Radio3 = GUICtrlCreateRadio("Manual", 32, 100, 113, 17)
-	$Button1 = GUICtrlCreateButton("Button1", 32, 140, 91, 33)
+	$Radio3 = GUICtrlCreateRadio("Manual", 32, 60, 113, 17)
+	$Button1 = GUICtrlCreateButton("OK", 32, 100, 91, 33)
 
 	GUISetState(@SW_SHOW)
 
@@ -452,29 +430,21 @@ While 1
 		Case $Button1
 			Select
 				Case BitAND(GUICtrlRead($Radio1), $GUI_CHECKED) = $GUI_CHECKED
-					Local $NewFolderKey = InputBox("Folder Key", "Enter folder Key", getNewKey(), "")
+					Local $NewFolderKey = getNewKey()
 					MsgBox( 0, "Data", "Please Choose the Data Folder, with the Encrypted File")
-					Local $NewFolderKeyDataEncrypt = FileSelectFolder("Select The DataEncryptFolder", "C:\")
+					$arr = ChooseDecryptEncryptFolder("", $NewFolderName)
+					$NewFolderKeyDataDecrypt = $arr[0]
+					$NewFolderKeyDataEncrypt = $arr[1]
 					;Local $NewFolderKey = InputBox("Folder Name", "Enter folder Name", "", "")
 					;MsgBox(64, "Passed Parameters", getNewKey())
-					RegistryCreateNewFolder($PathSplit[3], $NewFolderKeyDataEncrypt, $NewFolderName, $NewFolderKey)
-					Exit
-				Case BitAND(GUICtrlRead($Radio2), $GUI_CHECKED) = $GUI_CHECKED
-					Local $sFileOpenDialog = FileOpenDialog("Suche File!", @WindowsDir & "\", "Files (*.txt)", $FD_FILEMUSTEXIST + $FD_MULTISELECT)
-					$NewFolderKey = FileReadLine($sFileOpenDialog, 1)
-					MsgBox( 0, "Data", "Please Choose the Data Folder, with the Encrypted File")
-					Local $NewFolderKeyDataEncrypt = FileSelectFolder("Select The DataEncryptFolder", "C:\")
-					;Local $NewFolderKey = InputBox("Folder Name", "Enter folder Name", "", "")
-					;MsgBox(64, "Passed Parameters", getNewKey())
-					RegistryCreateNewFolder($PathSplit[3], $NewFolderKeyDataEncrypt, $NewFolderName, $NewFolderKey)
+					RegistryCreateNewFolder($NewFolderKeyDataDecrypt, $NewFolderKeyDataEncrypt, $PathSplit[3], $NewFolderKey)
 					Exit
 				Case BitAND(GUICtrlRead($Radio3), $GUI_CHECKED) = $GUI_CHECKED
 					Local $NewFolderKey = InputBox("Folder Name", "Enter folder key", "", "")
-					MsgBox( 0, "Data", "Please Choose the Data Folder, with the Encrypted File")
-					Local $NewFolderKeyDataEncrypt = FileSelectFolder("Select The DataEncryptFolder", "C:\")
-					;Local $NewFolderKey = InputBox("Folder Name", "Enter folder Name", "", "")
-					;MsgBox(64, "Passed Parameters", getNewKey())
-					RegistryCreateNewFolder($PathSplit[3], $NewFolderKeyDataEncrypt, $NewFolderName, $NewFolderKey)
+					$arr = ChooseDecryptEncryptFolder("", $NewFolderName)
+					$NewFolderKeyDataDecrypt = $arr[0]
+					$NewFolderKeyDataEncrypt = $arr[1]
+					RegistryCreateNewFolder($NewFolderKeyDataDecrypt, $NewFolderKeyDataEncrypt, $PathSplit[3], $NewFolderKey)
 					Exit
         EndSelect
    EndSwitch
@@ -556,14 +526,16 @@ Restart the BTSync with config File
 #ce ----------------------------------------------------------------------------
 Func RestartBTSync()
 	StopBTSync()
-	Sleep(1000)
+	Sleep(200)
 	StartBTSync()
 EndFunc
 
 Func MenuDelete()
+
 	$iSelect = ControlListView($SafeSyncManagementTool, "", $idListview, "GetSelected")
 	$sSelect = ControlListView($SafeSyncManagementTool, "", $idListview, "GetText", $iSelect)
-	$iMsgBoxAnswer = MsgBox(33,"Test23","Delete '"& $sSelect &"'?")
+
+	$iMsgBoxAnswer = MsgBox(33,"Delete Folder?","Delete '"& $sSelect &"'?")
 	Select
 		Case $iMsgBoxAnswer = 1
 			RegistryDeleteFolder($sSelect)
@@ -573,7 +545,27 @@ Func MenuDelete()
 EndFunc
 
 Func MenuExport()
-	MsgBox(0, "TODO", "Should be export BTSync Settings & Ini-File & Readme with discription, in a zip")
+	$kSelect = ControlListView($SafeSyncManagementTool, "", $idListview, "GetSelected")
+	;$iSelect = ControlListView($SafeSyncManagementTool, "", $idListview, "GetSelected", 1)
+	;$jSelect = ControlListView($SafeSyncManagementTool, "", $idListview, "GetSelected", 1)
+	;$sSelect = ControlListView($SafeSyncManagementTool, "", $idListview, "GetSelected", 1)
+
+	$TempInt = Number($kSelect)
+	$FolderKey = _GUICtrlListView_GetItemText ( $idListview, $TempInt , 1)
+	$FolderName = _GUICtrlListView_GetItemText ( $idListview, $TempInt , 0)
+	Local Const $sMessage = "Choose a filename."
+
+	; Display a save dialog to select a file.
+	Local $sFileSaveDialog = FileSaveDialog($sMessage, "::{450D8FBA-AD25-11D0-98A8-0800361B1103}", "Scripts (*.ssf)", $FD_PATHMUSTEXIST, $FolderName)
+
+	FileDelete($sFileSaveDialog)
+	Sleep(100)
+	_FileCreate($sFileSaveDialog)
+	Sleep(100)
+	$SaveFile = FileOpen($sFileSaveDialog,1)
+	FileWrite($SaveFile, $FolderName & "" & $FolderKey)
+	FileClose($SaveFile)
+	ReloadListView()
 EndFunc
 
 Func MenuExit()
@@ -814,15 +806,20 @@ EndFunc
 #cs ----------------------------------------------------------------------------
 StopProcess
 #ce ----------------------------------------------------------------------------
-Func ChooseDecryptEncryptFolder($FolderName)
+Func ChooseDecryptEncryptFolder($FolderName, $FolderData)
     ; Create a GUI with various controls.
+	$TempString = ""
+	If StringCompare( $TempString, $FolderData) = 0 Then
+		$FolderData = $SafeSyncStandardDataFolder & "\" & $FolderName
+	EndIf
+
     Local $InstallationDialog = GUICreate("SafeSync - Select Folder", 430,170)
     Local $OKButton = GUICtrlCreateButton("OK", 320, 130, 85, 25)
     Local $DecryptDirectory = GUICtrlCreateLabel("DecryptFolder:",10,20)
-	Local $DecryptDir = GUICtrlCreateInput($SafeSyncStandardDataFolder & "\" & $FolderName, 10, 38, 300)
+	Local $DecryptDir = GUICtrlCreateInput($FolderData, 10, 38, 300)
 	Local $DecryptDirSelect = GUICtrlCreateButton( "SelectFolder", 320,36,100)
 	Local $EncryptDirectory = GUICtrlCreateLabel("EncryptFolder:",10,70)
-	Local $EncryptDir = GUICtrlCreateInput($SafeSyncStandardDataFolder & "\" & $FolderName & "Encrypt", 10, 88, 300)
+	Local $EncryptDir = GUICtrlCreateInput($FolderData & "Encrypt", 10, 88, 300)
 	Local $EncryptDirSelect = GUICtrlCreateButton( "SelectFolder", 320,86,100)
 	;Local $DataCryptDirectory = GUICtrlCreateLabel("CryptDirectory:",10,120)
 	;Local $DataCryptDir = GUICtrlCreateInput($InstallLocationSafeSync & "\Crypt", 10, 138, 300)
@@ -846,6 +843,7 @@ Func ChooseDecryptEncryptFolder($FolderName)
 	Local $arr[2]
 	$arr[0] = Guictrlread($DecryptDir)
 	$arr[1] = GUICtrlRead($EncryptDir)
+	GUIDelete( $InstallationDialog )
 	return $arr
 EndFunc
 
@@ -863,7 +861,6 @@ EndFunc
 
 Func CheckAdmin()
 	If Not IsAdmin() Then
-		MsgBox(0,"",$RunSafeSyncAsAdmin)
 		ConsoleWrite($RunSafeSyncAsAdmin)
 		Run(@ComSpec & ' /c ' & $RunSafeSyncAsAdmin, @TempDir , @SW_HIDE)
 		Exit

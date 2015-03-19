@@ -10,5 +10,4 @@
 
 ; Script Start - Add your code below here
 #RequireAdmin
-MsgBox(0,"RunSafeSyncAsAdmin",$CmdLine[1])
 Run($CmdLine[1])
