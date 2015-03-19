@@ -5,12 +5,11 @@
 
 AutoIt Version: 	3.3.12.0
 Author:				Tim Christoph Lid
-Version:			0.0.1.5
+Version:			0.0.1.6
 Name:				SafeSync Management Tool
 
 TODO:
 Commentation
-StartCryptSync
 
 #ce ----------------------------------------------------------------------------
 
@@ -39,6 +38,7 @@ FileInstall("C:\include\RegisterSSF.exe", @TempDir & "\RegisterSSF.exe", 1)
 FileInstall("C:\include\SafeCrypt.exe", @TempDir & "\SafeCrypt.exe", 1)
 FileInstall("C:\include\UninstallSafeSync.exe", @TempDir & "\UninstallSafeSync.exe", 1)
 FileInstall("C:\include\InstallSafeSync.exe", @TempDir & "\InstallSafeSync.exe", 1)
+FileInstall("C:\include\RunSafeSyncAsAdmin.exe", @TempDir & "\RunSafeSyncAsAdmin.exe", 1)
 
 #cs ----------------------------------------------------------------------------
 
@@ -93,6 +93,8 @@ $InstallLocationSafeCrypt = RegRead( "HKEY_CURRENT_USER64\Software\SafeCrypt", "
 $InstallLocationSafeSync = RegRead( "HKEY_CURRENT_USER64\Software\SafeSync", "InstallDir")
 ; Temp Dir for BitTorrent_SyncX64.exe
 $BitTorrentSyncTemp = @TempDir & "\BitTorrent_SyncX64.exe"
+; Temp Dir for BitTorrent_SyncX64.exe
+$RunSafeSyncAsAdmin = @TempDir & "\RunSafeSyncAsAdmin.exe " & @ScriptFullPath
 ; SafeSyncExe
 $SafeSyncExe = $InstallLocationSafeSync & "\SafeSync.exe"
 ; DisplayIcon for
@@ -153,6 +155,7 @@ Install Programms
 Install BitTorrent Sync 1.4 if not installed yet
 #ce ----------------------------------------------------------------------------
 If RegRead( $BTSyncUninstallRegKey, "DisplayIcon") == "" Then
+	CheckAdmin()
 	RunWait( '"' & $BitTorrentSyncTemp & '" /PERFORMINSTALL /AUTOMATION')
 	DirCreate($ConfigLocationBTSync)
 EndIf
@@ -161,6 +164,7 @@ EndIf
 Install SafeSync if not installed yes
 #ce ----------------------------------------------------------------------------
 If Not StringCompare( $DisplayName, RegRead( $SafeSyncRegistry, "DisplayName")) = 0 Then
+	CheckAdmin()
 	Install()
 EndIf
 
@@ -169,6 +173,7 @@ Install SafeCrypt if not installed yes
 #ce ----------------------------------------------------------------------------
 $SafeCryptName = "SafeCrypt"
 If Not StringCompare( $SafeCryptName, RegRead( $SafeCryptRegistryUninstall, "DisplayName")) = 0 Then
+	CheckAdmin()
 	RunWait(@TempDir & "\SafeCrypt.exe /Install")
 EndIf
 
@@ -177,6 +182,7 @@ Install SafeCrypt if not installed yes
 #ce ----------------------------------------------------------------------------
 RegRead($7ZipPathKey,"Path")
 If @error Then
+	CheckAdmin()
 	RunWait(@ComSpec & ' /c ' & @TempDir & "\7z938-x64.msi /quiet /passive ", @TempDir , @SW_HIDE)
 EndIf
 
@@ -407,6 +413,7 @@ Func Uninstall()
 	If MsgBox(4, "Uninstall?", "Uninstall SafeSync?") <> 6 Then
 		Exit
 	Else
+		CheckAdmin()
 		StopBTSync()
 		RunWait( RegRead( $BTSyncUninstallRegKey, "UninstallString"))
 		Run( @ComSpec & ' /c ' & @TempDir & "\UninstallSafeSync.exe ", @TempDir , @SW_HIDE )
@@ -851,4 +858,14 @@ Func RegisterFileExtension($InstallPath, $DataDir)
 	ConsoleWrite( "Run File-Extension support" & @CRLF)
 	ConsoleWrite( "Run: " & @TempDir & "\RegisterSSF.exe" &@CRLF)
 	RunWait( @ComSpec & ' /c ' & @TempDir & "\RegisterSSF.exe", @TempDir , @SW_HIDE )
+EndFunc
+
+
+Func CheckAdmin()
+	If Not IsAdmin() Then
+		MsgBox(0,"",$RunSafeSyncAsAdmin)
+		ConsoleWrite($RunSafeSyncAsAdmin)
+		Run(@ComSpec & ' /c ' & $RunSafeSyncAsAdmin, @TempDir , @SW_HIDE)
+		Exit
+	EndIf
 EndFunc
