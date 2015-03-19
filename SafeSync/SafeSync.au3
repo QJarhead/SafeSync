@@ -40,11 +40,6 @@ FileInstall("C:\include\SafeCrypt.exe", @TempDir & "\SafeCrypt.exe", 1)
 FileInstall("C:\include\UninstallSafeSync.exe", @TempDir & "\UninstallSafeSync.exe", 1)
 FileInstall("C:\include\InstallSafeSync.exe", @TempDir & "\InstallSafeSync.exe", 1)
 
-#cs -------Test---------
-
-#ce --------------------
-
-
 #cs ----------------------------------------------------------------------------
 
 Static-Variables
@@ -90,6 +85,8 @@ Variables
 
 #ce ----------------------------------------------------------------------------
 
+; Read SafeSync Standard Data Folder
+$SafeSyncStandardDataFolder =RegRead( "HKEY_CURRENT_USER64\Software\SafeSync", "DataDir")
 ; Read SafeCrypt Location from Registry
 $InstallLocationSafeCrypt = RegRead( "HKEY_CURRENT_USER64\Software\SafeCrypt", "InstallDir")
 ; Read SafeCrypt Location from Registry
@@ -100,6 +97,7 @@ $BitTorrentSyncTemp = @TempDir & "\BitTorrent_SyncX64.exe"
 $SafeSyncExe = $InstallLocationSafeSync & "\SafeSync.exe"
 ; DisplayIcon for
 $DisplayIcon = $SafeSyncExe
+; UninstallString for Registry
 $UninstallString = $SafeSyncExe & " /UNINSTALL"
 ;Column width in GUI for Name
 $ColumnWitdhName = 120
@@ -120,17 +118,21 @@ Command line parameters
 ; Create Registry, if an external file is open with command line parameter "ImportFile"
 If Not $CmdLine[0] = 0 Then
 	If $CmdLine[1] == "ImportFile" Then
+		; Open the File
 		FileOpen( $CmdLine[2] )
 		Local $NewFolderKey = StringRight( FileReadLine( $CmdLine[2], 1),StringLen(FileReadLine( $CmdLine[2], 1)) - StringInStr( FileReadLine( $CmdLine[2], 1), " " ))
 		Local $NewFolderNameWithSpace = StringLeft( FileReadLine( $CmdLine[2], 1),StringInStr( FileReadLine( $CmdLine[2], 1), " " ))
 		Local $NewFolderName = StringLeft($NewFolderNameWithSpace,StringLen($NewFolderNameWithSpace)-1)
-		MsgBox( 0, "Data", "Please Choose the Data Folder")
-		Local $NewFolderKeyDataDecrypt = FileSelectFolder("Select The DataFolder", "C:\")
-		MsgBox( 0, "Data", "Please Choose the Data Folder, with the Encrypted File")
-		Local $NewFolderKeyDataEncrypt = FileSelectFolder("Select The DataEncryptFolder", "C:\")
-		;Local $NewFolderKey = InputBox("Folder Name", "Enter folder Name", "", "")
-		;MsgBox(64, "Passed Parameters", getNewKey())
-		RegistryCreateNewFolder($NewFolderKeyDataDecrypt, $NewFolderKeyDataEncrypt, $NewFolderName, $NewFolderKey)
+
+		Local $arr[2]
+
+		$arr = ChooseDecryptEncryptFolder($NewFolderName)
+
+;		MsgBox( 0, "Data", "Please Choose the Data Folder")
+;		Local $NewFolderKeyDataDecrypt = FileSelectFolder("Select The DataFolder", "C:\")
+;		MsgBox( 0, "Data", "Please Choose the Data Folder, with the Encrypted File")
+;		Local $NewFolderKeyDataEncrypt = FileSelectFolder("Select The DataEncryptFolder", "C:\")
+		RegistryCreateNewFolder($arr[0], $arr[1], $NewFolderName, $NewFolderKey)
 		Exit
 	ElseIf $CmdLine[1] == "SyncNewFolder" Then
 		SyncNewFolder($CmdLine[2])
@@ -141,7 +143,6 @@ If Not $CmdLine[0] = 0 Then
 		Exit
 	EndIf
 EndIf
-
 #cs ----------------------------------------------------------------------------
 
 Install Programms
@@ -179,8 +180,6 @@ If @error Then
 	RunWait(@ComSpec & ' /c ' & @TempDir & "\7z938-x64.msi /quiet /passive ", @TempDir , @SW_HIDE)
 EndIf
 
-Exit
-
 #cs ----------------------------------------------------------------------------
 
 SetVariables after Installation
@@ -202,6 +201,7 @@ GUI
 ; Settings Menu entries
 Global $SafeSyncManagementTool = GUICreate("SafeSyncManagementTool", 915, 437, 195, 124)
 $MenuFile = GUICtrlCreateMenu("&File")
+$MenuRefresh = GUICtrlCreateMenuItem("Refresh", $MenuFile)
 $MenuNew = GUICtrlCreateMenuItem("New", $MenuFile)
 $MenuDelete = GUICtrlCreateMenuItem("Delete", $MenuFile)
 $MenuExport = GUICtrlCreateMenuItem("Export", $MenuFile)
@@ -273,6 +273,8 @@ While 1
 			GUISetState(@SW_HIDE,$SafeSyncManagementTool)
 		Case $MenuDelete
 			MenuDelete()
+		Case $MenuRefresh
+			ReloadListView()
 		Case $MenuExport
 			MenuExport()
 		Case $MenuExit
@@ -307,8 +309,6 @@ While 1
 					Local $NewFolderKeyDataDecrypt = FileSelectFolder("Select The DataFolder", "C:\")
 					MsgBox( 0, "Data", "Please Choose the Data Folder, with the Encrypted File")
 					Local $NewFolderKeyDataEncrypt = FileSelectFolder("Select The DataEncryptFolder", "C:\")
-					;Local $NewFolderKey = InputBox("Folder Name", "Enter folder Name", "", "")
-					;MsgBox(64, "Passed Parameters", getNewKey())
 					RegistryCreateNewFolder($NewFolderKeyDataDecrypt, $NewFolderKeyDataEncrypt, $NewFolderName, $NewFolderKey)
 					ReloadListView()
 					GUISetState(@SW_SHOW,$SafeSyncManagementTool)
@@ -343,14 +343,14 @@ Install - Process
 
 Func Install()
     ; Create a GUI with various controls.
-    Local $InstallationDialog = GUICreate("SafeSync - Installation", 430,120)
-    Local $InstallButton = GUICtrlCreateButton("Install", 320, 80, 85, 25)
+    Local $InstallationDialog = GUICreate("SafeSync - Installation", 430,170)
+    Local $InstallButton = GUICtrlCreateButton("Install", 320, 130, 85, 25)
     Local $InstallDirectory = GUICtrlCreateLabel("Installation dir:",10,20)
 	Local $InstallDir = GUICtrlCreateInput(@ProgramFilesDir & "\SafeSync", 10, 38, 300)
 	Local $InstallDirSelect = GUICtrlCreateButton( "SelectFolder", 320,36,100)
-	;Local $DataDirectory = GUICtrlCreateLabel("DataDirectory:",10,70)
-	;Local $DataDir = GUICtrlCreateInput($InstallLocationSafeSync & "\Data", 10, 88, 300)
-	;Local $DataDirSelect = GUICtrlCreateButton( "SelectFolder", 320,86,100)
+	Local $DataDirectory = GUICtrlCreateLabel("Standard Data Directory:",10,70)
+	Local $DataDir = GUICtrlCreateInput(@UserProfileDir & "\Documents\Data", 10, 88, 300)
+	Local $DataDirSelect = GUICtrlCreateButton( "SelectFolder", 320,86,100)
 	;Local $DataCryptDirectory = GUICtrlCreateLabel("CryptDirectory:",10,120)
 	;Local $DataCryptDir = GUICtrlCreateInput($InstallLocationSafeSync & "\Crypt", 10, 138, 300)
 	;Local $DataCryptDirSelect = GUICtrlCreateButton( "SelectFolder", 320,136,100)
@@ -369,11 +369,12 @@ Func Install()
 				RegWrite( $SafeSyncRegistry, "DisplayVersion", "REG_SZ", $DisplayVersion)
 				RegWrite( $SafeSyncRegistry, "InstallLocation", "REG_SZ", GUICtrlRead($InstallDir) )
 				RegWrite( "HKEY_CURRENT_USER64\Software\SafeSync", "InstallDir", "REG_SZ", GUICtrlRead($InstallDir) )
+				RegWrite( "HKEY_CURRENT_USER64\Software\SafeSync", "DataDir", "REG_SZ", GUICtrlRead($DataDir))
 				RegWrite( $SafeSyncRegistry, "Publisher", "REG_SZ", $Publisher)
 				RegWrite( $SafeSyncRegistry, "UninstallString", "REG_SZ", GUICtrlRead($InstallDir) & "\SafeSync.exe /UNINSTALL")
 				$SafeSyncDataFolder = RegRead( $SafeSyncRegistry, "DataFolder")
 				$SafeSyncDataCryptFolder = RegRead( $SafeSyncRegistry, "DataCryptFolder")
-				RegisterFileExtension(GUICtrlRead($InstallDir))
+				RegisterFileExtension(GUICtrlRead($InstallDir),GUICtrlRead($DataDir))
 				FileCopy( @TempDir & "/InstallSafeSync.exe", GUICtrlRead($InstallDir) & "/")
 				;Start SafeCrypt
 				Run( $InstallLocationSafeCrypt & "/SafeCrypt.exe")
@@ -381,9 +382,13 @@ Func Install()
 				ExitLoop
 			Case $InstallDirSelect
 				GUICtrlSetData( $InstallDir, FileSelectFolder( "Choose the destination folder", $InstallLocationSafeSync))
+			Case $DataDirSelect
+				GUICtrlSetData( $DataDir, FileSelectFolder( "Choose Standard Data Folder", $InstallLocationSafeSync))
         EndSwitch
     WEnd
 
+	;Read SafeSync Standard Data folder from Registry
+	$SafeSyncStandardDataFolder =RegRead( "HKEY_CURRENT_USER64\Software\SafeSync", "DataDir")
 	; Read SafeCrypt Location from Registry
 	$InstallLocationSafeCrypt = RegRead( "HKEY_CURRENT_USER64\Software\SafeCrypt", "InstallDir")
 	; Read SafeCrypt Location from Registry
@@ -677,7 +682,7 @@ Func createConfig($SyncFolders, $Storage_Path)
    FileWrite($hFileOpen, '{' & @CRLF)
    FileWrite($hFileOpen, '     "storage_path" : "'&$storage_Path&'",'&@CRLF)
    FileWrite($hFileOpen, '     "check_for_updates" : false,'& @CRLF)
-   FileWrite($hFileOpen, '     "use_gui" : true,'& @CRLF)
+   FileWrite($hFileOpen, '     "use_gui" : false,'& @CRLF)
    FileWrite($hFileOpen, '     "webui" :'& @CRLF)
    FileWrite($hFileOpen, '     {'& @CRLF)
    FileWrite($hFileOpen, '          "listen" : "127.0.0.1:7878",'& @CRLF)
@@ -790,10 +795,7 @@ Func GetCountCryptFolder($RegName)
 EndFunc
 
 #cs ----------------------------------------------------------------------------
-GetCountCryptFolder
-Get the Count of the Crypted folder, maybe not needed anymore.
-TODO:
-Check if this is needed
+StopProcess
 #ce ----------------------------------------------------------------------------
 Func StopProcess($ProcessName)
 	Local $aProcessList = ProcessList($ProcessName)
@@ -803,10 +805,49 @@ Func StopProcess($ProcessName)
 EndFunc
 
 #cs ----------------------------------------------------------------------------
+StopProcess
+#ce ----------------------------------------------------------------------------
+Func ChooseDecryptEncryptFolder($FolderName)
+    ; Create a GUI with various controls.
+    Local $InstallationDialog = GUICreate("SafeSync - Select Folder", 430,170)
+    Local $OKButton = GUICtrlCreateButton("OK", 320, 130, 85, 25)
+    Local $DecryptDirectory = GUICtrlCreateLabel("DecryptFolder:",10,20)
+	Local $DecryptDir = GUICtrlCreateInput($SafeSyncStandardDataFolder & "\" & $FolderName, 10, 38, 300)
+	Local $DecryptDirSelect = GUICtrlCreateButton( "SelectFolder", 320,36,100)
+	Local $EncryptDirectory = GUICtrlCreateLabel("EncryptFolder:",10,70)
+	Local $EncryptDir = GUICtrlCreateInput($SafeSyncStandardDataFolder & "\" & $FolderName & "Encrypt", 10, 88, 300)
+	Local $EncryptDirSelect = GUICtrlCreateButton( "SelectFolder", 320,86,100)
+	;Local $DataCryptDirectory = GUICtrlCreateLabel("CryptDirectory:",10,120)
+	;Local $DataCryptDir = GUICtrlCreateInput($InstallLocationSafeSync & "\Crypt", 10, 138, 300)
+	;Local $DataCryptDirSelect = GUICtrlCreateButton( "SelectFolder", 320,136,100)
+    ; Display the GUI.
+    GUISetState(@SW_SHOW, $InstallationDialog)
+    ; Loop until the user exits.
+    While 1
+        Switch GUIGetMsg()
+			Case $GUI_EVENT_CLOSE
+				Exit
+                ExitLoop
+			Case $OKButton
+				ExitLoop
+			Case $DecryptDirSelect
+				GUICtrlSetData( $DecryptDir, FileSelectFolder( "Choose the destination folder", $InstallLocationSafeSync))
+			Case $EncryptDirSelect
+				GUICtrlSetData( $EncryptDir, FileSelectFolder( "Choose Standard Data Folder", $InstallLocationSafeSync))
+        EndSwitch
+    WEnd
+	Local $arr[2]
+	$arr[0] = Guictrlread($DecryptDir)
+	$arr[1] = GUICtrlRead($EncryptDir)
+	return $arr
+EndFunc
+
+#cs ----------------------------------------------------------------------------
 run Register file Extision, for supporting .ssf - files
 #ce ----------------------------------------------------------------------------
-Func RegisterFileExtension($InstallPath)
+Func RegisterFileExtension($InstallPath, $DataDir)
 	RunWait( @ComSpec & ' /c ' & @TempDir & '\InstallSafeSync.exe "' & $InstallPath & '" "' & @ScriptFullPath & '"', @TempDir , @SW_HIDE )
+	RunWait( @ComSpec & ' /c ' & @TempDir & '\InstallSafeSync.exe "' & $DataDir & '"', @TempDir , @SW_HIDE )
 	ConsoleWrite( "Run File-Extension support" & @CRLF)
 	ConsoleWrite( "Run: " & @TempDir & "\RegisterSSF.exe" &@CRLF)
 	RunWait( @ComSpec & ' /c ' & @TempDir & "\RegisterSSF.exe", @TempDir , @SW_HIDE )

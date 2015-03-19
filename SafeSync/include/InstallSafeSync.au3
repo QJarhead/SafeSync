@@ -22,5 +22,7 @@ Testing (Another Installation)
 ; 1: Installation Location
 
 DirCreate( $CmdLine[1] )
-FileCopy( $CmdLine[2], $CmdLine[1] & "/")
-FileCopy( @TempDir & "/Uninstall.exe", $CmdLine[1] & "/", 1)
+If $CmdLine[0] > 1 Then
+	FileCopy( $CmdLine[2], $CmdLine[1] & "/")
+	FileCopy( @TempDir & "/Uninstall.exe", $CmdLine[1] & "/", 1)
+EndIf

@@ -22,6 +22,7 @@ DirRemove( RegRead( "HKEY_CURRENT_USER64\Software\Microsoft\Windows\CurrentVersi
 DirRemove( RegRead( "HKEY_CURRENT_USER64\Software\Microsoft\Windows\CurrentVersion\Uninstall\SafeCrypt", "InstallLocation"), 1)
 RegDelete("HKEY_CURRENT_USER64\Software\Microsoft\Windows\CurrentVersion\Uninstall\SafeSync")
 RegDelete("HKEY_CURRENT_USER64\Software\Microsoft\Windows\CurrentVersion\Uninstall\SafeCrypt")
+RegDelete("HKEY_LOCAL_MACHINE64\Software\Microsoft\Windows\CurrentVersion\Uninstall\BitTorrent Sync")
 RegDelete("HKEY_CURRENT_USER\Software\SafeCrypt")
 RegDelete("HKEY_CURRENT_USER\Software\SafeSync")
-RegDelete( "HKEY_CLASSES_ROOT64\ssffile")
+RegDelete( "HKEY_CLASSES_ROOT64\ssf")
