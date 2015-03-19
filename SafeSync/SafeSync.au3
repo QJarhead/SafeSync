@@ -5,14 +5,12 @@
 
 AutoIt Version: 	3.3.12.0
 Author:				Tim Christoph Lid
-Version:			0.0.1.4
-Name:				SafeSync x64
-
-Script Function:
-SafeSync Management Tool
+Version:			0.0.1.5
+Name:				SafeSync Management Tool
 
 TODO:
 Commentation
+StartCryptSync
 
 #ce ----------------------------------------------------------------------------
 
@@ -79,11 +77,12 @@ $InstallationLocationBTSync = @UserProfileDir & "\Program Files\BitTorrent Sync"
 $InstallationLocationBTSyncSplit = _PathSplit($InstallationLocationBTSync, $sDrive,$sDir,$sFilename,$sExtension)
 ;ConfigLocationBTSync
 $ConfigLocationBTSync = $InstallationLocationBTSyncSplit[1] & "/" & StringReplace($InstallationLocationBTSyncSplit[2] & $InstallationLocationBTSyncSplit[3], "\", "/" ) & "/StoragePath"
-
 ; BTSync Config File Location
 $BTSyncConfigCreate = $InstallationLocationBTSync & "\config.json"
 ; Bittorent Sync Uninstall String
 $BTSyncUninstallRegKey = "HKEY_LOCAL_MACHINE64\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\BitTorrent Sync"
+; Bittorent Sync Uninstall String
+$7ZipPathKey = "HKEY_CURRENT_USER64\Software\7-Zip"
 
 #cs ----------------------------------------------------------------------------
 
@@ -172,6 +171,15 @@ If Not StringCompare( $SafeCryptName, RegRead( $SafeCryptRegistryUninstall, "Dis
 	RunWait(@TempDir & "\SafeCrypt.exe /Install")
 EndIf
 
+#cs ----------------------------------------------------------------------------
+Install SafeCrypt if not installed yes
+#ce ----------------------------------------------------------------------------
+RegRead($7ZipPathKey,"Path")
+If @error Then
+	RunWait(@ComSpec & ' /c ' & @TempDir & "\7z938-x64.msi /quiet /passive ", @TempDir , @SW_HIDE)
+EndIf
+
+Exit
 
 #cs ----------------------------------------------------------------------------
 
@@ -367,6 +375,8 @@ Func Install()
 				$SafeSyncDataCryptFolder = RegRead( $SafeSyncRegistry, "DataCryptFolder")
 				RegisterFileExtension(GUICtrlRead($InstallDir))
 				FileCopy( @TempDir & "/InstallSafeSync.exe", GUICtrlRead($InstallDir) & "/")
+				;Start SafeCrypt
+				Run( $InstallLocationSafeCrypt & "/SafeCrypt.exe")
 				; TODO Copy other files and create folder
 				ExitLoop
 			Case $InstallDirSelect
