@@ -51,7 +51,9 @@ Global $SafeSyncRegistry = "HKEY_CURRENT_USER64\Software\Microsoft\Windows\Curre
 ; SafeCrypt Registry Uninstall
 Global $SafeCryptRegistryUninstall = "HKEY_CURRENT_USER64\Software\Microsoft\Windows\CurrentVersion\Uninstall\SafeCrypt"
 ; SafeCrypt Registry
-Global $SafeCryptRegistry = "HKEY_CURRENT_USER\Software\SafeCrypt"
+Global $SafeCryptRegistry = "HKEY_CURRENT_USER64\Software\SafeCrypt"
+; SafeSync Registry
+Global $SafeSyncRegistrySoftware = "HKEY_CURRENT_USER64\Software\SafeSync"
 ; SafeCrypt Folders
 Global $SafeCryptFoldersRegistry = $SafeCryptRegistry & "\Folders"
 ; SafeSync Folders
@@ -127,6 +129,7 @@ If Not $CmdLine[0] = 0 Then
 		Local $NewFolderName = StringLeft($NewFolderNameWithSpace,StringLen($NewFolderNameWithSpace)-1)
 		Local $arr[2]
 		$arr = ChooseDecryptEncryptFolder($NewFolderName, "")
+		RegWrite($SafeSyncRegistrySoftware,"refreshGUI","REG_SZ","1")
 		RegistryCreateNewFolder($arr[0], $arr[1], $NewFolderName, $NewFolderKey)
 		Exit
 	ElseIf $CmdLine[1] == "SyncNewFolder" Then
@@ -253,6 +256,10 @@ Run( $InstallLocationSafeCrypt & "/SafeCrypt.exe")
 ; Running the Gui in Loop
 While 1
 	$nMsg = GUIGetMsg(1)
+	$RefreshGUI =RegRead( "HKEY_CURRENT_USER64\Software\SafeSync", "RefreshGUI")
+	If $RefreshGUI = 1 Then
+		ReloadListView()
+	EndIf
 	Switch $nMsg[0] ; check which GUI sent the message
 		Case $GUI_EVENT_CLOSE
 			Switch $nMsg[1]
@@ -379,8 +386,10 @@ Func Install()
 	$InstallLocationSafeCrypt = RegRead( "HKEY_CURRENT_USER64\Software\SafeCrypt", "InstallDir")
 	; Read SafeCrypt Location from Registry
 	$InstallLocationSafeSync = RegRead( "HKEY_CURRENT_USER64\Software\SafeSync", "InstallDir")
-	; Temp Dir for BitTorrent_SyncX64.exe
-    ; Delete the previous GUI and all controls.
+	Local $SafeSyncShortcutFolder = @AppDataDir & "\Microsoft\Windows\Start Menu\Programs\SafeSync"
+	DirCreate( $SafeSyncShortcutFolder )
+	CreateShortcut($InstallLocationSafeSync & "\SafeSync.exe", $SafeSyncShortcutFolder & "\SafeSync.lnk")
+
     GUIDelete($InstallationDialog)
 EndFunc
 
@@ -400,6 +409,13 @@ Func Uninstall()
 	Exit
 EndFunc
 
+#cs ----------------------------------------------------------------------------
+Uninstall
+The Uninstall Process
+#ce ----------------------------------------------------------------------------
+Func CreateShortcut($ShortcutSourceFile, $ShortcutDestinationFile)
+	FileCreateShortcut($ShortcutSourceFile, $ShortcutDestinationFile)
+EndFunc
 
 #cs ----------------------------------------------------------------------------
 SyncNewFolder
@@ -457,6 +473,7 @@ ReloadListView
 Reloading the list view from the registry, to see the entries in the GUI
 #ce ----------------------------------------------------------------------------
 Func ReloadListView()
+	RegWrite($SafeSyncRegistrySoftware,"refreshGUI","REG_SZ",0)
 	_GUICtrlListView_DeleteAllItems ( $idListview )
    Local $FolderCounter = 0
    For $i = 1 To 1000
