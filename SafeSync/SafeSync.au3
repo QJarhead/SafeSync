@@ -10,6 +10,20 @@ Name:				SafeSync Management Tool
 
 TODO:
 Commentation
+Documentation
+Testing
+Complete the GUI
+Bittorent Settings, GUI is show or not
+
+Maybe:
+KEY ist correct?
+Folder is  already in use
+Name ist already in use
+Check if BTSync is running
+
+Failures:
+7 zip not installing
+Storage path not create
 
 #ce ----------------------------------------------------------------------------
 
@@ -98,6 +112,7 @@ $BitTorrentSyncTemp = @TempDir & "\BitTorrent_SyncX64.exe"
 ; Temp Dir for BitTorrent_SyncX64.exe
 $RunSafeSyncAsAdmin = @TempDir & "\RunSafeSyncAsAdmin.exe " & @ScriptFullPath
 ; SafeSyncExe
+$ShowBTSyncGUI = false
 $SafeSyncExe = $InstallLocationSafeSync & "\SafeSync.exe"
 ; DisplayIcon for
 $DisplayIcon = $SafeSyncExe
@@ -697,8 +712,8 @@ Func createConfig($SyncFolders, $Storage_Path)
    ; Write data to the file using the handle returned by FileOpen.
    FileWrite($hFileOpen, '{' & @CRLF)
    FileWrite($hFileOpen, '     "storage_path" : "'&$storage_Path&'",'&@CRLF)
-   FileWrite($hFileOpen, '     "check_for_updates" : false,'& @CRLF)
-   FileWrite($hFileOpen, '     "use_gui" : false,'& @CRLF)
+   FileWrite($hFileOpen, '     "check_for_updates" : ,'& @CRLF)
+   FileWrite($hFileOpen, '     "use_gui" : ' & $ShowBTSyncGUI & ','& @CRLF)
    FileWrite($hFileOpen, '     "webui" :'& @CRLF)
    FileWrite($hFileOpen, '     {'& @CRLF)
    FileWrite($hFileOpen, '          "listen" : "127.0.0.1:7878",'& @CRLF)
