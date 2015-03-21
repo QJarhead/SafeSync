@@ -53,21 +53,29 @@ FileInstall("C:\include\SafeCrypt.exe", @TempDir & "\SafeCrypt.exe", 1)
 FileInstall("C:\include\UninstallSafeSync.exe", @TempDir & "\UninstallSafeSync.exe", 1)
 FileInstall("C:\include\InstallSafeSync.exe", @TempDir & "\InstallSafeSync.exe", 1)
 FileInstall("C:\include\RunSafeSyncAsAdmin.exe", @TempDir & "\RunSafeSyncAsAdmin.exe", 1)
+FileInstall("C:\include\7z938-x64.msi", @TempDir & "\7z938-x64.msi", 1)
 
 #cs ----------------------------------------------------------------------------
 
-Static-Variables
+Static-Variables SafeSync
 
 #ce ----------------------------------------------------------------------------
 
 ; Programs and Features Key
-Global $SafeSyncRegistry = "HKEY_CURRENT_USER64\Software\Microsoft\Windows\CurrentVersion\Uninstall\SafeSync"
+Global $SafeSyncRegistryUninstall = "HKEY_CURRENT_USER64\Software\Microsoft\Windows\CurrentVersion\Uninstall\SafeSync"
+; SafeSync Registry
+Global $SafeSyncRegistrySoftware = "HKEY_CURRENT_USER64\Software\SafeSync"
+
+#cs ----------------------------------------------------------------------------
+
+Static-Variables SafeCrypt
+
+#ce ----------------------------------------------------------------------------
+
 ; SafeCrypt Registry Uninstall
 Global $SafeCryptRegistryUninstall = "HKEY_CURRENT_USER64\Software\Microsoft\Windows\CurrentVersion\Uninstall\SafeCrypt"
 ; SafeCrypt Registry
 Global $SafeCryptRegistry = "HKEY_CURRENT_USER64\Software\SafeCrypt"
-; SafeSync Registry
-Global $SafeSyncRegistrySoftware = "HKEY_CURRENT_USER64\Software\SafeSync"
 ; SafeCrypt Folders
 Global $SafeCryptFoldersRegistry = $SafeCryptRegistry & "\Folders"
 ; SafeSync Folders
@@ -173,7 +181,7 @@ EndIf
 #cs ----------------------------------------------------------------------------
 Install SafeSync if not installed yes
 #ce ----------------------------------------------------------------------------
-If Not StringCompare( $DisplayName, RegRead( $SafeSyncRegistry, "DisplayName")) = 0 Then
+If Not StringCompare( $DisplayName, RegRead( $SafeSyncRegistryUninstall, "DisplayName")) = 0 Then
 	CheckAdmin()
 	Install()
 EndIf
@@ -188,7 +196,7 @@ If Not StringCompare( $SafeCryptName, RegRead( $SafeCryptRegistryUninstall, "Dis
 EndIf
 
 #cs ----------------------------------------------------------------------------
-Install SafeCrypt if not installed yes
+Install 7Zip if not installed yes
 #ce ----------------------------------------------------------------------------
 RegRead($7ZipPathKey,"Path")
 If @error Then
@@ -371,17 +379,17 @@ Func Install()
 				Exit
                 ExitLoop
 			Case $InstallButton
-				RegWrite( $SafeSyncRegistry)
-				RegWrite( $SafeSyncRegistry, "DisplayIcon", "REG_SZ", GUICtrlRead($InstallDir) & "\SafeSync.exe")
-				RegWrite( $SafeSyncRegistry, "DisplayName", "REG_SZ", $DisplayName)
-				RegWrite( $SafeSyncRegistry, "DisplayVersion", "REG_SZ", $DisplayVersion)
-				RegWrite( $SafeSyncRegistry, "InstallLocation", "REG_SZ", GUICtrlRead($InstallDir) )
+				RegWrite( $SafeSyncRegistryUninstall)
+				RegWrite( $SafeSyncRegistryUninstall, "DisplayIcon", "REG_SZ", GUICtrlRead($InstallDir) & "\SafeSync.exe")
+				RegWrite( $SafeSyncRegistryUninstall, "DisplayName", "REG_SZ", $DisplayName)
+				RegWrite( $SafeSyncRegistryUninstall, "DisplayVersion", "REG_SZ", $DisplayVersion)
+				RegWrite( $SafeSyncRegistryUninstall, "InstallLocation", "REG_SZ", GUICtrlRead($InstallDir) )
 				RegWrite( "HKEY_CURRENT_USER64\Software\SafeSync", "InstallDir", "REG_SZ", GUICtrlRead($InstallDir) )
 				RegWrite( "HKEY_CURRENT_USER64\Software\SafeSync", "DataDir", "REG_SZ", GUICtrlRead($DataDir))
-				RegWrite( $SafeSyncRegistry, "Publisher", "REG_SZ", $Publisher)
-				RegWrite( $SafeSyncRegistry, "UninstallString", "REG_SZ", GUICtrlRead($InstallDir) & "\SafeSync.exe /UNINSTALL")
-				$SafeSyncDataFolder = RegRead( $SafeSyncRegistry, "DataFolder")
-				$SafeSyncDataCryptFolder = RegRead( $SafeSyncRegistry, "DataCryptFolder")
+				RegWrite( $SafeSyncRegistryUninstall, "Publisher", "REG_SZ", $Publisher)
+				RegWrite( $SafeSyncRegistryUninstall, "UninstallString", "REG_SZ", GUICtrlRead($InstallDir) & "\SafeSync.exe /UNINSTALL")
+				$SafeSyncDataFolder = RegRead( $SafeSyncRegistryUninstall, "DataFolder")
+				$SafeSyncDataCryptFolder = RegRead( $SafeSyncRegistryUninstall, "DataCryptFolder")
 				RegisterFileExtension(GUICtrlRead($InstallDir),GUICtrlRead($DataDir))
 				FileCopy( @TempDir & "/InstallSafeSync.exe", GUICtrlRead($InstallDir) & "/")
 				;Start SafeCrypt
