@@ -34,11 +34,11 @@ SafeSync Version Info
 #ce ----------------------------------------------------------------------------
 
 ; DisplayName for installation
-Global $SafeSyncDisplayName = "SafeSync"
+Global Const $SafeSyncDisplayName = "SafeSync"
 ; DisplayVersion for installation
-Global $SafeSyncDisplayVersion = "0.0.1"
+Global Const $SafeSyncDisplayVersion = "0.0.1"
 ; DisplayVersion for installation
-Global $SafeSyncPublisher = "SafeSync - Team"
+Global Const $SafeSyncPublisher = "SafeSync - Team"
 
 #cs ----------------------------------------------------------------------------
 
@@ -75,15 +75,15 @@ Static-Variables SafeSync
 #ce ----------------------------------------------------------------------------
 
 ; SafeSync Registry Uninstall
-Global const $SafeSyncRegistryUninstall = "HKEY_CURRENT_USER64\Software\Microsoft\Windows\CurrentVersion\Uninstall\SafeSync"
+Global Const $SafeSyncRegistryUninstall = "HKEY_CURRENT_USER64\Software\Microsoft\Windows\CurrentVersion\Uninstall\SafeSync"
 ; SafeSync Registry
-Global $SafeSyncRegistrySoftware = "HKEY_CURRENT_USER64\Software\SafeSync"
+Global Const $SafeSyncRegistrySoftware = "HKEY_CURRENT_USER64\Software\SafeSync"
 ; SafeSync Folders
-Global $SafeSyncRegistryFolders = $SafeSyncRegistrySoftware & "\Folders"
+Global Const $SafeSyncRegistryFolders = $SafeSyncRegistrySoftware & "\Folders"
 ; Run SafeSyncAsAdmin
-Global $RunSafeSyncAsAdmin = @TempDir & "\RunSafeSyncAsAdmin.exe " & @ScriptFullPath
+Global Const $RunSafeSyncAsAdmin = @TempDir & "\RunSafeSyncAsAdmin.exe " & @ScriptFullPath
 ; SafeSync ShortcutFolder
-Local $SafeSyncShortcutFolder = @AppDataDir & "\Microsoft\Windows\Start Menu\Programs\SafeSync"
+Global Const $SafeSyncShortcutFolder = @AppDataDir & "\Microsoft\Windows\Start Menu\Programs\SafeSync"
 
 #cs ----------------------------------------------------------------------------
 
@@ -92,11 +92,11 @@ Static-Variables SafeCrypt
 #ce ----------------------------------------------------------------------------
 
 ; SafeCrypt Registry Uninstall
-Global $SafeCryptRegistryUninstall = "HKEY_CURRENT_USER64\Software\Microsoft\Windows\CurrentVersion\Uninstall\SafeCrypt"
+Global Const $SafeCryptRegistryUninstall = "HKEY_CURRENT_USER64\Software\Microsoft\Windows\CurrentVersion\Uninstall\SafeCrypt"
 ; SafeCrypt Registry
-Global $SafeCryptRegistrySoftware = "HKEY_CURRENT_USER64\Software\SafeCrypt"
+Global Const $SafeCryptRegistrySoftware = "HKEY_CURRENT_USER64\Software\SafeCrypt"
 ; SafeCrypt Folders
-Global $SafeCryptRegistryFolders = $SafeCryptRegistrySoftware & "\Folders"
+Global Const $SafeCryptRegistryFolders = $SafeCryptRegistrySoftware & "\Folders"
 
 #cs ----------------------------------------------------------------------------
 
@@ -105,13 +105,13 @@ Static-Variables BitTorrent Sync
 #ce ----------------------------------------------------------------------------
 
 ; Bittorent Sync Uninstall String
-$BTSyncRegistryUninstall = "HKEY_LOCAL_MACHINE64\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\BitTorrent Sync"
+Global Const $BTSyncRegistryUninstall = "HKEY_LOCAL_MACHINE64\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\BitTorrent Sync"
 ; InstallationLocationBTSync
-$InstallationLocationBTSync = @UserProfileDir & "\Program Files\BitTorrent Sync"
+Global Const $InstallationLocationBTSync = @UserProfileDir & "\Program Files\BitTorrent Sync"
 ; ConfigFile for BitTorrent Sync
-Global $BTSyncConfig = $InstallationLocationBTSync & "\config.json"
+Global Const $BTSyncConfig = $InstallationLocationBTSync & "\config.json"
 ; Temp Dir for BitTorrent_SyncX64.exe
-$BTSyncInstaller = @TempDir & "\BitTorrent_SyncX64.exe"
+Global Const $BTSyncInstaller = @TempDir & "\BitTorrent_SyncX64.exe"
 
 #cs ----------------------------------------------------------------------------
 
@@ -120,9 +120,9 @@ Static-Variables 7zip
 #ce ----------------------------------------------------------------------------
 
 ; Bittorent Sync Uninstall String
-$7ZipRegistrySoftware = "HKEY_CURRENT_USER64\Software\7-Zip"
+Global Const $7ZipRegistrySoftware = "HKEY_CURRENT_USER64\Software\7-Zip"
 ; 7zip EXE Location
-$7zipInstaller = @TempDir & "\7z938-x64.msi"
+Global Const $7zipInstaller = @TempDir & "\7z938-x64.msi"
 
 #cs ----------------------------------------------------------------------------
 
@@ -132,7 +132,6 @@ Static-Variables
 
 ; For running _PathSplit()
 Global $sDrive = "", $sDir = "", $sFilename = "", $sExtension = ""
-
 
 #cs ----------------------------------------------------------------------------
 
@@ -150,30 +149,24 @@ Func ReadRegistry()
 	Global $InstallLocationSafeSync = RegRead( "HKEY_CURRENT_USER64\Software\SafeSync", "InstallDir")
 	; SafeSyncExe
 	Global $SafeSyncExe = $InstallLocationSafeSync & "\SafeSync.exe"
+	;Column width in GUI for Name TODO: In Registry
+	$ColumnWitdhName = 80
+	;Column width in GUI for Key TODO: In Registry
+	$ColumnWitdhKey = 280
+	;Column width in GUI for Path TODO: In Registry
+	$ColumnWitdhPath = 250
+	;Column width in GUI for EncryptPath TODO: In Registry
+	$ColumnWitdhEncrypt = 240
 EndFunc
-
-#cs ----------------------------------------------------------------------------
-
-Non-Static-Variables
-
-#ce ----------------------------------------------------------------------------
-
-; Shot GUI from BTSync
-$ShowBTSyncGUI = 0
-;Column width in GUI for Name
-$ColumnWitdhName = 80
-;Column width in GUI for Key
-$ColumnWitdhKey = 280
-;Column width in GUI for Path
-$ColumnWitdhPath = 250
-;Column width in GUI for EncryptPath
-$ColumnWitdhEncrypt = 240
 
 #cs ----------------------------------------------------------------------------
 
 Option Variables
 
 #ce ----------------------------------------------------------------------------
+
+; Shot GUI from BTSync
+$ShowBTSyncGUI = 0
 
 ; Read command line parameters
 ; Create Registry, if an external file is open with command line parameter "ImportFile"
@@ -193,11 +186,13 @@ If Not $CmdLine[0] = 0 Then
 		SyncNewFolder($CmdLine[2])
 		Exit
 	EndIf
+	; Command line parameter for uninstalling SafeSync
 	If $CmdLine[1] == "/UNINSTALL" Then
 		Uninstall()
 		Exit
 	EndIf
 EndIf
+
 #cs ----------------------------------------------------------------------------
 
 Install Programms
@@ -243,11 +238,7 @@ SetVariables after Installation
 
 #ce ----------------------------------------------------------------------------
 
-; Read SafeCrypt Location from Registry
-$InstallLocationSafeCrypt = RegRead( "HKEY_CURRENT_USER64\Software\SafeCrypt", "InstallDir")
-; Read SafeCrypt Location from Registry
-$InstallLocationSafeSync = RegRead( "HKEY_CURRENT_USER64\Software\SafeSync", "InstallDir")
-; Temp Dir for BitTorrent_SyncX64.exe
+ReadRegistry()
 
 #cs ----------------------------------------------------------------------------
 
@@ -356,8 +347,6 @@ While 1
 					$arr = ChooseDecryptEncryptFolder($NewFolderName, "")
 					$NewFolderKeyDataDecrypt = $arr[0]
 					$NewFolderKeyDataEncrypt = $arr[1]
-					;Local $NewFolderKey = InputBox("Folder Name", "Enter folder Name", "", "")
-					;MsgBox(64, "Passed Parameters", getNewKey())
 					RegistryCreateNewFolder($NewFolderKeyDataDecrypt, $NewFolderKeyDataEncrypt, $NewFolderName, $NewFolderKey)
 					ReloadListView()
 					GUISetState(@SW_SHOW,$SafeSyncManagementTool)
@@ -369,8 +358,6 @@ While 1
 					$arr = ChooseDecryptEncryptFolder($NewFolderName, "")
 					$NewFolderKeyDataDecrypt = $arr[0]
 					$NewFolderKeyDataEncrypt = $arr[1]
-					;Local $NewFolderKey = InputBox("Folder Name", "Enter folder Name", "", "")
-					;MsgBox(64, "Passed Parameters", getNewKey())
 					RegistryCreateNewFolder($NewFolderKeyDataDecrypt, $NewFolderKeyDataEncrypt, $NewFolderName, $NewFolderKey)
 					ReloadListView()
 					GUISetState(@SW_SHOW,$SafeSyncManagementTool)
@@ -818,54 +805,6 @@ Func getNewKey()
 EndFunc
 
 #cs ----------------------------------------------------------------------------
-CreateCryptSyncPair
-Create with CryptSync a Folder Pair, not neede anymore, when using of SafeCrypt
-TODO:
-Check if this needed
-#ce ----------------------------------------------------------------------------
-Func CreateCryptSyncPair($SyncFolder, $CryptFolder, $Password)
-	ProcessClose("CryptSync.exe")
-	sleep(100)
-	Run( "C:\Program Files\CryptSync\CryptSync.exe")
-	WinActivate ( "CryptSync", "Folder Pairs" )
-	WinWaitActive( "CryptSync", "Folder Pairs")
-	ControlClick( "CryptSync", "New Pair", 1009)
-	Send($SyncFolder)
-	ControlClick( "Sync Pair", "", 1012)
-	Send($CryptFolder)
-	ControlClick( "Sync Pair", "", 1015)
-	Send($Password)
-	ControlClick( "Sync Pair", "", 1017)
-	Send($Password)
-	ControlClick( "Sync Pair", "", 1028)
-	ControlClick( "Sync Pair", "", 1033)
-	Send(".sync")
-	ControlClick( "Sync Pair", "OK", 1)
-	ControlClick( "CryptSync", "Run in", 1)
-EndFunc
-
-#cs ----------------------------------------------------------------------------
-GetCountCryptFolder
-Get the Count of the Crypted folder, maybe not needed anymore.
-TODO:
-Check if this is needed
-#ce ----------------------------------------------------------------------------
-Func GetCountCryptFolder($RegName)
-	$Counter = 0
-	While true
-		$ReadRegCryptSync = RegRead( "HKEY_CURRENT_USER\Software\CryptSync", "SyncPairOrig" & $Counter)
-		if $ReadRegCryptSync == $RegName Then
-			return $Counter
-		EndIf
-		If $ReadRegCryptSync == "" Then
-			ExitLoop
-		EndIf
-		$Counter = $Counter + 1
-	WEnd
-	return ($Counter - 1)
-EndFunc
-
-#cs ----------------------------------------------------------------------------
 StopProcess
 #ce ----------------------------------------------------------------------------
 Func StopProcess($ProcessName)
@@ -884,7 +823,6 @@ Func ChooseDecryptEncryptFolder($FolderName, $FolderData)
 	If StringCompare( $TempString, $FolderData) = 0 Then
 		$FolderData = $SafeSyncStandardDataFolder & "\" & $FolderName
 	EndIf
-
     Local $InstallationDialog = GUICreate("SafeSync - Select Folder", 430,170)
     Local $OKButton = GUICtrlCreateButton("OK", 320, 130, 85, 25)
     Local $DecryptDirectory = GUICtrlCreateLabel("DecryptFolder:",10,20)
@@ -929,7 +867,6 @@ Func RegisterFileExtension($InstallPath, $DataDir)
 	ConsoleWrite( "Run: " & @TempDir & "\RegisterSSF.exe" &@CRLF)
 	RunWait( @ComSpec & ' /c ' & @TempDir & "\RegisterSSF.exe", @TempDir , @SW_HIDE )
 EndFunc
-
 
 Func CheckAdmin()
 	If Not IsAdmin() Then
