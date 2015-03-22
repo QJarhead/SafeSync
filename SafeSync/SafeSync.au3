@@ -29,6 +29,19 @@ Storage path not create
 
 #cs ----------------------------------------------------------------------------
 
+SafeSync Version Info
+
+#ce ----------------------------------------------------------------------------
+
+; DisplayName for installation
+Global $SafeSyncDisplayName = "SafeSync"
+; DisplayVersion for installation
+Global $SafeSyncDisplayVersion = "0.0.1"
+; DisplayVersion for installation
+Global $SafeSyncPublisher = "SafeSync - Team"
+
+#cs ----------------------------------------------------------------------------
+
 Including
 
 #ce ----------------------------------------------------------------------------
@@ -61,10 +74,16 @@ Static-Variables SafeSync
 
 #ce ----------------------------------------------------------------------------
 
-; Programs and Features Key
-Global $SafeSyncRegistryUninstall = "HKEY_CURRENT_USER64\Software\Microsoft\Windows\CurrentVersion\Uninstall\SafeSync"
+; SafeSync Registry Uninstall
+Global const $SafeSyncRegistryUninstall = "HKEY_CURRENT_USER64\Software\Microsoft\Windows\CurrentVersion\Uninstall\SafeSync"
 ; SafeSync Registry
 Global $SafeSyncRegistrySoftware = "HKEY_CURRENT_USER64\Software\SafeSync"
+; SafeSync Folders
+Global $SafeSyncRegistryFolders = $SafeSyncRegistrySoftware & "\Folders"
+; Run SafeSyncAsAdmin
+Global $RunSafeSyncAsAdmin = @TempDir & "\RunSafeSyncAsAdmin.exe " & @ScriptFullPath
+; SafeSync ShortcutFolder
+Local $SafeSyncShortcutFolder = @AppDataDir & "\Microsoft\Windows\Start Menu\Programs\SafeSync"
 
 #cs ----------------------------------------------------------------------------
 
@@ -75,57 +94,72 @@ Static-Variables SafeCrypt
 ; SafeCrypt Registry Uninstall
 Global $SafeCryptRegistryUninstall = "HKEY_CURRENT_USER64\Software\Microsoft\Windows\CurrentVersion\Uninstall\SafeCrypt"
 ; SafeCrypt Registry
-Global $SafeCryptRegistry = "HKEY_CURRENT_USER64\Software\SafeCrypt"
+Global $SafeCryptRegistrySoftware = "HKEY_CURRENT_USER64\Software\SafeCrypt"
 ; SafeCrypt Folders
-Global $SafeCryptFoldersRegistry = $SafeCryptRegistry & "\Folders"
-; SafeSync Folders
-Global $SafeSyncRegKey = "HKEY_CURRENT_USER\Software\SafeSync\Folders"
-; DisplayName for installation
-Global $DisplayName = "SafeSync"
-; DisplayVersion for installation
-Global $DisplayVersion = "0.0.1"
-; ConfigFile for BitTorrent Sync
-Global $ConfigFileBTSync = @UserProfileDir & "\Program Files\BitTorrent Sync\config.json"
-; Publisher for installation
-Global $Publisher = "SafeSync-Team"
-; For running _PathSplit()
-Global $sDrive = "", $sDir = "", $sFilename = "", $sExtension = ""
-; InstallationLocationBTSync
-$InstallationLocationBTSync = @UserProfileDir & "\Program Files\BitTorrent Sync"
-; BitTorrent Config Location
-$InstallationLocationBTSyncSplit = _PathSplit($InstallationLocationBTSync, $sDrive,$sDir,$sFilename,$sExtension)
-;ConfigLocationBTSync
-$ConfigLocationBTSync = $InstallationLocationBTSyncSplit[1] & "/" & StringReplace($InstallationLocationBTSyncSplit[2] & $InstallationLocationBTSyncSplit[3], "\", "/" ) & "/StoragePath"
-; BTSync Config File Location
-$BTSyncConfigCreate = $InstallationLocationBTSync & "\config.json"
-; Bittorent Sync Uninstall String
-$BTSyncUninstallRegKey = "HKEY_LOCAL_MACHINE64\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\BitTorrent Sync"
-; Bittorent Sync Uninstall String
-$7ZipPathKey = "HKEY_CURRENT_USER64\Software\7-Zip"
+Global $SafeCryptRegistryFolders = $SafeCryptRegistrySoftware & "\Folders"
 
 #cs ----------------------------------------------------------------------------
 
-Variables
+Static-Variables BitTorrent Sync
 
 #ce ----------------------------------------------------------------------------
 
-; Read SafeSync Standard Data Folder
-$SafeSyncStandardDataFolder =RegRead( "HKEY_CURRENT_USER64\Software\SafeSync", "DataDir")
-; Read SafeCrypt Location from Registry
-$InstallLocationSafeCrypt = RegRead( "HKEY_CURRENT_USER64\Software\SafeCrypt", "InstallDir")
-; Read SafeCrypt Location from Registry
-$InstallLocationSafeSync = RegRead( "HKEY_CURRENT_USER64\Software\SafeSync", "InstallDir")
+; Bittorent Sync Uninstall String
+$BTSyncRegistryUninstall = "HKEY_LOCAL_MACHINE64\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\BitTorrent Sync"
+; InstallationLocationBTSync
+$InstallationLocationBTSync = @UserProfileDir & "\Program Files\BitTorrent Sync"
+; ConfigFile for BitTorrent Sync
+Global $BTSyncConfig = $InstallationLocationBTSync & "\config.json"
 ; Temp Dir for BitTorrent_SyncX64.exe
-$BitTorrentSyncTemp = @TempDir & "\BitTorrent_SyncX64.exe"
-; Temp Dir for BitTorrent_SyncX64.exe
-$RunSafeSyncAsAdmin = @TempDir & "\RunSafeSyncAsAdmin.exe " & @ScriptFullPath
-; SafeSyncExe
-$ShowBTSyncGUI = false
-$SafeSyncExe = $InstallLocationSafeSync & "\SafeSync.exe"
-; DisplayIcon for
-$DisplayIcon = $SafeSyncExe
-; UninstallString for Registry
-$UninstallString = $SafeSyncExe & " /UNINSTALL"
+$BTSyncInstaller = @TempDir & "\BitTorrent_SyncX64.exe"
+
+#cs ----------------------------------------------------------------------------
+
+Static-Variables 7zip
+
+#ce ----------------------------------------------------------------------------
+
+; Bittorent Sync Uninstall String
+$7ZipRegistrySoftware = "HKEY_CURRENT_USER64\Software\7-Zip"
+; 7zip EXE Location
+$7zipInstaller = @TempDir & "\7z938-x64.msi"
+
+#cs ----------------------------------------------------------------------------
+
+Static-Variables
+
+#ce ----------------------------------------------------------------------------
+
+; For running _PathSplit()
+Global $sDrive = "", $sDir = "", $sFilename = "", $sExtension = ""
+
+
+#cs ----------------------------------------------------------------------------
+
+Non-Static-Variables
+
+#ce ----------------------------------------------------------------------------
+
+ReadRegistry()
+Func ReadRegistry()
+	; Read SafeSync Standard Data Folder
+	Global $SafeSyncStandardDataFolder =RegRead( "HKEY_CURRENT_USER64\Software\SafeSync", "DataDir")
+	; Read SafeCrypt Location from Registry
+	Global $SafeCryptInstallDir = RegRead( "HKEY_CURRENT_USER64\Software\SafeCrypt", "InstallDir")
+	; Read SafeCrypt Location from Registry
+	Global $InstallLocationSafeSync = RegRead( "HKEY_CURRENT_USER64\Software\SafeSync", "InstallDir")
+	; SafeSyncExe
+	Global $SafeSyncExe = $InstallLocationSafeSync & "\SafeSync.exe"
+EndFunc
+
+#cs ----------------------------------------------------------------------------
+
+Non-Static-Variables
+
+#ce ----------------------------------------------------------------------------
+
+; Shot GUI from BTSync
+$ShowBTSyncGUI = 0
 ;Column width in GUI for Name
 $ColumnWitdhName = 80
 ;Column width in GUI for Key
@@ -137,7 +171,7 @@ $ColumnWitdhEncrypt = 240
 
 #cs ----------------------------------------------------------------------------
 
-Command line parameters
+Option Variables
 
 #ce ----------------------------------------------------------------------------
 
@@ -173,15 +207,14 @@ Install Programms
 #cs ----------------------------------------------------------------------------
 Install BitTorrent Sync 1.4 if not installed yet
 #ce ----------------------------------------------------------------------------
-If RegRead( $BTSyncUninstallRegKey, "DisplayIcon") == "" Then
-	RunWait( '"' & $BitTorrentSyncTemp & '" /PERFORMINSTALL /AUTOMATION')
-	DirCreate($ConfigLocationBTSync)
+If RegRead( $BTSyncRegistryUninstall, "DisplayIcon") == "" Then
+	RunWait( '"' & $BTSyncInstaller & '" /PERFORMINSTALL /AUTOMATION')
 EndIf
 
 #cs ----------------------------------------------------------------------------
 Install SafeSync if not installed yes
 #ce ----------------------------------------------------------------------------
-If Not StringCompare( $DisplayName, RegRead( $SafeSyncRegistryUninstall, "DisplayName")) = 0 Then
+If Not StringCompare( $SafeSyncDisplayName, RegRead( $SafeSyncRegistryUninstall, "DisplayName")) = 0 Then
 	CheckAdmin()
 	Install()
 EndIf
@@ -198,10 +231,10 @@ EndIf
 #cs ----------------------------------------------------------------------------
 Install 7Zip if not installed yes
 #ce ----------------------------------------------------------------------------
-RegRead($7ZipPathKey,"Path")
+RegRead($7ZipRegistrySoftware,"Path")
 If @error Then
 	CheckAdmin()
-	RunWait(@ComSpec & ' /c ' & @TempDir & "\7z938-x64.msi /quiet /passive ", @TempDir , @SW_HIDE)
+	RunWait(@ComSpec & ' /c ' & $7zipInstaller & "/quiet /passive ", @TempDir , @SW_HIDE)
 EndIf
 
 #cs ----------------------------------------------------------------------------
@@ -381,12 +414,12 @@ Func Install()
 			Case $InstallButton
 				RegWrite( $SafeSyncRegistryUninstall)
 				RegWrite( $SafeSyncRegistryUninstall, "DisplayIcon", "REG_SZ", GUICtrlRead($InstallDir) & "\SafeSync.exe")
-				RegWrite( $SafeSyncRegistryUninstall, "DisplayName", "REG_SZ", $DisplayName)
-				RegWrite( $SafeSyncRegistryUninstall, "DisplayVersion", "REG_SZ", $DisplayVersion)
+				RegWrite( $SafeSyncRegistryUninstall, "DisplayName", "REG_SZ", $SafeSyncDisplayName)
+				RegWrite( $SafeSyncRegistryUninstall, "DisplayVersion", "REG_SZ", $SafeSyncDisplayVersion)
 				RegWrite( $SafeSyncRegistryUninstall, "InstallLocation", "REG_SZ", GUICtrlRead($InstallDir) )
 				RegWrite( "HKEY_CURRENT_USER64\Software\SafeSync", "InstallDir", "REG_SZ", GUICtrlRead($InstallDir) )
 				RegWrite( "HKEY_CURRENT_USER64\Software\SafeSync", "DataDir", "REG_SZ", GUICtrlRead($DataDir))
-				RegWrite( $SafeSyncRegistryUninstall, "Publisher", "REG_SZ", $Publisher)
+				RegWrite( $SafeSyncRegistryUninstall, "Publisher", "REG_SZ", $SafeSyncPublisher)
 				RegWrite( $SafeSyncRegistryUninstall, "UninstallString", "REG_SZ", GUICtrlRead($InstallDir) & "\SafeSync.exe /UNINSTALL")
 				$SafeSyncDataFolder = RegRead( $SafeSyncRegistryUninstall, "DataFolder")
 				$SafeSyncDataCryptFolder = RegRead( $SafeSyncRegistryUninstall, "DataCryptFolder")
@@ -409,7 +442,6 @@ Func Install()
 	$InstallLocationSafeCrypt = RegRead( "HKEY_CURRENT_USER64\Software\SafeCrypt", "InstallDir")
 	; Read SafeCrypt Location from Registry
 	$InstallLocationSafeSync = RegRead( "HKEY_CURRENT_USER64\Software\SafeSync", "InstallDir")
-	Local $SafeSyncShortcutFolder = @AppDataDir & "\Microsoft\Windows\Start Menu\Programs\SafeSync"
 	DirCreate( $SafeSyncShortcutFolder )
 	CreateShortcut($InstallLocationSafeSync & "\SafeSync.exe", $SafeSyncShortcutFolder & "\SafeSync.lnk")
 
@@ -426,7 +458,7 @@ Func Uninstall()
 		Exit
 	Else
 		StopBTSync()
-		RunWait( RegRead( $BTSyncUninstallRegKey, "UninstallString"))
+		RunWait( RegRead( $BTSyncRegistryUninstall, "UninstallString"))
 		Run( @ComSpec & ' /c ' & @TempDir & "\UninstallSafeSync.exe ", @TempDir , @SW_HIDE )
 	EndIf
 	Exit
@@ -500,21 +532,21 @@ Func ReloadListView()
 	_GUICtrlListView_DeleteAllItems ( $idListview )
    Local $FolderCounter = 0
    For $i = 1 To 1000
-	  $sVar = RegEnumVal($SafeSyncRegKey, $i)
+	  $sVar = RegEnumVal($SafeSyncRegistryFolders, $i)
 	  $FolderCounter = $i
 	  If @error <> 0 Then ExitLoop
-	  $sVar1 = RegRead($SafeSyncRegKey, $sVar)
-	  Local $idItem1 = GUICtrlCreateListViewItem("" & $sVar & "| " & $sVar1 & " | " & RegRead( $SafeCryptFoldersRegistry & "\" & $sVar, "Encrypt") & " | " & RegRead( $SafeCryptFoldersRegistry & "\" & $sVar, "Decrypt") & " ", $idListview)
+	  $sVar1 = RegRead($SafeSyncRegistryFolders, $sVar)
+	  Local $idItem1 = GUICtrlCreateListViewItem("" & $sVar & "| " & $sVar1 & " | " & RegRead( $SafeCryptRegistryFolders & "\" & $sVar, "Encrypt") & " | " & RegRead( $SafeCryptRegistryFolders & "\" & $sVar, "Decrypt") & " ", $idListview)
    Next
    Global $SyncFolders[$FolderCounter][2]
    For $i = 1 To $FolderCounter + 1
-	  $sVar = RegEnumVal($SafeSyncRegKey, $i)
+	  $sVar = RegEnumVal($SafeSyncRegistryFolders, $i)
 	  If @error <> 0 Then ExitLoop
-	  $sVar1 = RegRead($SafeSyncRegKey, $sVar)
-	  $SyncFolders[$i][0] = RegRead( $SafeCryptFoldersRegistry & "\" & $sVar, "Encrypt")
+	  $sVar1 = RegRead($SafeSyncRegistryFolders, $sVar)
+	  $SyncFolders[$i][0] = RegRead( $SafeCryptRegistryFolders & "\" & $sVar, "Encrypt")
 	  $SyncFolders[$i][1] = $sVar1
    Next
-   createConfig($SyncFolders, $ConfigLocationBTSync)
+   createConfig($SyncFolders, $BTSyncConfig)
    RestartBTSync()
 EndFunc
 
@@ -523,7 +555,7 @@ RegistryCreateNewFolder
 Function to create a New Folder
 #ce ----------------------------------------------------------------------------
 Func RegistryCreateNewFolder($NewFolderKeyDataEncrypt, $NewFolderKeyDataDecrypt, $NewFolderName, $NewFolderKey)
-	RegWrite($SafeSyncRegKey, $NewFolderName, "REG_SZ", $NewFolderKey)
+	RegWrite($SafeSyncRegistryFolders, $NewFolderName, "REG_SZ", $NewFolderKey)
 	DirCreate ($NewFolderKeyDataDecrypt)
 	DirCreate ($NewFolderKeyDataEncrypt)
 	; SafeCrypt Add folder
@@ -536,7 +568,7 @@ RegistryDeleteFolder
 Function to delete a New Folder
 #ce ----------------------------------------------------------------------------
 Func RegistryDeleteFolder($FolderName)
-	RegDelete($SafeSyncRegKey,$FolderName)
+	RegDelete($SafeSyncRegistryFolders,$FolderName)
 	ReloadListView()
 	RestartBTSync()
 EndFunc
@@ -556,8 +588,8 @@ StartBTSync
 Stop the Bittorent Sync Process with the config file
 #ce ----------------------------------------------------------------------------
 Func StartBTSync()
-	ConsoleWrite('"C:\Users\Tim\Program Files\BitTorrent Sync\BTSync.exe" /config "' & $BTSyncConfigCreate & '"' & @CRLF)
-	Run('"C:\Users\Tim\Program Files\BitTorrent Sync\BTSync.exe" /config "' & $BTSyncConfigCreate & '"')
+	ConsoleWrite('"C:\Users\Tim\Program Files\BitTorrent Sync\BTSync.exe" /config "' & $BTSyncConfig & '"' & @CRLF)
+	Run('"C:\Users\Tim\Program Files\BitTorrent Sync\BTSync.exe" /config "' & $BTSyncConfig & '"')
 EndFunc
 
 #cs ----------------------------------------------------------------------------
@@ -712,8 +744,8 @@ createConfig
 Function to create the config File, from the entries on the registry
 #ce ----------------------------------------------------------------------------
 Func createConfig($SyncFolders, $Storage_Path)
-   _FileCreate($BTSyncConfigCreate)
-   Local $hFileOpen = FileOpen($BTSyncConfigCreate,1)
+   _FileCreate($BTSyncConfig)
+   Local $hFileOpen = FileOpen($BTSyncConfig,1)
    If $hFileOpen = -1 Then
 	   MsgBox("Test", "", "An error occurred when reading the file.")
    EndIf
