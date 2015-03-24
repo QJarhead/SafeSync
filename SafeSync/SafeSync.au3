@@ -21,7 +21,7 @@ Folder is  already in use
 Name ist already in use
 Check if BTSync is running
 
-Failures:
+Issues:
 7 zip not installing
 Storage path not create
 
@@ -109,7 +109,10 @@ Global Const $BTSyncRegistryUninstall = "HKEY_LOCAL_MACHINE64\SOFTWARE\Microsoft
 ; InstallationLocationBTSync
 Global Const $InstallationLocationBTSync = @UserProfileDir & "\Program Files\BitTorrent Sync"
 ; ConfigFile for BitTorrent Sync
-Global Const $BTSyncConfig = $InstallationLocationBTSync & "\config.json"
+Global Const $BTSyncConfig = "C://Users/Tim/Program Files/BitTorrent Sync/config.json"
+Global Const $BTSyncStoragePath = "C:/Users/Tim/Program Files/BitTorrent Sync/StoragePath"
+
+
 ; Temp Dir for BitTorrent_SyncX64.exe
 Global Const $BTSyncInstaller = @TempDir & "\BitTorrent_SyncX64.exe"
 
@@ -147,16 +150,18 @@ Func ReadRegistry()
 	Global $SafeCryptInstallDir = RegRead( "HKEY_CURRENT_USER64\Software\SafeCrypt", "InstallDir")
 	; Read SafeCrypt Location from Registry
 	Global $InstallLocationSafeSync = RegRead( "HKEY_CURRENT_USER64\Software\SafeSync", "InstallDir")
+	; Read SafeCrypt show GUI Option
+	Global $BTSyncShowGUI = RegRead( "HKEY_CURRENT_USER64\Software\SafeSync", "ShowGUI")
 	; SafeSyncExe
 	Global $SafeSyncExe = $InstallLocationSafeSync & "\SafeSync.exe"
 	;Column width in GUI for Name TODO: In Registry
-	$ColumnWitdhName = 80
+	Global $ColumnWitdhName = 80
 	;Column width in GUI for Key TODO: In Registry
-	$ColumnWitdhKey = 280
+	Global $ColumnWitdhKey = 280
 	;Column width in GUI for Path TODO: In Registry
-	$ColumnWitdhPath = 250
+	Global $ColumnWitdhPath = 250
 	;Column width in GUI for EncryptPath TODO: In Registry
-	$ColumnWitdhEncrypt = 240
+	Global $ColumnWitdhEncrypt = 240
 EndFunc
 
 #cs ----------------------------------------------------------------------------
@@ -165,8 +170,8 @@ Option Variables
 
 #ce ----------------------------------------------------------------------------
 
-; Shot GUI from BTSync
-$ShowBTSyncGUI = 0
+
+;---------------------------------------------------------------------------------------
 
 ; Read command line parameters
 ; Create Registry, if an external file is open with command line parameter "ImportFile"
@@ -298,7 +303,7 @@ For $i = 1 To $aProcessList[0][0]
 Next
 
 ;Start SafeCrypt
-Run( $InstallLocationSafeCrypt & "/SafeCrypt.exe")
+Run( $SafeCryptInstallDir & "/SafeCrypt.exe")
 
 ; Running the Gui in Loop
 While 1
@@ -413,7 +418,7 @@ Func Install()
 				RegisterFileExtension(GUICtrlRead($InstallDir),GUICtrlRead($DataDir))
 				FileCopy( @TempDir & "/InstallSafeSync.exe", GUICtrlRead($InstallDir) & "/")
 				;Start SafeCrypt
-				Run( $InstallLocationSafeCrypt & "/SafeCrypt.exe")
+				Run( $SafeCryptInstallDir & "/SafeCrypt.exe")
 				; TODO Copy other files and create folder
 				ExitLoop
 			Case $InstallDirSelect
@@ -533,7 +538,7 @@ Func ReloadListView()
 	  $SyncFolders[$i][0] = RegRead( $SafeCryptRegistryFolders & "\" & $sVar, "Encrypt")
 	  $SyncFolders[$i][1] = $sVar1
    Next
-   createConfig($SyncFolders, $BTSyncConfig)
+   createConfig($SyncFolders, $BTSyncStoragePath)
    RestartBTSync()
 EndFunc
 
@@ -546,7 +551,7 @@ Func RegistryCreateNewFolder($NewFolderKeyDataEncrypt, $NewFolderKeyDataDecrypt,
 	DirCreate ($NewFolderKeyDataDecrypt)
 	DirCreate ($NewFolderKeyDataEncrypt)
 	; SafeCrypt Add folder
-	RunWait( @ComSpec & ' /c ""' & $InstallLocationSafeCrypt & '\SafeCrypt.exe" AddFolder ""' & $NewFolderName & '"" ""' & $NewFolderKeyDataDecrypt & '"" ""' & $NewFolderKeyDataEncrypt & '"" ""' )
+	RunWait( @ComSpec & ' /c ""' & $SafeCryptInstallDir & '\SafeCrypt.exe" AddFolder ""' & $NewFolderName & '"" ""' & $NewFolderKeyDataDecrypt & '"" ""' & $NewFolderKeyDataEncrypt & '"" ""' )
 	;RestartBTSync()
 EndFunc
 
@@ -632,11 +637,44 @@ Func MenuExit()
 EndFunc
 
 Func MenuBitTorrent()
-	ControlListView(@ProgramFilesDir & "\AutoIt3", "", $idListview, "SelectAll")
-	$iSelect = ControlListView("SafeSyncManagementTool", "", $idListview, "GetSelected")
-	$sSelect = ControlListView("SafeSyncManagementTool", "", $idListview, "GetText", $iSelect)
-	MsgBox($MB_SYSTEMMODAL, "", $sSelect)
-	MsgBox(0, "TODO", "Open real Bittorent?")
+	$hGUI = GUICreate("Test", 150, 230)
+	$BTSyncOption_Button_Save = GUICtrlCreateButton( "Save", 30, 180, 65,35)
+	GUIStartGroup()
+	$BTSyncOption_ShowGUI_True = GUICtrlCreateRadio("True", 20, 30, 100, 20)
+	$BTSyncOption_ShowGUI_False = GUICtrlCreateRadio("False", 20, 50, 100, 20)
+
+	If $BTSyncShowGUI = "true" Then
+		GUICtrlSetState($BTSyncOption_ShowGUI_True, $GUI_CHECKED)
+	Else
+		GUICtrlSetState($BTSyncOption_ShowGUI_False, $GUI_CHECKED)
+	EndIf
+	GUIStartGroup()
+	$BTSyncOption_UseRelayServer_True = GUICtrlCreateRadio("True", 20, 110, 100, 20)
+	$BTSyncOption_UseRelayServer_False = GUICtrlCreateRadio("False", 20, 130, 100, 20)
+	GUIStartGroup()
+	$hGroup_1 = GUICtrlCreateGroup("Show GUI?", 10, 10, 120, 70)
+	$hGroup_2 = GUICtrlCreateGroup("UseRelayServer?", 10, 90, 120, 70)
+
+	GUISetState()
+
+	While 1
+
+		Switch GUIGetMsg()
+			Case $GUI_EVENT_CLOSE
+				GUIDelete($hGUI)
+			Case $BTSyncOption_Button_Save
+				If BitAND(GUICtrlRead($BTSyncOption_ShowGUI_True), $GUI_CHECKED) = $GUI_CHECKED Then
+					RegWrite( "HKEY_CURRENT_USER64\Software\SafeSync", "ShowGUI", "REG_SZ", "true")
+					$BTSyncShowGUI = "true"
+				Else
+					RegWrite( "HKEY_CURRENT_USER64\Software\SafeSync", "ShowGUI", "REG_SZ", "false")
+					$BTSyncShowGUI = "false"
+				EndIf
+				ReloadListView()
+				GUIDelete($hGUI)
+		EndSwitch
+
+	WEnd
 EndFunc
 
 Func MenuCrypt()
@@ -739,8 +777,8 @@ Func createConfig($SyncFolders, $Storage_Path)
    ; Write data to the file using the handle returned by FileOpen.
    FileWrite($hFileOpen, '{' & @CRLF)
    FileWrite($hFileOpen, '     "storage_path" : "'&$storage_Path&'",'&@CRLF)
-   FileWrite($hFileOpen, '     "check_for_updates" : ,'& @CRLF)
-   FileWrite($hFileOpen, '     "use_gui" : ' & $ShowBTSyncGUI & ','& @CRLF)
+   FileWrite($hFileOpen, '     "check_for_updates" : false,'& @CRLF)
+   FileWrite($hFileOpen, '     "use_gui" : ' & $BTSyncShowGUI & ','& @CRLF)
    FileWrite($hFileOpen, '     "webui" :'& @CRLF)
    FileWrite($hFileOpen, '     {'& @CRLF)
    FileWrite($hFileOpen, '          "listen" : "127.0.0.1:7878",'& @CRLF)
