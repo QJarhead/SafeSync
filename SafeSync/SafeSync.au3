@@ -67,6 +67,7 @@ FileInstall("C:\include\UninstallSafeSync.exe", @TempDir & "\UninstallSafeSync.e
 FileInstall("C:\include\InstallSafeSync.exe", @TempDir & "\InstallSafeSync.exe", 1)
 FileInstall("C:\include\RunSafeSyncAsAdmin.exe", @TempDir & "\RunSafeSyncAsAdmin.exe", 1)
 FileInstall("C:\include\7z938-x64.msi", @TempDir & "\7z938-x64.msi", 1)
+FileInstall("C:\include\SafeCrypt.msi", @TempDir & "\SafeCrypt.msi", 1)
 
 #cs ----------------------------------------------------------------------------
 
@@ -147,7 +148,7 @@ Func ReadRegistry()
 	; Read SafeSync Standard Data Folder
 	Global $SafeSyncStandardDataFolder =RegRead( "HKEY_CURRENT_USER64\Software\SafeSync", "DataDir")
 	; Read SafeCrypt Location from Registry
-	Global $SafeCryptInstallDir = RegRead( "HKEY_CURRENT_USER64\Software\SafeCrypt", "InstallDir")
+	Global $SafeCryptInstallDir = RegRead( "HKEY_CURRENT_USER64\Software\SafeSync\SafeCrypt", "InstallDir")
 	; Read SafeCrypt Location from Registry
 	Global $InstallLocationSafeSync = RegRead( "HKEY_CURRENT_USER64\Software\SafeSync", "InstallDir")
 	; Read SafeCrypt show GUI Option
@@ -214,18 +215,19 @@ EndIf
 #cs ----------------------------------------------------------------------------
 Install SafeSync if not installed yes
 #ce ----------------------------------------------------------------------------
-If Not StringCompare( $SafeSyncDisplayName, RegRead( $SafeSyncRegistryUninstall, "DisplayName")) = 0 Then
-	CheckAdmin()
-	Install()
-EndIf
+;If Not StringCompare( $SafeSyncDisplayName, RegRead( $SafeSyncRegistryUninstall, "DisplayName")) = 0 Then
+;	CheckAdmin()
+;	Install()
+;EndIf
 
 #cs ----------------------------------------------------------------------------
-Install SafeCrypt if not installed yes
+Install SafeCrypt if not installed yet
 #ce ----------------------------------------------------------------------------
-$SafeCryptName = "SafeCrypt"
-If Not StringCompare( $SafeCryptName, RegRead( $SafeCryptRegistryUninstall, "DisplayName")) = 0 Then
-	CheckAdmin()
-	RunWait(@TempDir & "\SafeCrypt.exe /Install")
+
+If RegRead( "HKEY_CURRENT_USER64\Software\SafeSync\SafeCrypt", "InstallDir") = "" Then
+	ConsoleWrite( "Install SafeCrypt" & @CRLF)
+	RunWait(@ComSpec & ' /c ' & @TempDir & "\SafeCrypt.msi", @TempDir, @SW_HIDE)
+	ReadRegistry()
 EndIf
 
 #cs ----------------------------------------------------------------------------
@@ -233,6 +235,7 @@ Install 7Zip if not installed yes
 #ce ----------------------------------------------------------------------------
 RegRead($7ZipRegistrySoftware,"Path")
 If @error Then
+	ConsoleWrite( "Install 7zip" )
 	CheckAdmin()
 	RunWait(@ComSpec & ' /c ' & $7zipInstaller & "/quiet /passive ", @TempDir , @SW_HIDE)
 EndIf
