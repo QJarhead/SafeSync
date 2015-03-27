@@ -62,7 +62,6 @@ Including
 FileInstall("C:\include\BitTorrent_SyncX64.exe", @TempDir & "\BitTorrent_SyncX64.exe", 1)
 FileInstall("C:\include\config.ini", @TempDir & "\config.ini", 1)
 FileInstall("C:\include\RegisterSSF.exe", @TempDir & "\RegisterSSF.exe", 1)
-FileInstall("C:\include\SafeCrypt.exe", @TempDir & "\SafeCrypt.exe", 1)
 FileInstall("C:\include\UninstallSafeSync.exe", @TempDir & "\UninstallSafeSync.exe", 1)
 FileInstall("C:\include\InstallSafeSync.exe", @TempDir & "\InstallSafeSync.exe", 1)
 FileInstall("C:\include\RunSafeSyncAsAdmin.exe", @TempDir & "\RunSafeSyncAsAdmin.exe", 1)
@@ -95,7 +94,7 @@ Static-Variables SafeCrypt
 ; SafeCrypt Registry Uninstall
 Global Const $SafeCryptRegistryUninstall = "HKEY_CURRENT_USER64\Software\Microsoft\Windows\CurrentVersion\Uninstall\SafeCrypt"
 ; SafeCrypt Registry
-Global Const $SafeCryptRegistrySoftware = "HKEY_CURRENT_USER64\Software\SafeCrypt"
+Global Const $SafeCryptRegistrySoftware = "HKEY_CURRENT_USER64\Software\SafeSync\SafeCrypt"
 ; SafeCrypt Folders
 Global Const $SafeCryptRegistryFolders = $SafeCryptRegistrySoftware & "\Folders"
 
@@ -147,11 +146,16 @@ ReadRegistry()
 Func ReadRegistry()
 	; Read SafeSync Standard Data Folder
 	Global $SafeSyncStandardDataFolder =RegRead( "HKEY_CURRENT_USER64\Software\SafeSync", "DataDir")
+	If $SafeSyncStandardDataFolder = "" Then
+		MsgBox( 0,"Warning","Please choose a Folder, for your Data")
+		$SafeSyncStandardDataFolder = FileSelectFolder( "Choose the destination folder", "C:\")
+		RegWrite("HKEY_CURRENT_USER64\Software\SafeSync", "DataDir", "REG_SZ", $SafeSyncStandardDataFolder)
+	EndIf
 	; Read SafeCrypt Location from Registry
 	Global $SafeCryptInstallDir = RegRead( "HKEY_CURRENT_USER64\Software\SafeSync\SafeCrypt", "InstallDir")
 	; Read SafeCrypt Location from Registry
 	Global $InstallLocationSafeSync = RegRead( "HKEY_CURRENT_USER64\Software\SafeSync", "InstallDir")
-	; Read SafeCrypt show GUI Option
+	; Read BTSyncShowGUI show GUI Option
 	Global $BTSyncShowGUI = RegRead( "HKEY_CURRENT_USER64\Software\SafeSync", "ShowGUI")
 	; SafeSyncExe
 	Global $SafeSyncExe = $InstallLocationSafeSync & "\SafeSync.exe"
@@ -213,14 +217,6 @@ If RegRead( $BTSyncRegistryUninstall, "DisplayIcon") == "" Then
 EndIf
 
 #cs ----------------------------------------------------------------------------
-Install SafeSync if not installed yes
-#ce ----------------------------------------------------------------------------
-;If Not StringCompare( $SafeSyncDisplayName, RegRead( $SafeSyncRegistryUninstall, "DisplayName")) = 0 Then
-;	CheckAdmin()
-;	Install()
-;EndIf
-
-#cs ----------------------------------------------------------------------------
 Install SafeCrypt if not installed yet
 #ce ----------------------------------------------------------------------------
 
@@ -238,6 +234,15 @@ If @error Then
 	ConsoleWrite( "Install 7zip" )
 	CheckAdmin()
 	RunWait(@ComSpec & ' /c ' & $7zipInstaller & "/quiet /passive ", @TempDir , @SW_HIDE)
+EndIf
+
+#cs ----------------------------------------------------------------------------
+Install SafeSync if not installed yes
+#ce ----------------------------------------------------------------------------TODO
+If RegRead($SafeSyncRegistrySoftware, "FileRegistered") = 0 Then
+	ConsoleWrite("FileRegister" & @CRLF)
+	RegisterFileExtension($InstallLocationSafeSync,$SafeSyncStandardDataFolder)
+	ConsoleWrite("Ready" & @CRLF)
 EndIf
 
 #cs ----------------------------------------------------------------------------
@@ -434,7 +439,7 @@ Func Install()
 	;Read SafeSync Standard Data folder from Registry
 	$SafeSyncStandardDataFolder =RegRead( "HKEY_CURRENT_USER64\Software\SafeSync", "DataDir")
 	; Read SafeCrypt Location from Registry
-	$InstallLocationSafeCrypt = RegRead( "HKEY_CURRENT_USER64\Software\SafeCrypt", "InstallDir")
+	$InstallLocationSafeCrypt = RegRead( "HKEY_CURRENT_USER64\Software\SafeSync\SafeCrypt", "InstallDir")
 	; Read SafeCrypt Location from Registry
 	$InstallLocationSafeSync = RegRead( "HKEY_CURRENT_USER64\Software\SafeSync", "InstallDir")
 	DirCreate( $SafeSyncShortcutFolder )
@@ -515,7 +520,7 @@ While 1
         EndSelect
    EndSwitch
 WEnd
-
+ReloadListView()
 EndFunc
 
 #cs ----------------------------------------------------------------------------
@@ -658,9 +663,12 @@ Func MenuBitTorrent()
 	$hGroup_1 = GUICtrlCreateGroup("Show GUI?", 10, 10, 120, 70)
 	$hGroup_2 = GUICtrlCreateGroup("UseRelayServer?", 10, 90, 120, 70)
 
-	GUISetState()
+	GUISetState(@SW_HIDE,$SafeSyncManagementTool)
+	GUISetState(@SW_SHOW,$hGUI)
 
-	While 1
+	$test = 1
+
+	While $test
 
 		Switch GUIGetMsg()
 			Case $GUI_EVENT_CLOSE
@@ -674,7 +682,9 @@ Func MenuBitTorrent()
 					$BTSyncShowGUI = "false"
 				EndIf
 				ReloadListView()
+				GUISetState(@SW_SHOW,$SafeSyncManagementTool)
 				GUIDelete($hGUI)
+				$test = 0
 		EndSwitch
 
 	WEnd
@@ -772,6 +782,7 @@ createConfig
 Function to create the config File, from the entries on the registry
 #ce ----------------------------------------------------------------------------
 Func createConfig($SyncFolders, $Storage_Path)
+	DirCreate($Storage_Path)
    _FileCreate($BTSyncConfig)
    Local $hFileOpen = FileOpen($BTSyncConfig,1)
    If $hFileOpen = -1 Then
@@ -902,11 +913,12 @@ EndFunc
 run Register file Extision, for supporting .ssf - files
 #ce ----------------------------------------------------------------------------
 Func RegisterFileExtension($InstallPath, $DataDir)
-	RunWait( @ComSpec & ' /c ' & @TempDir & '\InstallSafeSync.exe "' & $InstallPath & '" "' & @ScriptFullPath & '"', @TempDir , @SW_HIDE )
-	RunWait( @ComSpec & ' /c ' & @TempDir & '\InstallSafeSync.exe "' & $DataDir & '"', @TempDir , @SW_HIDE )
+	;RunWait( @ComSpec & ' /c ' & @TempDir & '\InstallSafeSync.exe "' & $InstallPath & '" "' & @ScriptFullPath & '"', @TempDir , @SW_HIDE )
+	;RunWait( @ComSpec & ' /c ' & @TempDir & '\InstallSafeSync.exe "' & $DataDir & '"', @TempDir , @SW_HIDE )
 	ConsoleWrite( "Run File-Extension support" & @CRLF)
 	ConsoleWrite( "Run: " & @TempDir & "\RegisterSSF.exe" &@CRLF)
 	RunWait( @ComSpec & ' /c ' & @TempDir & "\RegisterSSF.exe", @TempDir , @SW_HIDE )
+	RegWrite($SafeSyncRegistrySoftware, "FileRegistered","REG_SZ","1")
 EndFunc
 
 Func CheckAdmin()
