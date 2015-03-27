@@ -9,21 +9,19 @@ Version:			0.0.1.6
 Name:				SafeSync Management Tool
 
 TODO:
-Commentation
-Documentation
 Testing
 Complete the GUI
-Bittorent Settings, GUI is show or not
 
 Maybe:
 KEY ist correct?
 Folder is  already in use
 Name ist already in use
 Check if BTSync is running
+Check if BTSync is running
 
 Issues:
-7 zip not installing
-Storage path not create
+
+#NoTrayIcon
 
 #ce ----------------------------------------------------------------------------
 
@@ -78,8 +76,10 @@ Static-Variables SafeSync
 Global Const $SafeSyncRegistryUninstall = "HKEY_CURRENT_USER64\Software\Microsoft\Windows\CurrentVersion\Uninstall\SafeSync"
 ; SafeSync Registry
 Global Const $SafeSyncRegistrySoftware = "HKEY_CURRENT_USER64\Software\SafeSync"
+; SafeSyncManagementool Registry
+Global Const $SafeSyncRegistrySoftwareManagementTool = "HKEY_CURRENT_USER64\Software\SafeSync\ManagementTool"
 ; SafeSync Folders
-Global Const $SafeSyncRegistryFolders = $SafeSyncRegistrySoftware & "\Folders"
+Global Const $SafeSyncRegistryFolders = $SafeSyncRegistrySoftware & "\ManagementTool\Folders"
 ; Run SafeSyncAsAdmin
 Global Const $RunSafeSyncAsAdmin = @TempDir & "\RunSafeSyncAsAdmin.exe " & @ScriptFullPath
 ; SafeSync ShortcutFolder
@@ -145,18 +145,21 @@ Non-Static-Variables
 ReadRegistry()
 Func ReadRegistry()
 	; Read SafeSync Standard Data Folder
-	Global $SafeSyncStandardDataFolder =RegRead( "HKEY_CURRENT_USER64\Software\SafeSync", "DataDir")
+	Global $SafeSyncStandardDataFolder =RegRead( "HKEY_CURRENT_USER64\Software\SafeSync\ManagementTool", "DataDir")
 	If $SafeSyncStandardDataFolder = "" Then
 		MsgBox( 0,"Warning","Please choose a Folder, for your Data")
 		$SafeSyncStandardDataFolder = FileSelectFolder( "Choose the destination folder", "C:\")
-		RegWrite("HKEY_CURRENT_USER64\Software\SafeSync", "DataDir", "REG_SZ", $SafeSyncStandardDataFolder)
+		RegWrite("HKEY_CURRENT_USER64\Software\SafeSync\ManagementTool", "DataDir", "REG_SZ", $SafeSyncStandardDataFolder)
 	EndIf
 	; Read SafeCrypt Location from Registry
 	Global $SafeCryptInstallDir = RegRead( "HKEY_CURRENT_USER64\Software\SafeSync\SafeCrypt", "InstallDir")
 	; Read SafeCrypt Location from Registry
-	Global $InstallLocationSafeSync = RegRead( "HKEY_CURRENT_USER64\Software\SafeSync", "InstallDir")
+	Global $InstallLocationSafeSync = RegRead( $SafeSyncRegistrySoftwareManagementTool, "InstallDir")
 	; Read BTSyncShowGUI show GUI Option
-	Global $BTSyncShowGUI = RegRead( "HKEY_CURRENT_USER64\Software\SafeSync", "ShowGUI")
+	Global $BTSyncShowGUI = RegRead( $SafeSyncRegistrySoftwareManagementTool, "ShowGUI")
+	If $BTSyncShowGUI = "" Then
+		$BTSyncShowGUI = "false"
+	EndIf
 	; SafeSyncExe
 	Global $SafeSyncExe = $InstallLocationSafeSync & "\SafeSync.exe"
 	;Column width in GUI for Name TODO: In Registry
@@ -189,7 +192,7 @@ If Not $CmdLine[0] = 0 Then
 		Local $NewFolderName = StringLeft($NewFolderNameWithSpace,StringLen($NewFolderNameWithSpace)-1)
 		Local $arr[2]
 		$arr = ChooseDecryptEncryptFolder($NewFolderName, "")
-		RegWrite($SafeSyncRegistrySoftware,"refreshGUI","REG_SZ","1")
+		RegWrite($SafeSyncRegistrySoftwareManagementTool,"refreshGUI","REG_SZ","1")
 		RegistryCreateNewFolder($arr[0], $arr[1], $NewFolderName, $NewFolderKey)
 		Exit
 	ElseIf $CmdLine[1] == "SyncNewFolder" Then
@@ -312,11 +315,14 @@ Next
 
 ;Start SafeCrypt
 Run( $SafeCryptInstallDir & "/SafeCrypt.exe")
+Opt('TrayOnEventMode', 1)
+Opt('TrayMenuMode', 1)
+TraySetOnEvent( -7, '_Restore')
 
 ; Running the Gui in Loop
 While 1
 	$nMsg = GUIGetMsg(1)
-	$RefreshGUI =RegRead( "HKEY_CURRENT_USER64\Software\SafeSync", "RefreshGUI")
+	$RefreshGUI =RegRead( $SafeSyncRegistrySoftwareManagementTool, "RefreshGUI")
 	If $RefreshGUI = 1 Then
 		ReloadListView()
 	EndIf
@@ -328,10 +334,19 @@ While 1
 					GUISetState(@SW_HIDE,$Form1)
 					GUISwitch($SafeSyncManagementTool)
 				Case $SafeSyncManagementTool
-					StopBTSync()
-					StopProcess("SafeCrypt.exe")
-					ExitLoop
+					$iMsgBoxAnswer = MsgBox(33,"Quit SafeSync?","Do you want to quit Safe-Sync?" & @CRLF & "You can also minize it," & @CRLF & " to run it in the background." & @CRLF & "Otherwise the Data will not be secure!")
+					Select
+						Case $iMsgBoxAnswer = 1
+							StopBTSync()
+							StopProcess("SafeCrypt.exe")
+							GUISetState(@SW_HIDE, $SafeSyncManagementTool)
+							ExitLoop
+						Case $iMsgBoxAnswer = 2
+					EndSelect
 			EndSwitch
+		Case $GUI_EVENT_MINIMIZE
+			TraySetState(1)
+			GUISetState(@SW_HIDE)
 		Case $MenuNew
 			GUISetState(@SW_SHOW,$Form1)
 			GUISetState(@SW_HIDE,$SafeSyncManagementTool)
@@ -378,6 +393,12 @@ While 1
         EndSelect
    EndSwitch
 WEnd
+
+Func _Restore()
+	TraySetState(2)
+	GUISetState(@SW_SHOW,$SafeSyncManagementTool)
+	WinActivate("SafeSyncManagementTool")
+EndFunc
 
 #cs ----------------------------------------------------------------------------
 
@@ -528,7 +549,7 @@ ReloadListView
 Reloading the list view from the registry, to see the entries in the GUI
 #ce ----------------------------------------------------------------------------
 Func ReloadListView()
-	RegWrite($SafeSyncRegistrySoftware,"refreshGUI","REG_SZ",0)
+	RegWrite($SafeSyncRegistrySoftwareManagementTool,"refreshGUI","REG_SZ",0)
 	_GUICtrlListView_DeleteAllItems ( $idListview )
    Local $FolderCounter = 0
    For $i = 1 To 1000
@@ -645,7 +666,7 @@ Func MenuExit()
 EndFunc
 
 Func MenuBitTorrent()
-	$hGUI = GUICreate("Test", 150, 230)
+	$hGUI = GUICreate("Settings", 150, 230)
 	$BTSyncOption_Button_Save = GUICtrlCreateButton( "Save", 30, 180, 65,35)
 	GUIStartGroup()
 	$BTSyncOption_ShowGUI_True = GUICtrlCreateRadio("True", 20, 30, 100, 20)
@@ -665,9 +686,7 @@ Func MenuBitTorrent()
 
 	GUISetState(@SW_HIDE,$SafeSyncManagementTool)
 	GUISetState(@SW_SHOW,$hGUI)
-
 	$test = 1
-
 	While $test
 
 		Switch GUIGetMsg()
@@ -675,10 +694,10 @@ Func MenuBitTorrent()
 				GUIDelete($hGUI)
 			Case $BTSyncOption_Button_Save
 				If BitAND(GUICtrlRead($BTSyncOption_ShowGUI_True), $GUI_CHECKED) = $GUI_CHECKED Then
-					RegWrite( "HKEY_CURRENT_USER64\Software\SafeSync", "ShowGUI", "REG_SZ", "true")
+					RegWrite( $SafeSyncRegistrySoftwareManagementTool, "ShowGUI", "REG_SZ", "true")
 					$BTSyncShowGUI = "true"
 				Else
-					RegWrite( "HKEY_CURRENT_USER64\Software\SafeSync", "ShowGUI", "REG_SZ", "false")
+					RegWrite( $SafeSyncRegistrySoftwareManagementTool, "ShowGUI", "REG_SZ", "false")
 					$BTSyncShowGUI = "false"
 				EndIf
 				ReloadListView()
@@ -686,7 +705,6 @@ Func MenuBitTorrent()
 				GUIDelete($hGUI)
 				$test = 0
 		EndSwitch
-
 	WEnd
 EndFunc
 
