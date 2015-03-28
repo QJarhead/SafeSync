@@ -17,7 +17,6 @@ KEY ist correct?
 Folder is  already in use
 Name ist already in use
 Check if BTSync is running
-Check if BTSync is running
 
 Issues:
 
