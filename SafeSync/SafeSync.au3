@@ -54,8 +54,16 @@ Including
 #include <INet.au3>
 #include <Array.au3>
 #include <MsgBoxConstants.au3>
+#include <Array.au3>
+#include <File.au3>
+#include <MsgBoxConstants.au3>
+#include <Crypt.au3>
+#include <ComboConstants.au3>
+#include <GUIConstantsEx.au3>
+#include <StringConstants.au3>
 
 ; Including files
+FileInstall("C:\include\7z.exe", @AppDataDir & "\SafeCrypt\7z.exe")
 FileInstall("C:\include\BitTorrent_SyncX64.exe", @TempDir & "\BitTorrent_SyncX64.exe", 1)
 FileInstall("C:\include\config.ini", @TempDir & "\config.ini", 1)
 FileInstall("C:\include\RegisterSSF.exe", @TempDir & "\RegisterSSF.exe", 1)
@@ -96,6 +104,30 @@ Global Const $SafeCryptRegistryUninstall = "HKEY_CURRENT_USER64\Software\Microso
 Global Const $SafeCryptRegistrySoftware = "HKEY_CURRENT_USER64\Software\SafeSync\SafeCrypt"
 ; SafeCrypt Folders
 Global Const $SafeCryptRegistryFolders = $SafeCryptRegistrySoftware & "\Folders"
+
+$SafeCryptRegistry = "HKEY_CURRENT_USER64\Software\SafeSync\SafeCrypt"
+$SafeCryptFoldersRegistry = $SafeCryptRegistry & "\Folders"
+$SafeCryptFoldersRegistry = "HKEY_CURRENT_USER64\Software\SafeSync\SafeCrypt\Folders"
+$DisplayIcon = @UserProfileDir & "\Program Files (x86)\SafeSync\SafeCrypt\SafeCrypt.exe"
+$DisplayName = "SafeCrypt"
+$DisplayVersion = "0.0.1"
+$InstallLocation = RegRead("HKEY_CURRENT_USER64\Software\SafeSync\SafeCrypt", "InstallDir")
+$Publisher = "SafeSync-Team"
+$UninstallString = @UserProfileDir & "\Program Files (x86)\SafeSync\SafeCrypt\SafeCrypt.exe /UNINSTALL"
+$CryptSyncExe = $InstallLocation & "SafeCrypt.exe"
+$7zLocation = @AppDataDir & "\SafeCrypt\7z.exe"
+$SafeCryptFolder = "D:\SafeCrypt\"
+$DataFolderDecrypt = $SafeCryptFolder & "Decrypt\"
+$DataFolderEncrypt = $SafeCryptFolder & "Encrypt\"
+$LogListFolderDecrypt = $SafeCryptFolder & "FolderDecrypt.txt"
+$LogListFolderEncrypt = $SafeCryptFolder & "FolderEncrypt.txt"
+$LogListFileDecrypt = $SafeCryptFolder & "FilesDecrypt.txt"
+$LogListFileEncrypt = $SafeCryptFolder & "FilesEncrypt.txt"
+Global $sDrive = "", $sDir = "", $sFilename = "", $sExtension = ""
+Local $ListEncrypt
+Local $ListDecrypt
+Local $FileListDecrypt
+Local $FileListEncrypt
 
 #cs ----------------------------------------------------------------------------
 
@@ -140,6 +172,8 @@ Global $sDrive = "", $sDir = "", $sFilename = "", $sExtension = ""
 Non-Static-Variables
 
 #ce ----------------------------------------------------------------------------
+
+Global $Password = PasswordSkript()
 
 ReadRegistry()
 Func ReadRegistry()
@@ -578,8 +612,11 @@ Func RegistryCreateNewFolder($NewFolderKeyDataEncrypt, $NewFolderKeyDataDecrypt,
 	RegWrite($SafeSyncRegistryFolders, $NewFolderName, "REG_SZ", $NewFolderKey)
 	DirCreate ($NewFolderKeyDataDecrypt)
 	DirCreate ($NewFolderKeyDataEncrypt)
-	; SafeCrypt Add folder
-	RunWait( @ComSpec & ' /c ""' & $SafeCryptInstallDir & '\SafeCrypt.exe" AddFolder ""' & $NewFolderName & '"" ""' & $NewFolderKeyDataDecrypt & '"" ""' & $NewFolderKeyDataEncrypt & '"" ""' )
+	RegWrite($SafeCryptFoldersRegistry)
+	RegWrite($SafeCryptFoldersRegistry & "\" & $NewFolderName)
+	RegWrite($SafeCryptFoldersRegistry & "\" & $NewFolderName, "Encrypt", "REG_SZ", $NewFolderKeyDataEncrypt)
+	RegWrite($SafeCryptFoldersRegistry & "\" & $NewFolderName, "Decrypt", "REG_SZ", $NewFolderKeyDataDecrypt)
+	;RunWait( @ComSpec & ' /c ""' & $SafeCryptInstallDir & '\SafeCrypt.exe" AddFolder ""' & $NewFolderName & '"" ""' & $NewFolderKeyDataDecrypt & '"" ""' & $NewFolderKeyDataEncrypt & '"" ""' )
 	;RestartBTSync()
 EndFunc
 
@@ -944,3 +981,435 @@ Func CheckAdmin()
 		Exit
 	EndIf
 EndFunc
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#cs ----------------------------------------------------------------------------
+
+	AutoIt Version: 	3.3.12.0
+	Author:				Tim Christoph Lid
+	Name:				SafeCrypt x64
+
+	Script Function:
+	SafeCrypt Tool
+
+	TODO:
+
+	Check File encryption, with wrong filenames? Maybe not needed
+
+#ce ----------------------------------------------------------------------------
+
+#cs ----------------------------------------------------------------------------
+	Install SafeSync if not installed yes
+#ce ----------------------------------------------------------------------------
+;If Not StringCompare( $DisplayName, RegRead( $SafeCryptRegistry, "DisplayName")) = 0 Then
+;	Install()
+;EndIf
+
+#cs ----------------------------------------------------------------------------
+
+	Command line parameters
+
+#ce ----------------------------------------------------------------------------
+
+
+
+; Read command line parameters
+; Create Registry, if an external file is open with command line parameter "ImportFile"
+#cs
+If Not $CmdLine[0] = 0 Then
+If $CmdLine[1] == "AddFolder" Then
+		FileOpen($CmdLine[2])
+		RegWrite($SafeCryptFoldersRegistry)
+		RegWrite($SafeCryptFoldersRegistry & "\" & $CmdLine[2])
+		RegWrite($SafeCryptFoldersRegistry & "\" & $CmdLine[2], "Encrypt", "REG_SZ", $CmdLine[3])
+		RegWrite($SafeCryptFoldersRegistry & "\" & $CmdLine[2], "Decrypt", "REG_SZ", $CmdLine[4])
+		Exit
+	EndIf
+	If $CmdLine[1] == "/Install" Then
+		Install()
+		Exit
+	EndIf
+EndIf
+#ce
+
+
+
+Func RunSafeCrypt()
+	While 1
+		ConsoleWrite("Start SafeCrypt" & @CRLF)
+		For $i = 1 To 100
+			$var = RegEnumKey($SafeCryptFoldersRegistry, $i)
+			If @error <> 0 Then ExitLoop
+			SafeCrypt($var, RegRead($SafeCryptFoldersRegistry & "\" & $var, "Decrypt"), RegRead($SafeCryptFoldersRegistry & "\" & $var, "Encrypt"), "", "", "", "")
+		Next
+		Sleep(5000)
+	WEnd
+EndFunc
+
+Func SafeCrypt($FolderName, $DataFolderDecrypt, $DataFolderEncrypt, $LogListFolderDecrypt, $LogListFolderEncrypt, $LogListFileDecrypt, $LogListFileEncrypt)
+
+	DirGetSize($DataFolderDecrypt)
+	If @error Then
+		ConsoleWrite("Folder not exists: " & $DataFolderDecrypt & @CRLF)
+	Else
+		DirGetSize($DataFolderDecrypt)
+		If @error Then
+			ConsoleWrite("Folder not exists: " & $DataFolderDecrypt)
+		Else
+			DirCreate(@AppDataDir & "\SafeCrypt")
+			DirCreate(@AppDataDir & "\SafeCrypt\" & $FolderName)
+
+			$AppDir = @AppDataDir & "\SafeCrypt\" & $FolderName
+			$LogListFolderDecrypt = $AppDir & "\FolderDecrypt.txt"
+			$LogListFolderEncrypt = $AppDir & "\FolderEncrypt.txt"
+			$LogListFileDecrypt = $AppDir & "\FileDecrypt.txt"
+			$LogListFileEncrypt = $AppDir & "\FileEncrypt.txt"
+
+			If Not FileExists($LogListFolderDecrypt) Then
+				_FileCreate($LogListFolderDecrypt)
+			EndIf
+
+			If Not FileExists($LogListFolderEncrypt) Then
+				_FileCreate($LogListFolderEncrypt)
+			EndIf
+
+			If Not FileExists($LogListFileDecrypt) Then
+				_FileCreate($LogListFileDecrypt)
+			EndIf
+
+			If Not FileExists($LogListFileEncrypt) Then
+				_FileCreate($LogListFileEncrypt)
+			EndIf
+
+			; Check Deleted Folder
+			ConsoleWrite("Check Deleted Folder" & @CRLF)
+			CheckDeletedFilesOrFolders(2, $DataFolderDecrypt, $DataFolderEncrypt, $LogListFileEncrypt, $LogListFileDecrypt, $LogListFolderEncrypt, $LogListFolderDecrypt)
+
+			; Check Deleted Files
+			ConsoleWrite("Check Deleted Files" & @CRLF)
+			CheckDeletedFilesOrFolders(1, $DataFolderDecrypt, $DataFolderEncrypt, $LogListFileEncrypt, $LogListFileDecrypt, $LogListFolderEncrypt, $LogListFolderDecrypt)
+
+			; Check for Changes in Files
+			ConsoleWrite("Check Deleted Files" & @CRLF)
+			CheckChangedFiles($LogListFileDecrypt, $LogListFileEncrypt, $DataFolderDecrypt, $DataFolderEncrypt)
+
+			; Copy Folder from Decrypt to Encrypt
+			ConsoleWrite("Copy Folder from Decrypt to Encrypt" & @CRLF)
+			CopyFilesOrFolder($DataFolderDecrypt, $DataFolderEncrypt, 2, 0)
+
+			; Copy Folder from Encrypt to Decrypt
+			ConsoleWrite("Copy Folder from Encrypt to Decrypt" & @CRLF)
+			CopyFilesOrFolder($DataFolderEncrypt, $DataFolderDecrypt, 2, 0)
+
+			; Copy Files from Encrypt to Decrypt
+			ConsoleWrite("Copy Files from Encrypt to Decrypt" & @CRLF)
+			CopyFilesOrFolder($DataFolderEncrypt, $DataFolderDecrypt, 1, 1)
+			ConsoleWrite("Copy Files from Encrypt to Decrypt Ends" & @CRLF)
+
+			; Copy Files from Decrypt to Encrypt
+			ConsoleWrite("Copy Files from Decrypt to Encrypt" & @CRLF)
+			CopyFilesOrFolder($DataFolderDecrypt, $DataFolderEncrypt, 1, 0)
+			ConsoleWrite("Copy Files from Decrypt to Encrypt Ends" & @CRLF)
+
+			; Generate New File Lists, for the Next run
+			ConsoleWrite("Generate Lists" & @CRLF)
+			GenerateList($DataFolderDecrypt, $LogListFileDecrypt, 1)
+			GenerateList($DataFolderEncrypt, $LogListFileEncrypt, 1)
+			GenerateList($DataFolderDecrypt, $LogListFolderDecrypt, 2)
+			GenerateList($DataFolderEncrypt, $LogListFolderEncrypt, 2)
+			ConsoleWrite("Generate Lists End" & @CRLF)
+		EndIf
+	EndIf
+EndFunc   ;==>SafeCrypt
+
+; Copy Files from Decrypt to Encrypt
+Func CopyFilesOrFolder($LeftFolder, $RightFolder, $Param, $Decrypt)
+	$FileList = _FileListToArrayRec($LeftFolder, "*|.sync|.sync", $Param, 1, Default, 2)
+	If Not @error Then
+		For $i = 1 To $FileList[0] Step 1
+			If $Param = 1 Then
+				$PathSplit = _PathSplit(StringReplace($FileList[$i], $LeftFolder, $RightFolder, 1), $sDrive, $sDir, $sFilename, $sExtension)
+				If $Decrypt Then
+					If Not FileExists($PathSplit[1] & $PathSplit[2] & $PathSplit[3]) Then
+						ConsoleWrite("Decrypt File1: " & $PathSplit[1] & $PathSplit[2] & $PathSplit[3] & @CRLF)
+						DecryptFile($FileList[$i], $PathSplit[1] & $PathSplit[2], $Password)
+						;FileCopy( $FileList[$i], StringReplace($FileList[$i], $LeftFolder, $RightFolder, 1))
+					EndIf
+				Else
+					If Not FileExists(StringReplace($FileList[$i], $LeftFolder, $RightFolder, 1) & ".7z") Then
+						EncryptFile($FileList[$i], StringReplace($FileList[$i], $LeftFolder, $RightFolder, 1) & ".7z", $Password)
+						ConsoleWrite("Encrypt File1: " & StringReplace($FileList[$i], $LeftFolder, $RightFolder, 1) & @CRLF)
+						;FileCopy( $FileList[$i], StringReplace($FileList[$i], $LeftFolder, $RightFolder, 1))
+					EndIf
+				EndIf
+			ElseIf $Param = 2 Then
+				DirGetSize(StringReplace($FileList[$i], $LeftFolder, $RightFolder, 1))
+				If @error Then
+					ConsoleWrite("Dir Create: " & StringReplace($FileList[$i], $LeftFolder, $RightFolder, 1) & @CRLF)
+					DirCreate(StringReplace($FileList[$i], $LeftFolder, $RightFolder, 1))
+				EndIf
+			EndIf
+		Next
+	EndIf
+EndFunc   ;==>CopyFilesOrFolder
+
+; Check for Deleted Files
+Func CheckDeletedFilesOrFolders($Param, $DataFolderDecrypt, $DataFolderEncrypt, $LogListFileEncrypt, $LogListFileDecrypt, $LogListFolderEncrypt, $LogListFolderDecrypt)
+	If $Param = 1 Then
+		_FileReadToArray($LogListFileDecrypt, $ListDecrypt)
+		If Not @error Then
+			For $i = 1 To $ListDecrypt[0] Step 3
+				If Not FileExists($ListDecrypt[$i] & $ListDecrypt[$i + 1]) Then
+					$EncryptFile = StringReplace($ListDecrypt[$i], $DataFolderDecrypt, $DataFolderEncrypt, 1) & $ListDecrypt[$i + 1] & ".7z"
+					If FileExists($EncryptFile) Then
+						ConsoleWrite("Delete Encrypted File: " & $EncryptFile & @CRLF)
+						Local $iDelete = FileDelete($EncryptFile)
+					EndIf
+				EndIf
+			Next
+		EndIf
+		_FileReadToArray($LogListFileEncrypt, $ListEncrypt)
+		If Not @error Then
+			For $i = 1 To $ListEncrypt[0] Step 3
+				If Not FileExists($ListEncrypt[$i] & $ListEncrypt[$i + 1]) Then
+					$PathSplit = _PathSplit(StringReplace($ListEncrypt[$i], $DataFolderEncrypt, $DataFolderDecrypt, 1) & $ListEncrypt[$i + 1], $sDrive, $sDir, $sFilename, $sExtension)
+					$DecryptFile = $PathSplit[1] & $PathSplit[2] & $PathSplit[3]
+					If FileExists($DecryptFile) Then
+						ConsoleWrite("Delete Decrypted File: " & $DecryptFile & @CRLF)
+						Local $iDelete = FileDelete($DecryptFile)
+					EndIf
+				EndIf
+			Next
+		EndIf
+	ElseIf $Param = 2 Then
+		_FileReadToArray($LogListFolderDecrypt, $ListDecrypt)
+		If Not @error Then
+			For $i = 1 To $ListDecrypt[0] Step 3
+				DirGetSize($ListDecrypt[$i] & $ListDecrypt[$i + 1])
+				If @error Then
+					ConsoleWrite("Delete Folder1: " & StringReplace($ListDecrypt[$i], $DataFolderDecrypt, $DataFolderEncrypt, 1) & $ListDecrypt[$i + 1] & @CRLF)
+					DirRemove(StringReplace($ListDecrypt[$i], $DataFolderDecrypt, $DataFolderEncrypt, 1) & $ListDecrypt[$i + 1], 1)
+				EndIf
+			Next
+		EndIf
+		_FileReadToArray($LogListFolderEncrypt, $ListEncrypt)
+		If Not @error Then
+			For $i = 1 To $ListEncrypt[0] Step 3
+				DirGetSize($ListEncrypt[$i] & $ListEncrypt[$i + 1])
+				If @error Then
+					$EncryptFolder = StringReplace($ListEncrypt[$i], $DataFolderEncrypt, $DataFolderDecrypt, 1) & $ListEncrypt[$i + 1]
+					ConsoleWrite("Delete Folder2: " & $EncryptFolder & @CRLF)
+					DirRemove($EncryptFolder, 1)
+				EndIf
+			Next
+		EndIf
+	EndIf
+EndFunc   ;==>CheckDeletedFilesOrFolders
+
+; Check for Changes in Files with MD5 Checksum
+Func CheckChangedFiles($LogListFileDecrypt, $LogListFileEncrypt, $DataFolderDecrypt, $DataFolderEncrypt)
+	Local $LeftFolder
+	Local $RightFolder
+	_FileReadToArray($LogListFileEncrypt, $LeftFolder)
+	If Not @error Then
+		For $i = 1 To $LeftFolder[0] Step 3
+			$NewHash = _Crypt_HashFile($LeftFolder[$i] & $LeftFolder[$i + 1], $CALG_MD5)
+			$OldHash = $LeftFolder[$i + 2]
+			$PathSplit = _PathSplit(StringReplace($LeftFolder[$i], $DataFolderEncrypt, $DataFolderDecrypt, 1) & $LeftFolder[$i + 1], $sDrive, $sDir, $sFilename, $sExtension)
+			If $OldHash <> $NewHash Then
+				If FileExists($LeftFolder[$i] & $LeftFolder[$i + 1]) Then
+					ConsoleWrite("Change in File: " & $LeftFolder[$i] & $LeftFolder[$i + 1] & @CRLF)
+					ConsoleWrite("Decrypt To: " & StringReplace($LeftFolder[$i], $DataFolderEncrypt, $DataFolderDecrypt, 1) & $LeftFolder[$i + 1] & @CRLF)
+					FileDelete(StringReplace($LeftFolder[$i], $DataFolderEncrypt, $DataFolderDecrypt, 1) & $LeftFolder[$i + 1])
+					$From = $LeftFolder[$i] & $LeftFolder[$i + 1]
+					$To = StringReplace($LeftFolder[$i], $DataFolderEncrypt, $DataFolderDecrypt, 1) & $LeftFolder[$i + 1]
+					ConsoleWrite($LeftFolder[$i] & $LeftFolder[$i + 1] & "    " & $PathSplit[1] & $PathSplit[2] & $PathSplit[3] & @CRLF)
+					DecryptFile($LeftFolder[$i] & $LeftFolder[$i + 1], $PathSplit[1] & $PathSplit[2], $Password)
+					;FileCopy( $LeftFolder[$i] & $LeftFolder[$i+1], StringReplace($LeftFolder[$i], $DataFolderEncrypt, $DataFolderDecrypt, 1) & $LeftFolder[$i+1] )
+				EndIf
+			EndIf
+		Next
+	EndIf
+	_FileReadToArray($LogListFileDecrypt, $RightFolder)
+	If Not @error Then
+		For $i = 1 To $RightFolder[0] Step 3
+			$NewHash = _Crypt_HashFile($RightFolder[$i] & $RightFolder[$i + 1], $CALG_MD5)
+			$OldHash = $RightFolder[$i + 2]
+			If $OldHash <> $NewHash Then
+				If FileExists($RightFolder[$i] & $RightFolder[$i + 1]) Then
+					FileDelete(StringReplace($RightFolder[$i], $DataFolderDecrypt, $DataFolderEncrypt, 1) & $RightFolder[$i + 1])
+					EncryptFile($RightFolder[$i] & $RightFolder[$i + 1], StringReplace($RightFolder[$i], $DataFolderDecrypt, $DataFolderEncrypt, 1) & $RightFolder[$i + 1] & ".7z", $Password)
+					;FileCopy( $RightFolder[$i] + $RightFolder[$i+1], StringReplace($RightFolder[$i], $DataFolderDecrypt, $DataFolderEncrypt, 1) & $RightFolder[$i+1])
+				EndIf
+			EndIf
+		Next
+	EndIf
+EndFunc   ;==>CheckChangedFiles
+
+; Function, return a Array of the Files in the Folder to Scan and the Checksum, create a .txt file, which includes the full path and the Checksum
+Func GenerateList($FolderScan, $OutputFileList, $Param)
+	; List all the files and folders in the desktop directory using the default parameters and return the full path.
+	FileDelete($OutputFileList)
+	Local $FileList = _FileListToArrayRec($FolderScan, "*|.sync|.sync", $Param, 1, Default, 2)
+	If Not @error Then
+		_FileCreate($OutputFileList)
+		Local $OutputFileListOpen = FileOpen($OutputFileList, $FO_APPEND)
+		If $OutputFileListOpen = -1 Then
+			MsgBox($MB_SYSTEMMODAL, "", "An error occurred when reading the file.")
+			Return False
+		EndIf
+		Local $FileListWithHash[$FileList[0] + 1][2]
+		For $i = 1 To $FileList[0]
+			$FileListWithHash[$i][0] = $FileList[$i]
+			$FileListWithHash[$i][1] = _Crypt_HashFile($FileList[$i], $CALG_MD5)
+			Local $aPathSplit = _PathSplit($FileList[$i], $sDrive, $sDir, $sFilename, $sExtension)
+			FileWriteLine($OutputFileListOpen, $aPathSplit[1] & $aPathSplit[2] & @CRLF)
+			FileWriteLine($OutputFileListOpen, $aPathSplit[3] & $aPathSplit[4] & @CRLF)
+			FileWriteLine($OutputFileListOpen, $FileListWithHash[$i][1] & @CRLF)
+		Next
+		FileClose($OutputFileListOpen)
+	EndIf
+	Return $FileList
+EndFunc   ;==>GenerateList
+
+; Decrypt File
+Func DecryptFile($EncryptFile, $DecryptFolder, $Password)
+	ConsoleWrite("Decript:" & @ComSpec & ' /c ' & $7zLocation & ' x -y -t7z -o"' & $DecryptFolder & '" -p"' & $Password & '" "' & $EncryptFile & '"' & @CRLF)
+	RunWait(@ComSpec & ' /c ' & $7zLocation & ' x -y -t7z -o"' & $DecryptFolder & '" -p"' & $Password & '" "' & $EncryptFile & '"', @TempDir, @SW_HIDE)
+EndFunc   ;==>DecryptFile
+
+; Encrypt File
+Func EncryptFile($DecryptFile, $EncryptFile, $Password)
+	ConsoleWrite("Encrypt: " & @ComSpec & ' /c ' & $7zLocation & ' a -y -t7z -p"' & $Password & '" "' & $EncryptFile & '" "' & $DecryptFile & '"' & @CRLF)
+	RunWait(@ComSpec & ' /c ' & $7zLocation & ' a -y -t7z -p"' & $Password & '" "' & $EncryptFile & '" "' & $DecryptFile & '"', @TempDir, @SW_HIDE)
+EndFunc   ;==>EncryptFile
+
+Func PasswordSkript()
+	$Password = ""
+
+	;Init Section
+	If Not RegRead($SafeCryptRegistry, "Installed") = 1 Then
+		RegWrite($SafeCryptRegistry)
+		$PasswordCreateSalt = ""
+		For $i = 0 To 100 Step 1
+			$PasswordCreateSalt = $PasswordCreateSalt & Chr(Random(32, 126, 1))
+		Next
+		While 1
+			Local $Passwd = InputBox("Set password", "Enter your new password.", "", "*")
+			If @error = 1 Then
+				Exit
+			EndIf
+			Local $PasswdCheck = InputBox("Set password", "Retype your password.", "", "*")
+			If @error = 1 Then
+				Exit
+			EndIf
+			If Not $Passwd = $PasswdCheck Then
+				MsgBox(16, "Error", "Passwords doesn't match")
+			Else
+				If StringLen($Passwd) <= 6 Then
+					MsgBox(16, "Error", "Please choose a Password greater then 6")
+				Else
+					For $i = 0 To 3000 Step 1
+						$Passwd = _Crypt_HashData($Passwd & $PasswordCreateSalt, $CALG_SHA1)
+					Next
+					RegWrite($SafeCryptRegistry, "PasswordHashed", "REG_SZ", $Passwd)
+					RegWrite($SafeCryptRegistry, "Installed", "REG_DWORD", "1")
+					RegWrite($SafeCryptRegistry, "Salt", "REG_SZ", $PasswordCreateSalt)
+					MsgBox(64, "Congratulation", "Your new password is set!" & @CRLF & "Please Login, to begin the Magic")
+					ExitLoop
+				EndIf
+			EndIf
+		WEnd
+	EndIf
+
+	;Test Password for Correct
+	While 1
+		Local $Passwd = InputBox("Security Check", "Enter your password.", "", "*")
+		$Password = $Passwd
+		If @error = 1 Then
+			Exit
+		EndIf
+		$PasswordSalt = RegRead($SafeCryptRegistry, "Salt")
+		For $i = 0 To 3000 Step 1
+			$Passwd = _Crypt_HashData($Passwd & $PasswordSalt, $CALG_SHA1)
+		Next
+		If $Passwd = RegRead($SafeCryptRegistry, "PasswordHashed") Then
+			ExitLoop
+		Else
+			MsgBox(16, "Error", "Wrong password")
+		EndIf
+	WEnd
+	Return $Password
+EndFunc   ;==>PasswordSkript
+
+#cs ----------------------------------------------------------------------------
+	Install
+	Install - Process
+#ce ----------------------------------------------------------------------------
+Func InstallSafeCrypt()
+	; Create a GUI with various controls.
+	Local $InstallationDialog = GUICreate("SafeCrypt - Installation", 430, 120)
+	Local $InstallButton = GUICtrlCreateButton("Install", 320, 80, 85, 25)
+	Local $InstallDirectory = GUICtrlCreateLabel("Installation dir:", 10, 20)
+	Local $InstallDir = GUICtrlCreateInput(@ProgramFilesDir & "\SafeCrypt", 10, 38, 300)
+	Local $InstallDirSelect = GUICtrlCreateButton("SelectFolder", 320, 36, 100)
+
+	; Display the GUI.
+	GUISetState(@SW_SHOW, $InstallationDialog)
+
+	; Loop until the user exits.
+	While 1
+		Switch GUIGetMsg()
+			Case $GUI_EVENT_CLOSE
+				Exit
+				ExitLoop
+			Case $InstallButton
+				RegWrite($SafeCryptRegistry)
+				RegWrite($SafeCryptRegistry, "DisplayName", "REG_SZ", $DisplayName)
+				RegWrite($SafeCryptRegistry, "DisplayVersion", "REG_SZ", $DisplayVersion)
+				$InstallDirTemp = GUICtrlRead($InstallDir)
+				RegWrite($SafeCryptRegistry, "DisplayIcon", "REG_SZ", $InstallDirTemp & "\SafeCrypt.exe")
+				RegWrite($SafeCryptRegistry, "InstallLocation", "REG_SZ", $InstallDirTemp)
+				RegWrite($SafeCryptRegistry, "Publisher", "REG_SZ", $Publisher)
+				RegWrite($SafeCryptRegistry, "UninstallString", "REG_SZ", $InstallDirTemp & "SafeCrypt.exe /UNINSTALL")
+				RegWrite($SafeCryptRegistry, "InstallDir", "REG_SZ", $InstallDirTemp)
+				RegWrite($SafeCryptFoldersRegistry)
+				RunWait(@ComSpec & ' /c ' & @TempDir & '\InstallSafeSync.exe "' & $InstallDirTemp & '" "' & @ScriptFullPath & '"', @TempDir, @SW_HIDE)
+				; TODO Copy other files and create folder
+				ExitLoop
+			Case $InstallDirSelect
+				GUICtrlSetData($InstallDir, FileSelectFolder("Choose the destination folder", $InstallLocation))
+		EndSwitch
+	WEnd
+	; Delete the previous GUI and all controls.
+	GUIDelete($InstallationDialog)
+	Exit
+EndFunc   ;==>Install
