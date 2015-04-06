@@ -98,8 +98,6 @@ Static-Variables SafeCrypt
 
 #ce ----------------------------------------------------------------------------
 
-; SafeCrypt Registry Uninstall
-Global Const $SafeCryptRegistryUninstall = "HKEY_CURRENT_USER64\Software\Microsoft\Windows\CurrentVersion\Uninstall\SafeCrypt"
 ; SafeCrypt Registry
 Global Const $SafeCryptRegistrySoftware = "HKEY_CURRENT_USER64\Software\SafeSync\SafeCrypt"
 ; SafeCrypt Folders
