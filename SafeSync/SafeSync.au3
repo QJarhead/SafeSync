@@ -623,7 +623,6 @@ Func RestartBTSync()
 EndFunc
 
 Func MenuDelete()
-
 	$iSelect = ControlListView($SafeSyncManagementTool, "", $idListview, "GetSelected")
 	$sSelect = ControlListView($SafeSyncManagementTool, "", $idListview, "GetText", $iSelect)
 
