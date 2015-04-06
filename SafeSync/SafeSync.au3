@@ -86,7 +86,7 @@ Global Const $SafeSyncRegistrySoftware = "HKEY_CURRENT_USER64\Software\SafeSync"
 ; SafeSyncManagementool Registry
 Global Const $SafeSyncRegistrySoftwareManagementTool = "HKEY_CURRENT_USER64\Software\SafeSync\ManagementTool"
 ; SafeSync Folders
-Global Const $SafeSyncRegistryFolders = $SafeSyncRegistrySoftware & "\ManagementTool\Folders"
+Global Const $SafeSyncRegistryFolders = $SafeSyncRegistrySoftware & "\Folders"
 ; Run SafeSyncAsAdmin
 Global Const $RunSafeSyncAsAdmin = @TempDir & "\RunSafeSyncAsAdmin.exe " & @ScriptFullPath
 ; SafeSync ShortcutFolder
@@ -100,19 +100,6 @@ Static-Variables SafeCrypt
 
 ; SafeCrypt Registry
 Global Const $SafeCryptRegistrySoftware = "HKEY_CURRENT_USER64\Software\SafeSync\SafeCrypt"
-; SafeCrypt Folders
-Global Const $SafeCryptRegistryFolders = $SafeCryptRegistrySoftware & "\Folders"
-
-$SafeCryptRegistry = "HKEY_CURRENT_USER64\Software\SafeSync\SafeCrypt"
-$SafeCryptFoldersRegistry = $SafeCryptRegistry & "\Folders"
-$SafeCryptFoldersRegistry = "HKEY_CURRENT_USER64\Software\SafeSync\SafeCrypt\Folders"
-$DisplayIcon = @UserProfileDir & "\Program Files (x86)\SafeSync\SafeCrypt\SafeCrypt.exe"
-$DisplayName = "SafeCrypt"
-$DisplayVersion = "0.0.1"
-$InstallLocation = RegRead("HKEY_CURRENT_USER64\Software\SafeSync\SafeCrypt", "InstallDir")
-$Publisher = "SafeSync-Team"
-$UninstallString = @UserProfileDir & "\Program Files (x86)\SafeSync\SafeCrypt\SafeCrypt.exe /UNINSTALL"
-$CryptSyncExe = $InstallLocation & "SafeCrypt.exe"
 $7zLocation = @AppDataDir & "\SafeCrypt\7z.exe"
 $SafeCryptFolder = "D:\SafeCrypt\"
 $DataFolderDecrypt = $SafeCryptFolder & "Decrypt\"
@@ -121,11 +108,10 @@ $LogListFolderDecrypt = $SafeCryptFolder & "FolderDecrypt.txt"
 $LogListFolderEncrypt = $SafeCryptFolder & "FolderEncrypt.txt"
 $LogListFileDecrypt = $SafeCryptFolder & "FilesDecrypt.txt"
 $LogListFileEncrypt = $SafeCryptFolder & "FilesEncrypt.txt"
-Global $sDrive = "", $sDir = "", $sFilename = "", $sExtension = ""
-Local $ListEncrypt
-Local $ListDecrypt
-Local $FileListDecrypt
-Local $FileListEncrypt
+Global $ListEncrypt
+Global $ListDecrypt
+Global $FileListDecrypt
+Global $FileListEncrypt
 
 #cs ----------------------------------------------------------------------------
 
@@ -183,8 +169,6 @@ Func ReadRegistry()
 		RegWrite("HKEY_CURRENT_USER64\Software\SafeSync\ManagementTool", "DataDir", "REG_SZ", $SafeSyncStandardDataFolder)
 	EndIf
 	; Read SafeCrypt Location from Registry
-	Global $SafeCryptInstallDir = RegRead( "HKEY_CURRENT_USER64\Software\SafeSync\SafeCrypt", "InstallDir")
-	; Read SafeCrypt Location from Registry
 	Global $InstallLocationSafeSync = RegRead( $SafeSyncRegistrySoftwareManagementTool, "InstallDir")
 	; Read BTSyncShowGUI show GUI Option
 	Global $BTSyncShowGUI = RegRead( $SafeSyncRegistrySoftwareManagementTool, "ShowGUI")
@@ -215,6 +199,12 @@ Option Variables
 ; Read command line parameters
 ; Create Registry, if an external file is open with command line parameter "ImportFile"
 If Not $CmdLine[0] = 0 Then
+
+	If $CmdLine[1] == "SafeCrypt" Then
+		If $CmdLine[2] == "Start" Then
+			RunSafeCrypt()
+		EndIf
+	EndIf
 	If $CmdLine[1] == "ImportFile" Then
 		; Open the File
 		FileOpen( $CmdLine[2] )
@@ -248,16 +238,6 @@ Install BitTorrent Sync 1.4 if not installed yet
 #ce ----------------------------------------------------------------------------
 If RegRead( $BTSyncRegistryUninstall, "DisplayIcon") == "" Then
 	RunWait( '"' & $BTSyncInstaller & '" /PERFORMINSTALL /AUTOMATION')
-EndIf
-
-#cs ----------------------------------------------------------------------------
-Install SafeCrypt if not installed yet
-#ce ----------------------------------------------------------------------------
-
-If RegRead( "HKEY_CURRENT_USER64\Software\SafeSync\SafeCrypt", "InstallDir") = "" Then
-	ConsoleWrite( "Install SafeCrypt" & @CRLF)
-	RunWait(@ComSpec & ' /c ' & @TempDir & "\SafeCrypt.msi", @TempDir, @SW_HIDE)
-	ReadRegistry()
 EndIf
 
 #cs ----------------------------------------------------------------------------
@@ -345,7 +325,12 @@ For $i = 1 To $aProcessList[0][0]
 Next
 
 ;Start SafeCrypt
-Run( $SafeCryptInstallDir & "/SafeCrypt.exe")
+
+Run( @ScriptFullPath & " SafeCrypt Start")
+
+;Run( $SafeCryptInstallDir & "/SafeCrypt.exe")
+
+;Gui Things
 Opt('TrayOnEventMode', 1)
 Opt('TrayMenuMode', 1)
 TraySetOnEvent( -7, '_Restore')
@@ -477,8 +462,6 @@ Func Install()
 				$SafeSyncDataCryptFolder = RegRead( $SafeSyncRegistryUninstall, "DataCryptFolder")
 				RegisterFileExtension(GUICtrlRead($InstallDir),GUICtrlRead($DataDir))
 				FileCopy( @TempDir & "/InstallSafeSync.exe", GUICtrlRead($InstallDir) & "/")
-				;Start SafeCrypt
-				Run( $SafeCryptInstallDir & "/SafeCrypt.exe")
 				; TODO Copy other files and create folder
 				ExitLoop
 			Case $InstallDirSelect
@@ -588,14 +571,14 @@ Func ReloadListView()
 	  $FolderCounter = $i
 	  If @error <> 0 Then ExitLoop
 	  $sVar1 = RegRead($SafeSyncRegistryFolders, $sVar)
-	  Local $idItem1 = GUICtrlCreateListViewItem("" & $sVar & "| " & $sVar1 & " | " & RegRead( $SafeCryptRegistryFolders & "\" & $sVar, "Encrypt") & " | " & RegRead( $SafeCryptRegistryFolders & "\" & $sVar, "Decrypt") & " ", $idListview)
+	  Local $idItem1 = GUICtrlCreateListViewItem("" & $sVar & "| " & $sVar1 & " | " & RegRead( $SafeSyncRegistryFolders & "\" & $sVar, "Encrypt") & " | " & RegRead( $SafeSyncRegistryFolders & "\" & $sVar, "Decrypt") & " ", $idListview)
    Next
    Global $SyncFolders[$FolderCounter][2]
    For $i = 1 To $FolderCounter + 1
 	  $sVar = RegEnumVal($SafeSyncRegistryFolders, $i)
 	  If @error <> 0 Then ExitLoop
 	  $sVar1 = RegRead($SafeSyncRegistryFolders, $sVar)
-	  $SyncFolders[$i][0] = RegRead( $SafeCryptRegistryFolders & "\" & $sVar, "Encrypt")
+	  $SyncFolders[$i][0] = RegRead( $SafeSyncRegistryFolders & "\" & $sVar, "Encrypt")
 	  $SyncFolders[$i][1] = $sVar1
    Next
    createConfig($SyncFolders, $BTSyncStoragePath)
@@ -610,10 +593,10 @@ Func RegistryCreateNewFolder($NewFolderKeyDataEncrypt, $NewFolderKeyDataDecrypt,
 	RegWrite($SafeSyncRegistryFolders, $NewFolderName, "REG_SZ", $NewFolderKey)
 	DirCreate ($NewFolderKeyDataDecrypt)
 	DirCreate ($NewFolderKeyDataEncrypt)
-	RegWrite($SafeCryptFoldersRegistry)
-	RegWrite($SafeCryptFoldersRegistry & "\" & $NewFolderName)
-	RegWrite($SafeCryptFoldersRegistry & "\" & $NewFolderName, "Encrypt", "REG_SZ", $NewFolderKeyDataEncrypt)
-	RegWrite($SafeCryptFoldersRegistry & "\" & $NewFolderName, "Decrypt", "REG_SZ", $NewFolderKeyDataDecrypt)
+	RegWrite($SafeSyncRegistryFolders)
+	RegWrite($SafeSyncRegistryFolders & "\" & $NewFolderName)
+	RegWrite($SafeSyncRegistryFolders & "\" & $NewFolderName, "Encrypt", "REG_SZ", $NewFolderKeyDataEncrypt)
+	RegWrite($SafeSyncRegistryFolders & "\" & $NewFolderName, "Decrypt", "REG_SZ", $NewFolderKeyDataDecrypt)
 	;RunWait( @ComSpec & ' /c ""' & $SafeCryptInstallDir & '\SafeCrypt.exe" AddFolder ""' & $NewFolderName & '"" ""' & $NewFolderKeyDataDecrypt & '"" ""' & $NewFolderKeyDataEncrypt & '"" ""' )
 	;RestartBTSync()
 EndFunc
@@ -1064,9 +1047,9 @@ Func RunSafeCrypt()
 	While 1
 		ConsoleWrite("Start SafeCrypt" & @CRLF)
 		For $i = 1 To 100
-			$var = RegEnumKey($SafeCryptFoldersRegistry, $i)
+			$var = RegEnumKey($SafeSyncRegistryFolders, $i)
 			If @error <> 0 Then ExitLoop
-			SafeCrypt($var, RegRead($SafeCryptFoldersRegistry & "\" & $var, "Decrypt"), RegRead($SafeCryptFoldersRegistry & "\" & $var, "Encrypt"), "", "", "", "")
+			SafeCrypt($var, RegRead($SafeSyncRegistryFolders & "\" & $var, "Decrypt"), RegRead($SafeSyncRegistryFolders & "\" & $var, "Encrypt"), "", "", "", "")
 		Next
 		Sleep(5000)
 	WEnd
@@ -1310,12 +1293,15 @@ Func EncryptFile($DecryptFile, $EncryptFile, $Password)
 	RunWait(@ComSpec & ' /c ' & $7zLocation & ' a -y -t7z -p"' & $Password & '" "' & $EncryptFile & '" "' & $DecryptFile & '"', @TempDir, @SW_HIDE)
 EndFunc   ;==>EncryptFile
 
-Func PasswordSkript()
-	$Password = ""
+Func PasswordFolderInit()
 
-	;Init Section
-	If Not RegRead($SafeCryptRegistry, "Installed") = 1 Then
-		RegWrite($SafeCryptRegistry)
+EndFunc
+
+Func PasswordSkript()
+	$Password = ""a
+
+	If Not RegRead($SafeCryptRegistrySoftware, "Installed") = 1 Then
+		RegWrite($SafeCryptRegistrySoftware)
 		$PasswordCreateSalt = ""
 		For $i = 0 To 100 Step 1
 			$PasswordCreateSalt = $PasswordCreateSalt & Chr(Random(32, 126, 1))
@@ -1338,9 +1324,9 @@ Func PasswordSkript()
 					For $i = 0 To 3000 Step 1
 						$Passwd = _Crypt_HashData($Passwd & $PasswordCreateSalt, $CALG_SHA1)
 					Next
-					RegWrite($SafeCryptRegistry, "PasswordHashed", "REG_SZ", $Passwd)
-					RegWrite($SafeCryptRegistry, "Installed", "REG_DWORD", "1")
-					RegWrite($SafeCryptRegistry, "Salt", "REG_SZ", $PasswordCreateSalt)
+					RegWrite($SafeCryptRegistrySoftware, "PasswordHashed", "REG_SZ", $Passwd)
+					RegWrite($SafeCryptRegistrySoftware, "Installed", "REG_DWORD", "1")
+					RegWrite($SafeCryptRegistrySoftware, "Salt", "REG_SZ", $PasswordCreateSalt)
 					MsgBox(64, "Congratulation", "Your new password is set!" & @CRLF & "Please Login, to begin the Magic")
 					ExitLoop
 				EndIf
@@ -1355,11 +1341,11 @@ Func PasswordSkript()
 		If @error = 1 Then
 			Exit
 		EndIf
-		$PasswordSalt = RegRead($SafeCryptRegistry, "Salt")
+		$PasswordSalt = RegRead($SafeCryptRegistrySoftware, "Salt")
 		For $i = 0 To 3000 Step 1
 			$Passwd = _Crypt_HashData($Passwd & $PasswordSalt, $CALG_SHA1)
 		Next
-		If $Passwd = RegRead($SafeCryptRegistry, "PasswordHashed") Then
+		If $Passwd = RegRead($SafeCryptRegistrySoftware, "PasswordHashed") Then
 			ExitLoop
 		Else
 			MsgBox(16, "Error", "Wrong password")
@@ -1371,7 +1357,6 @@ EndFunc   ;==>PasswordSkript
 #cs ----------------------------------------------------------------------------
 	Install
 	Install - Process
-#ce ----------------------------------------------------------------------------
 Func InstallSafeCrypt()
 	; Create a GUI with various controls.
 	Local $InstallationDialog = GUICreate("SafeCrypt - Installation", 430, 120)
@@ -1390,15 +1375,15 @@ Func InstallSafeCrypt()
 				Exit
 				ExitLoop
 			Case $InstallButton
-				RegWrite($SafeCryptRegistry)
-				RegWrite($SafeCryptRegistry, "DisplayName", "REG_SZ", $DisplayName)
-				RegWrite($SafeCryptRegistry, "DisplayVersion", "REG_SZ", $DisplayVersion)
+				RegWrite($SafeCryptRegistrySoftware)
+				RegWrite($SafeCryptRegistrySoftware, "DisplayName", "REG_SZ", $DisplayName)
+				RegWrite($SafeCryptRegistrySoftware, "DisplayVersion", "REG_SZ", $DisplayVersion)
 				$InstallDirTemp = GUICtrlRead($InstallDir)
-				RegWrite($SafeCryptRegistry, "DisplayIcon", "REG_SZ", $InstallDirTemp & "\SafeCrypt.exe")
-				RegWrite($SafeCryptRegistry, "InstallLocation", "REG_SZ", $InstallDirTemp)
-				RegWrite($SafeCryptRegistry, "Publisher", "REG_SZ", $Publisher)
-				RegWrite($SafeCryptRegistry, "UninstallString", "REG_SZ", $InstallDirTemp & "SafeCrypt.exe /UNINSTALL")
-				RegWrite($SafeCryptRegistry, "InstallDir", "REG_SZ", $InstallDirTemp)
+				RegWrite($SafeCryptRegistrySoftware, "DisplayIcon", "REG_SZ", $InstallDirTemp & "\SafeCrypt.exe")
+				RegWrite($SafeCryptRegistrySoftware, "InstallLocation", "REG_SZ", $InstallDirTemp)
+				RegWrite($SafeCryptRegistrySoftware, "Publisher", "REG_SZ", $Publisher)
+				RegWrite($SafeCryptRegistrySoftware, "UninstallString", "REG_SZ", $InstallDirTemp & "SafeCrypt.exe /UNINSTALL")
+				RegWrite($SafeCryptRegistrySoftware, "InstallDir", "REG_SZ", $InstallDirTemp)
 				RegWrite($SafeCryptFoldersRegistry)
 				RunWait(@ComSpec & ' /c ' & @TempDir & '\InstallSafeSync.exe "' & $InstallDirTemp & '" "' & @ScriptFullPath & '"', @TempDir, @SW_HIDE)
 				; TODO Copy other files and create folder
@@ -1410,4 +1395,5 @@ Func InstallSafeCrypt()
 	; Delete the previous GUI and all controls.
 	GUIDelete($InstallationDialog)
 	Exit
-EndFunc   ;==>Install
+EndFunc
+#ce ----------------------------------------------------------------------------
