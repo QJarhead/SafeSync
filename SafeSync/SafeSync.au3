@@ -302,6 +302,25 @@ $MenuAbout = GUICtrlCreateMenuItem("About", $MenuInfo)
 ; Create ListView
 Local $idListview = GUICtrlCreateListView("Name|Key|EncryptLocation|Location", 10, 10, 895, 395) ;,$LVS_SORTDESCENDING)
 
+
+
+
+
+CreatePasswordFolder()
+
+
+Exit
+
+
+
+
+
+
+
+
+
+
+
 ;Initial reloading list View
 ReloadListView()
 
@@ -1297,8 +1316,58 @@ Func PasswordFolderInit()
 
 EndFunc
 
+Func CreatePasswordFolder()
+	While 1
+		$PasswordCreateSalt = ""
+		For $i = 0 To 100 Step 1
+			$PasswordCreateSalt = $PasswordCreateSalt & Chr(Random(32, 126, 1))
+		Next
+		Local $PasswdFolder = InputBox("Set password", "Enter your new password.", "", "*")
+		If @error = 1 Then
+			Exit
+		EndIf
+		Local $PasswdCheck = InputBox("Set password", "Retype your password.", "", "*")
+		If @error = 1 Then
+			Exit
+		EndIf
+		If Not $PasswdFolder = $PasswdCheck Then
+			MsgBox(16, "Error", "Passwords doesn't match")
+		Else
+			If StringLen($PasswdFolder) <= 6 Then
+				MsgBox(16, "Error", "Please choose a Password greater then 6")
+			Else
+
+
+				$PasswdFolder = _Crypt_EncryptData($PasswdFolder, $PasswordCreateSalt, $CALG_RC4)
+				$PasswdFolder = _Crypt_DecryptData($PasswdFolder, $PasswordCreateSalt, $CALG_RC4)
+
+
+
+
+
+				For $i = 0 To 30 Step 1
+					$PasswdFolder = _Crypt_EncryptData($PasswdFolder, $PasswordCreateSalt, $CALG_RC4)
+				Next
+				MsgBox(0,"",$PasswdFolder)
+				MsgBox(0,"",$PasswordCreateSalt)
+				;aqExitLoop
+
+				For $i = 0 To 30 Step 1
+				$PasswdFolder = _Crypt_DecryptData($PasswdFolder, $PasswordCreateSalt, $CALG_RC4)
+				Next
+				MsgBox(0,"",$PasswdFolder)
+				MsgBox(0,"",BinaryToString($PasswdFolder))
+				MsgBox(0,"",$PasswordCreateSalt)
+				ExitLoop
+
+
+			EndIf
+		EndIf
+	WEnd
+EndFunc
+
 Func PasswordSkript()
-	$Password = ""a
+	$Password = ""
 
 	If Not RegRead($SafeCryptRegistrySoftware, "Installed") = 1 Then
 		RegWrite($SafeCryptRegistrySoftware)
