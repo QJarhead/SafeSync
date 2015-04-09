@@ -302,25 +302,6 @@ $MenuAbout = GUICtrlCreateMenuItem("About", $MenuInfo)
 ; Create ListView
 Local $idListview = GUICtrlCreateListView("Name|Key|EncryptLocation|Location", 10, 10, 895, 395) ;,$LVS_SORTDESCENDING)
 
-
-
-
-
-CreatePasswordFolder()
-
-
-Exit
-
-
-
-
-
-
-
-
-
-
-
 ;Initial reloading list View
 ReloadListView()
 
@@ -335,6 +316,12 @@ $Radio1 = GUICtrlCreateRadio("Generate new Key", 32, 20, 113, 25)
 GUICtrlSetState(-1, $GUI_CHECKED)
 $Radio3 = GUICtrlCreateRadio("Manual", 32, 60, 113, 17)
 $Button1 = GUICtrlCreateButton("Button1", 32, 100, 91, 33)
+
+Global $Gui_SafeSync_Encrypt_Folder = GUICreate("Use Encryption?", 165, 160, 200, 124)
+$Radio5 = GUICtrlCreateRadio("With encryption", 32, 20, 113, 25)
+GUICtrlSetState(-1, $GUI_CHECKED)
+$Radio4 = GUICtrlCreateRadio("Don't use encryption", 32, 60, 113, 17)
+$Button2 = GUICtrlCreateButton("Button1", 32, 100, 91, 33)
 
 GUISwitch($SafeSyncManagementTool)
 
@@ -401,26 +388,36 @@ While 1
 			MenuOther()
 		Case $MenuAbout
 			MenuAbout()
+		Case $Button2
+			Select
+				Case BitAND(GUICtrlRead($Radio4), $GUI_CHECKED) = $GUI_CHECKED
+					MsgBox(0,"Encrypt","With Encryption!")
+				Case BitAND(GUICtrlRead($Radio5), $GUI_CHECKED) = $GUI_CHECKED
+					MsgBox(0,"No","No Encryption")
+			EndSelect
 		Case $Button1
 			Select
 				Case BitAND(GUICtrlRead($Radio1), $GUI_CHECKED) = $GUI_CHECKED
 					Local $NewFolderKey = getNewKey()
 					Local $NewFolderName = InputBox("Folder Name", "Enter new foldername")
+					GUISetState(@SW_SHOW,$Gui_SafeSync_Encrypt_Folder)
 					Local $arr[2]
 					$arr = ChooseDecryptEncryptFolder($NewFolderName, "")
 					$NewFolderKeyDataDecrypt = $arr[0]
 					$NewFolderKeyDataEncrypt = $arr[1]
+					Exit
 					RegistryCreateNewFolder($NewFolderKeyDataDecrypt, $NewFolderKeyDataEncrypt, $NewFolderName, $NewFolderKey)
 					ReloadListView()
 					GUISetState(@SW_SHOW,$SafeSyncManagementTool)
 					GUISetState(@SW_HIDE,$Form1)
 				Case BitAND(GUICtrlRead($Radio3), $GUI_CHECKED) = $GUI_CHECKED
-					Local $NewFolderName = InputBox("Folder Key", "Enter folder Key", "", "")
-					Local $NewFolderKey = InputBox("Folder Name", "Enter folder key", "", "")
+					Local $NewFolderName = InputBox("Folder Name", "Enter folder Name", "", "")
+					Local $NewFolderKey = InputBox("Folder Key", "Enter folder key", "", "")
 					Local $arr[2]
 					$arr = ChooseDecryptEncryptFolder($NewFolderName, "")
 					$NewFolderKeyDataDecrypt = $arr[0]
 					$NewFolderKeyDataEncrypt = $arr[1]
+					Exit
 					RegistryCreateNewFolder($NewFolderKeyDataDecrypt, $NewFolderKeyDataEncrypt, $NewFolderName, $NewFolderKey)
 					ReloadListView()
 					GUISetState(@SW_SHOW,$SafeSyncManagementTool)
@@ -1317,12 +1314,13 @@ Func PasswordFolderInit()
 EndFunc
 
 Func CreatePasswordFolder()
+	Local $PasswdFolder = ""
 	While 1
 		$PasswordCreateSalt = ""
 		For $i = 0 To 100 Step 1
 			$PasswordCreateSalt = $PasswordCreateSalt & Chr(Random(32, 126, 1))
 		Next
-		Local $PasswdFolder = InputBox("Set password", "Enter your new password.", "", "*")
+		$PasswdFolder = InputBox("Set password", "Enter your new password.", "", "*")
 		If @error = 1 Then
 			Exit
 		EndIf
@@ -1336,39 +1334,17 @@ Func CreatePasswordFolder()
 			If StringLen($PasswdFolder) <= 6 Then
 				MsgBox(16, "Error", "Please choose a Password greater then 6")
 			Else
-
-
-				$PasswdFolder = _Crypt_EncryptData($PasswdFolder, $PasswordCreateSalt, $CALG_RC4)
-				$PasswdFolder = _Crypt_DecryptData($PasswdFolder, $PasswordCreateSalt, $CALG_RC4)
-
-
-
-
-
 				For $i = 0 To 30 Step 1
 					$PasswdFolder = _Crypt_EncryptData($PasswdFolder, $PasswordCreateSalt, $CALG_RC4)
 				Next
-				MsgBox(0,"",$PasswdFolder)
-				MsgBox(0,"",$PasswordCreateSalt)
-				;aqExitLoop
-
-				For $i = 0 To 30 Step 1
-				$PasswdFolder = _Crypt_DecryptData($PasswdFolder, $PasswordCreateSalt, $CALG_RC4)
-				Next
-				MsgBox(0,"",$PasswdFolder)
-				MsgBox(0,"",BinaryToString($PasswdFolder))
-				MsgBox(0,"",$PasswordCreateSalt)
-				ExitLoop
-
-
 			EndIf
 		EndIf
 	WEnd
+	return $PasswdFolder
 EndFunc
 
 Func PasswordSkript()
 	$Password = ""
-
 	If Not RegRead($SafeCryptRegistrySoftware, "Installed") = 1 Then
 		RegWrite($SafeCryptRegistrySoftware)
 		$PasswordCreateSalt = ""
