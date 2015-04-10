@@ -42,6 +42,7 @@ Global Const $SafeSyncPublisher = "SafeSync - Team"
 Including
 
 #ce ----------------------------------------------------------------------------
+Local $Password=""
 
 ; Ínclude everything
 #include <ButtonConstants.au3>
@@ -59,8 +60,10 @@ Including
 #include <MsgBoxConstants.au3>
 #include <Crypt.au3>
 #include <ComboConstants.au3>
-#include <GUIConstantsEx.au3>
 #include <StringConstants.au3>
+#include <EditConstants.au3>
+#include <StaticConstants.au3>
+#include <GUIConstantsEX.au3>
 
 ; Including files
 FileInstall("C:\include\7z.exe", @AppDataDir & "\SafeCrypt\7z.exe")
@@ -112,6 +115,7 @@ Global $ListEncrypt
 Global $ListDecrypt
 Global $FileListDecrypt
 Global $FileListEncrypt
+Global $CreateDecryptionDir
 
 #cs ----------------------------------------------------------------------------
 
@@ -157,7 +161,7 @@ Non-Static-Variables
 
 #ce ----------------------------------------------------------------------------
 
-Global $Password = PasswordSkript()
+;Global $Password = PasswordSkript()
 
 ReadRegistry()
 Func ReadRegistry()
@@ -311,11 +315,30 @@ _GUICtrlListView_SetColumnWidth($idListview, 1, $ColumnWitdhKey)
 _GUICtrlListView_SetColumnWidth($idListview, 2, $ColumnWitdhPath)
 _GUICtrlListView_SetColumnWidth($idListview, 3, $ColumnWitdhEncrypt)
 GUISetState(@SW_SHOW)
+
+Global $Form1 = GUICreate("Form1", 717, 298, 194, 135)
+$Encryption = GUICtrlCreateRadio("Encryption", 48, 128, 113, 25)
+GUICtrlSetState(-1,$GUI_CHECKED)
+$NoEncryption = GUICtrlCreateRadio("No Encryption", 48, 150, 113, 25)
+$Input1 = GUICtrlCreateInput("Name", 48, 88, 121, 21)
+$Foldername = GUICtrlCreateLabel("Foldername", 48, 64, 59, 17)
+$PasswordInput1 = GUICtrlCreateInput("", 48, 180, 121, 21, BitOR($GUI_SS_DEFAULT_INPUT,$ES_PASSWORD))
+$DecryptionDir = GUICtrlCreateInput("", 216, 88, 361, 21)
+$DecryptionDirButton = GUICtrlCreateButton( "Select Folder", 586, 88, 80, 21)
+$PasswordInput2 = GUICtrlCreateInput("", 48, 202, 121, 21, BitOR($GUI_SS_DEFAULT_INPUT,$ES_PASSWORD))
+$DecryptionDirLabel = GUICtrlCreateLabel("Destination Folder:", 216, 64, 92, 17)
+$CreateButton = GUICtrlCreateButton("Create", 224, 248, 75, 25)
+$EncryptionDirLabel = GUICtrlCreateLabel("Encryption Folder:", 216, 136, 89, 17)
+$EncryptionDir = GUICtrlCreateInput("", 216, 160, 361, 21)
+$EncryptionDirButton = GUICtrlCreateButton( "Select Folder", 586, 160, 80, 21)
+
+#cs
 Global $Form1 = GUICreate("Form1", 165, 160, 200, 124)
 $Radio1 = GUICtrlCreateRadio("Generate new Key", 32, 20, 113, 25)
 GUICtrlSetState(-1, $GUI_CHECKED)
 $Radio3 = GUICtrlCreateRadio("Manual", 32, 60, 113, 17)
 $Button1 = GUICtrlCreateButton("Button1", 32, 100, 91, 33)
+#ce
 
 Global $Gui_SafeSync_Encrypt_Folder = GUICreate("Use Encryption?", 165, 160, 200, 124)
 $Radio5 = GUICtrlCreateRadio("With encryption", 32, 20, 113, 25)
@@ -340,6 +363,7 @@ Run( @ScriptFullPath & " SafeCrypt Start")
 Opt('TrayOnEventMode', 1)
 Opt('TrayMenuMode', 1)
 TraySetOnEvent( -7, '_Restore')
+TraySetState(2)
 
 ; Running the Gui in Loop
 While 1
@@ -352,6 +376,7 @@ While 1
 		Case $GUI_EVENT_CLOSE
 			Switch $nMsg[1]
 				Case $Form1
+					Exit
 					GUISetState(@SW_SHOW,$SafeSyncManagementTool)
 					GUISetState(@SW_HIDE,$Form1)
 					GUISwitch($SafeSyncManagementTool)
@@ -378,6 +403,22 @@ While 1
 			ReloadListView()
 		Case $MenuExport
 			MenuExport()
+		Case $DecryptionDirButton
+			GUICtrlSetData( $DecryptionDir, FileSelectFolder( "Choose Standard Data Folder", $InstallLocationSafeSync))
+		Case $EncryptionDirButton
+			GUICtrlSetData( $EncryptionDir, FileSelectFolder( "Choose Standard Data Folder", $InstallLocationSafeSync))
+		Case $Encryption
+			GUICtrlSetState($PasswordInput1, $GUI_ENABLE)
+			GUICtrlSetState($PasswordInput2, $GUI_ENABLE)
+			GUICtrlSetState($EncryptionDir, $GUI_ENABLE)
+			GUICtrlSetState($EncryptionDirButton, $GUI_ENABLE)
+			GUICtrlSetState($NoEncryption, $GUI_UNCHECKED)
+		Case $NoEncryption
+			GUICtrlSetState($PasswordInput1, $GUI_DISABLE)
+			GUICtrlSetState($PasswordInput2, $GUI_DISABLE)
+			GUICtrlSetState($EncryptionDir, $GUI_DISABLE)
+			GUICtrlSetState($EncryptionDirButton, $GUI_DISABLE)
+			GUICtrlSetState($Encryption, $GUI_UNCHECKED)
 		Case $MenuExit
 			MenuExit()
 		Case $MenuBitTorrent
@@ -388,19 +429,25 @@ While 1
 			MenuOther()
 		Case $MenuAbout
 			MenuAbout()
+		Case $CreateButton
+			GUISetState(@SW_SHOW,$Gui_SafeSync_Encrypt_Folder)
+			GUISetState(@SW_HIDE,$Form1)
 		Case $Button2
+			GUISetState(@SW_HIDE,$Gui_SafeSync_Encrypt_Folder)
 			Select
 				Case BitAND(GUICtrlRead($Radio4), $GUI_CHECKED) = $GUI_CHECKED
 					MsgBox(0,"Encrypt","With Encryption!")
 				Case BitAND(GUICtrlRead($Radio5), $GUI_CHECKED) = $GUI_CHECKED
 					MsgBox(0,"No","No Encryption")
 			EndSelect
-		Case $Button1
 			Select
-				Case BitAND(GUICtrlRead($Radio1), $GUI_CHECKED) = $GUI_CHECKED
+				Case BitAND(GUICtrlRead($Encryption), $GUI_CHECKED) = $GUI_CHECKED
 					Local $NewFolderKey = getNewKey()
 					Local $NewFolderName = InputBox("Folder Name", "Enter new foldername")
 					GUISetState(@SW_SHOW,$Gui_SafeSync_Encrypt_Folder)
+
+					GUISetState(@SW_HIDE,$Gui_SafeSync_Encrypt_Folder)
+
 					Local $arr[2]
 					$arr = ChooseDecryptEncryptFolder($NewFolderName, "")
 					$NewFolderKeyDataDecrypt = $arr[0]
@@ -410,7 +457,7 @@ While 1
 					ReloadListView()
 					GUISetState(@SW_SHOW,$SafeSyncManagementTool)
 					GUISetState(@SW_HIDE,$Form1)
-				Case BitAND(GUICtrlRead($Radio3), $GUI_CHECKED) = $GUI_CHECKED
+				Case BitAND(GUICtrlRead($Encryption), $GUI_CHECKED) = $GUI_CHECKED
 					Local $NewFolderName = InputBox("Folder Name", "Enter folder Name", "", "")
 					Local $NewFolderKey = InputBox("Folder Key", "Enter folder key", "", "")
 					Local $arr[2]
@@ -956,6 +1003,7 @@ Func ChooseDecryptEncryptFolder($FolderName, $FolderData)
 	$arr[0] = Guictrlread($DecryptDir)
 	$arr[1] = GUICtrlRead($EncryptDir)
 	GUIDelete( $InstallationDialog )
+	GUISetState(@SW_SHOW,$SafeSyncManagementTool)
 	return $arr
 EndFunc
 
