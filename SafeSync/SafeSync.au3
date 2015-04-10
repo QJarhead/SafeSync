@@ -320,7 +320,7 @@ Global $Form1 = GUICreate("Form1", 717, 298, 194, 135)
 $Encryption = GUICtrlCreateRadio("Encryption", 48, 128, 113, 25)
 GUICtrlSetState(-1,$GUI_CHECKED)
 $NoEncryption = GUICtrlCreateRadio("No Encryption", 48, 150, 113, 25)
-$Input1 = GUICtrlCreateInput("Name", 48, 88, 121, 21)
+$CreateFolder_Name = GUICtrlCreateInput("Name", 48, 88, 121, 21)
 $Foldername = GUICtrlCreateLabel("Foldername", 48, 64, 59, 17)
 $PasswordInput1 = GUICtrlCreateInput("", 48, 180, 121, 21, BitOR($GUI_SS_DEFAULT_INPUT,$ES_PASSWORD))
 $DecryptionDir = GUICtrlCreateInput("", 216, 88, 361, 21)
@@ -328,9 +328,12 @@ $DecryptionDirButton = GUICtrlCreateButton( "Select Folder", 586, 88, 80, 21)
 $PasswordInput2 = GUICtrlCreateInput("", 48, 202, 121, 21, BitOR($GUI_SS_DEFAULT_INPUT,$ES_PASSWORD))
 $DecryptionDirLabel = GUICtrlCreateLabel("Destination Folder:", 216, 64, 92, 17)
 $CreateButton = GUICtrlCreateButton("Create", 224, 248, 75, 25)
-$EncryptionDirLabel = GUICtrlCreateLabel("Encryption Folder:", 216, 136, 89, 17)
-$EncryptionDir = GUICtrlCreateInput("", 216, 160, 361, 21)
-$EncryptionDirButton = GUICtrlCreateButton( "Select Folder", 586, 160, 80, 21)
+$EncryptionDirLabel = GUICtrlCreateLabel("Encryption Folder:", 216, 115, 92, 17)
+$EncryptionDir = GUICtrlCreateInput("", 216, 132, 361, 21)
+$EncryptionDirButton = GUICtrlCreateButton( "Select Folder", 586, 132, 80, 21)
+$CreateFolder_KeyInput = GUICtrlCreateInput(getNewKey(),216,202,361,21)
+$CreateFolder_KeyLabel = GUICtrlCreateLabel("Key for Bittorent-Sync",216,180,361,21)
+$CreateFolder_KeyButton = GUICtrlCreateButton( "Generate New",586,202,80,21)
 
 #cs
 Global $Form1 = GUICreate("Form1", 165, 160, 200, 124)
@@ -403,6 +406,8 @@ While 1
 			ReloadListView()
 		Case $MenuExport
 			MenuExport()
+		Case $CreateFolder_KeyButton
+			GUICtrlSetData( $CreateFolder_KeyInput, getNewKey())
 		Case $DecryptionDirButton
 			GUICtrlSetData( $DecryptionDir, FileSelectFolder( "Choose Standard Data Folder", $InstallLocationSafeSync))
 		Case $EncryptionDirButton
@@ -430,8 +435,27 @@ While 1
 		Case $MenuAbout
 			MenuAbout()
 		Case $CreateButton
-			GUISetState(@SW_SHOW,$Gui_SafeSync_Encrypt_Folder)
-			GUISetState(@SW_HIDE,$Form1)
+			If CheckNewName(GUICtrlRead($CreateFolder_Name)) Then
+				If BitAND(GUICtrlRead($Encryption), $GUI_CHECKED) = $GUI_CHECKED Then
+					If StringCompare(GUICtrlRead( $PasswordInput1 ),GUICtrlRead( $PasswordInput2 )) Then
+						MsgBox(16, "Error", "Passwords doesn't match")
+					Else
+						If StringLen(GUICtrlRead( $PasswordInput1 )) <= 6 Then
+							MsgBox(16, "Error", "Please choose a Password greater then 6")
+						Else
+							RegistryCreateNewFolder( GUICtrlRead($DecryptionDir), GUICtrlRead($EncryptionDir), GUICtrlRead($CreateFolder_Name), GUICtrlRead($CreateFolder_KeyInput))
+							ReloadListView()
+							GUISetState(@SW_SHOW,$SafeSyncManagementTool)
+							GUISetState(@SW_HIDE,$Form1)
+						EndIf
+					EndIf
+				Else
+					MsgBox(0,"","no encryption was selected")
+				EndIf
+			Else
+				MsgBox(0,"","Please choose an other folder name!")
+			EndIf
+
 		Case $Button2
 			GUISetState(@SW_HIDE,$Gui_SafeSync_Encrypt_Folder)
 			Select
@@ -742,6 +766,14 @@ EndFunc
 
 Func MenuExit()
 	_Exit()
+EndFunc
+
+Func CheckNewName($NewFolderNameCheck)
+	If StringCompare($NewFolderNameCheck, "") Then
+		return 1
+	Else
+		return 0
+	EndIf
 EndFunc
 
 Func MenuBitTorrent()
