@@ -73,8 +73,6 @@ FileInstall("C:\include\RegisterSSF.exe", @TempDir & "\RegisterSSF.exe", 1)
 FileInstall("C:\include\UninstallSafeSync.exe", @TempDir & "\UninstallSafeSync.exe", 1)
 FileInstall("C:\include\InstallSafeSync.exe", @TempDir & "\InstallSafeSync.exe", 1)
 FileInstall("C:\include\RunSafeSyncAsAdmin.exe", @TempDir & "\RunSafeSyncAsAdmin.exe", 1)
-FileInstall("C:\include\7z938-x64.msi", @TempDir & "\7z938-x64.msi", 1)
-FileInstall("C:\include\SafeCrypt.msi", @TempDir & "\SafeCrypt.msi", 1)
 
 #cs ----------------------------------------------------------------------------
 
@@ -200,16 +198,22 @@ Option Variables
 
 ;---------------------------------------------------------------------------------------
 
+
+
+
+
 ; Read command line parameters
 ; Create Registry, if an external file is open with command line parameter "ImportFile"
 If Not $CmdLine[0] = 0 Then
-
+	MsgBox(0,"","Hier")
 	If $CmdLine[1] == "SafeCrypt" Then
+		MsgBox(0,"","Safecrypt")
 		If $CmdLine[2] == "Start" Then
 			RunSafeCrypt()
 		EndIf
 	EndIf
 	If $CmdLine[1] == "ImportFile" Then
+		;TODO create new import!
 		; Open the File
 		FileOpen( $CmdLine[2] )
 		Local $NewFolderKey = StringRight( FileReadLine( $CmdLine[2], 1),StringLen(FileReadLine( $CmdLine[2], 1)) - StringInStr( FileReadLine( $CmdLine[2], 1), " " ))
@@ -218,7 +222,7 @@ If Not $CmdLine[0] = 0 Then
 		Local $arr[2]
 		$arr = ChooseDecryptEncryptFolder($NewFolderName, "")
 		RegWrite($SafeSyncRegistrySoftwareManagementTool,"refreshGUI","REG_SZ","1")
-		RegistryCreateNewFolder($arr[0], $arr[1], $NewFolderName, $NewFolderKey)
+		RegistryCreateNewFolder($arr[0], $arr[1], $NewFolderName, $NewFolderKey, 0, "", "")
 		Exit
 	ElseIf $CmdLine[1] == "SyncNewFolder" Then
 		SyncNewFolder($CmdLine[2])
@@ -230,6 +234,12 @@ If Not $CmdLine[0] = 0 Then
 		Exit
 	EndIf
 EndIf
+
+
+;Start SafeCrypt
+Run( @ComSpec & ' /c ' & @ScriptFullPath & ' SafeCrypt' & ' Start', @TempDir)
+ConsoleWrite(@ComSpec & ' /c ' & @ScriptFullPath & ' SafeCrypt' & ' Start')
+MsgBox(0,"",@ScriptFullPath & " SafeCrypt Start")
 
 #cs ----------------------------------------------------------------------------
 
@@ -323,9 +333,9 @@ $NoEncryption = GUICtrlCreateRadio("No Encryption", 48, 150, 113, 25)
 $CreateFolder_Name = GUICtrlCreateInput("Name", 48, 88, 121, 21)
 $Foldername = GUICtrlCreateLabel("Foldername", 48, 64, 59, 17)
 $PasswordInput1 = GUICtrlCreateInput("", 48, 180, 121, 21, BitOR($GUI_SS_DEFAULT_INPUT,$ES_PASSWORD))
+$PasswordInput2 = GUICtrlCreateInput("", 48, 202, 121, 21, BitOR($GUI_SS_DEFAULT_INPUT,$ES_PASSWORD))
 $DecryptionDir = GUICtrlCreateInput("", 216, 88, 361, 21)
 $DecryptionDirButton = GUICtrlCreateButton( "Select Folder", 586, 88, 80, 21)
-$PasswordInput2 = GUICtrlCreateInput("", 48, 202, 121, 21, BitOR($GUI_SS_DEFAULT_INPUT,$ES_PASSWORD))
 $DecryptionDirLabel = GUICtrlCreateLabel("Destination Folder:", 216, 64, 92, 17)
 $CreateButton = GUICtrlCreateButton("Create", 224, 248, 75, 25)
 $EncryptionDirLabel = GUICtrlCreateLabel("Encryption Folder:", 216, 115, 92, 17)
@@ -355,10 +365,6 @@ Local $aProcessList = ProcessList("SafeCrypt.exe")
 For $i = 1 To $aProcessList[0][0]
 	ProcessClose ( $aProcessList[$i][1] )
 Next
-
-;Start SafeCrypt
-
-Run( @ScriptFullPath & " SafeCrypt Start")
 
 ;Run( $SafeCryptInstallDir & "/SafeCrypt.exe")
 
@@ -443,57 +449,23 @@ While 1
 						If StringLen(GUICtrlRead( $PasswordInput1 )) <= 6 Then
 							MsgBox(16, "Error", "Please choose a Password greater then 6")
 						Else
-							RegistryCreateNewFolder( GUICtrlRead($DecryptionDir), GUICtrlRead($EncryptionDir), GUICtrlRead($CreateFolder_Name), GUICtrlRead($CreateFolder_KeyInput))
+							Local $PasswordCreateSalt
+							For $i = 0 To 100 Step 1
+								$PasswordCreateSalt = $PasswordCreateSalt & Chr(Random(32, 126, 1))
+							Next
+							$PasswordCrypt = CryptPassword(GUICtrlRead( $PasswordInput1 ), $PasswordCreateSalt)
+							RegistryCreateNewFolder( GUICtrlRead($EncryptionDir), GUICtrlRead($DecryptionDir), GUICtrlRead($CreateFolder_Name), GUICtrlRead($CreateFolder_KeyInput), 1, $PasswordCrypt, $PasswordCreateSalt)
 							ReloadListView()
 							GUISetState(@SW_SHOW,$SafeSyncManagementTool)
 							GUISetState(@SW_HIDE,$Form1)
 						EndIf
 					EndIf
 				Else
-					MsgBox(0,"","no encryption was selected")
+					RegistryCreateNewFolder( GUICtrlRead($EncryptionDir), GUICtrlRead($DecryptionDir), GUICtrlRead($CreateFolder_Name), GUICtrlRead($CreateFolder_KeyInput), 0, "", "")
 				EndIf
 			Else
 				MsgBox(0,"","Please choose an other folder name!")
 			EndIf
-
-		Case $Button2
-			GUISetState(@SW_HIDE,$Gui_SafeSync_Encrypt_Folder)
-			Select
-				Case BitAND(GUICtrlRead($Radio4), $GUI_CHECKED) = $GUI_CHECKED
-					MsgBox(0,"Encrypt","With Encryption!")
-				Case BitAND(GUICtrlRead($Radio5), $GUI_CHECKED) = $GUI_CHECKED
-					MsgBox(0,"No","No Encryption")
-			EndSelect
-			Select
-				Case BitAND(GUICtrlRead($Encryption), $GUI_CHECKED) = $GUI_CHECKED
-					Local $NewFolderKey = getNewKey()
-					Local $NewFolderName = InputBox("Folder Name", "Enter new foldername")
-					GUISetState(@SW_SHOW,$Gui_SafeSync_Encrypt_Folder)
-
-					GUISetState(@SW_HIDE,$Gui_SafeSync_Encrypt_Folder)
-
-					Local $arr[2]
-					$arr = ChooseDecryptEncryptFolder($NewFolderName, "")
-					$NewFolderKeyDataDecrypt = $arr[0]
-					$NewFolderKeyDataEncrypt = $arr[1]
-					Exit
-					RegistryCreateNewFolder($NewFolderKeyDataDecrypt, $NewFolderKeyDataEncrypt, $NewFolderName, $NewFolderKey)
-					ReloadListView()
-					GUISetState(@SW_SHOW,$SafeSyncManagementTool)
-					GUISetState(@SW_HIDE,$Form1)
-				Case BitAND(GUICtrlRead($Encryption), $GUI_CHECKED) = $GUI_CHECKED
-					Local $NewFolderName = InputBox("Folder Name", "Enter folder Name", "", "")
-					Local $NewFolderKey = InputBox("Folder Key", "Enter folder key", "", "")
-					Local $arr[2]
-					$arr = ChooseDecryptEncryptFolder($NewFolderName, "")
-					$NewFolderKeyDataDecrypt = $arr[0]
-					$NewFolderKeyDataEncrypt = $arr[1]
-					Exit
-					RegistryCreateNewFolder($NewFolderKeyDataDecrypt, $NewFolderKeyDataEncrypt, $NewFolderName, $NewFolderKey)
-					ReloadListView()
-					GUISetState(@SW_SHOW,$SafeSyncManagementTool)
-					GUISetState(@SW_HIDE,$Form1)
-        EndSelect
    EndSwitch
 WEnd
 
@@ -630,14 +602,14 @@ While 1
 					$NewFolderKeyDataEncrypt = $arr[1]
 					;Local $NewFolderKey = InputBox("Folder Name", "Enter folder Name", "", "")
 					;MsgBox(64, "Passed Parameters", getNewKey())
-					RegistryCreateNewFolder($NewFolderKeyDataDecrypt, $NewFolderKeyDataEncrypt, $PathSplit[3], $NewFolderKey)
+					RegistryCreateNewFolder($NewFolderKeyDataDecrypt, $NewFolderKeyDataEncrypt, $PathSplit[3], $NewFolderKey,0, "", "")
 					Exit
 				Case BitAND(GUICtrlRead($Radio3), $GUI_CHECKED) = $GUI_CHECKED
 					Local $NewFolderKey = InputBox("Folder Name", "Enter folder key", "", "")
 					$arr = ChooseDecryptEncryptFolder("", $NewFolderName)
 					$NewFolderKeyDataDecrypt = $arr[0]
 					$NewFolderKeyDataEncrypt = $arr[1]
-					RegistryCreateNewFolder($NewFolderKeyDataDecrypt, $NewFolderKeyDataEncrypt, $PathSplit[3], $NewFolderKey)
+					RegistryCreateNewFolder($NewFolderKeyDataDecrypt, $NewFolderKeyDataEncrypt, $PathSplit[3], $NewFolderKey,0, "", "")
 					Exit
         EndSelect
    EndSwitch
@@ -676,16 +648,36 @@ EndFunc
 RegistryCreateNewFolder
 Function to create a New Folder
 #ce ----------------------------------------------------------------------------
-Func RegistryCreateNewFolder($NewFolderKeyDataEncrypt, $NewFolderKeyDataDecrypt, $NewFolderName, $NewFolderKey)
+Func RegistryCreateNewFolder($NewFolderKeyDataEncrypt, $NewFolderKeyDataDecrypt, $NewFolderName, $NewFolderKey, $CreateFolder_Encryption, $CreateFolder_Password, $PasswordSalt)
 	RegWrite($SafeSyncRegistryFolders, $NewFolderName, "REG_SZ", $NewFolderKey)
 	DirCreate ($NewFolderKeyDataDecrypt)
 	DirCreate ($NewFolderKeyDataEncrypt)
 	RegWrite($SafeSyncRegistryFolders)
 	RegWrite($SafeSyncRegistryFolders & "\" & $NewFolderName)
 	RegWrite($SafeSyncRegistryFolders & "\" & $NewFolderName, "Encrypt", "REG_SZ", $NewFolderKeyDataEncrypt)
+	RegWrite($SafeSyncRegistryFolders & "\" & $NewFolderName, "UseEncryption", "REG_SZ", $CreateFolder_Encryption)
 	RegWrite($SafeSyncRegistryFolders & "\" & $NewFolderName, "Decrypt", "REG_SZ", $NewFolderKeyDataDecrypt)
+	RegWrite($SafeSyncRegistryFolders & "\" & $NewFolderName, "PasswordSalt", "REG_SZ", $PasswordSalt)
+
+
+
+	RegWrite($SafeSyncRegistryFolders & "\" & $NewFolderName, "Password", "REG_SZ", $CreateFolder_Password)
 	;RunWait( @ComSpec & ' /c ""' & $SafeCryptInstallDir & '\SafeCrypt.exe" AddFolder ""' & $NewFolderName & '"" ""' & $NewFolderKeyDataDecrypt & '"" ""' & $NewFolderKeyDataEncrypt & '"" ""' )
 	;RestartBTSync()
+EndFunc
+
+Func CryptPassword($CryptPassword, $PasswordSalt)
+	For $i = 0 To 3000 Step 1
+		$CryptPassword = _Crypt_EncryptData($CryptPassword & $PasswordSalt, $CALG_SHA1, "")
+	Next
+	return $CryptPassword
+EndFunc
+
+Func DecryptPassword($CryptPassword, $PasswordSalt)
+	For $i = 0 To 3000 Step 1
+		$CryptPassword = _Crypt_DecryptData($CryptPassword & $PasswordSalt, $CALG_SHA1, "")
+	Next
+	return $CryptPassword
 EndFunc
 
 #cs ----------------------------------------------------------------------------
@@ -694,6 +686,7 @@ Function to delete a New Folder
 #ce ----------------------------------------------------------------------------
 Func RegistryDeleteFolder($FolderName)
 	RegDelete($SafeSyncRegistryFolders,$FolderName)
+	RegDelete($SafeSyncRegistryFolders & "\" & $FolderName)
 	ReloadListView()
 	RestartBTSync()
 EndFunc
@@ -1141,10 +1134,15 @@ EndIf
 
 Func RunSafeCrypt()
 	While 1
-		ConsoleWrite("Start SafeCrypt" & @CRLF)
 		For $i = 1 To 100
 			$var = RegEnumKey($SafeSyncRegistryFolders, $i)
 			If @error <> 0 Then ExitLoop
+			MsgBox(0,"",RegRead($SafeSyncRegistryFolders & "\" & $var, "Decrypt"))
+			MsgBox(0,"",RegRead($SafeSyncRegistryFolders & "\" & $var, "Password"))
+			MsgBox(0,"",DecryptPassword(RegRead($SafeSyncRegistryFolders & "\" & $var, "Password"),RegRead($SafeSyncRegistryFolders & "\" & $var, "Salt")))
+			MsgBox(0,"",BinaryToString(DecryptPassword(RegRead($SafeSyncRegistryFolders & "\" & $var, "Password"),RegRead($SafeSyncRegistryFolders & "\" & $var, "Salt"))))
+			RegRead($SafeSyncRegistryFolders & "\" & $var, "Password")
+			ExitLoop
 			SafeCrypt($var, RegRead($SafeSyncRegistryFolders & "\" & $var, "Decrypt"), RegRead($SafeSyncRegistryFolders & "\" & $var, "Encrypt"), "", "", "", "")
 		Next
 		Sleep(5000)
