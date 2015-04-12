@@ -1,30 +1,39 @@
-#include <ButtonConstants.au3>
+#include <ComboConstants.au3>
+#include <Crypt.au3>
 #include <EditConstants.au3>
 #include <GUIConstantsEx.au3>
-#include <StaticConstants.au3>
+#include <MsgBoxConstants.au3>
+#include <StringConstants.au3>
+#include <WinAPI.au3>
 #include <WindowsConstants.au3>
-#Region ### START Koda GUI section ### Form=
-$Form1 = GUICreate("Form1", 517, 298, 194, 135)
-$Encryption = GUICtrlCreateRadio("Encryption", 48, 128, 113, 25)
-$Input1 = GUICtrlCreateInput("Name", 48, 88, 121, 21)
-$Foldername = GUICtrlCreateLabel("Foldername", 48, 64, 59, 17)
-$Input2 = GUICtrlCreateInput("Input2", 48, 160, 121, 21, BitOR($GUI_SS_DEFAULT_INPUT,$ES_PASSWORD))
-$Input3 = GUICtrlCreateInput("Input3", 216, 88, 161, 21)
-$Input4 = GUICtrlCreateInput("Input4", 48, 192, 121, 21, BitOR($GUI_SS_DEFAULT_INPUT,$ES_PASSWORD))
-$Destination = GUICtrlCreateLabel("Destination Folder:", 216, 64, 92, 17)
-$Button1 = GUICtrlCreateButton("Create", 224, 248, 75, 25)
-$Label1 = GUICtrlCreateLabel("Encryption Folder:", 216, 136, 89, 17)
-$Label2 = GUICtrlCreateLabel("Add Folder", 240, 24, 55, 17)
-$Input5 = GUICtrlCreateInput("Input5", 216, 160, 161, 21)
-GUISetState(@SW_SHOW)
-#EndRegion ### END Koda GUI section ###
 
-While 1
-	$nMsg = GUIGetMsg()
-	Switch $nMsg
-		Case $GUI_EVENT_CLOSE
-			Exit
+$CryptPassword = "Geheim"
+$PasswordSalt = "Test"
+$Password = "GanzGeheim"
 
-		Case $Encryption
-	EndSwitch
-WEnd
+
+#cs
+MsgBox(0,"",$CryptPassword)
+$CryptPassword = _Crypt_EncryptData($CryptPassword & $PasswordSalt, $Password, $CALG_RC4)
+
+MsgBox(0,"",$CryptPassword)
+$CryptPassword = _Crypt_DecryptData($CryptPassword, $Password, $CALG_RC4)
+MsgBox(0,"",$CryptPassword)
+MsgBox(0,"",BinaryToString($CryptPassword))
+
+#ce
+
+$Crypt = CryptPassword("Teseagvrsgarwgt", "Sawzs645wh354blt")
+
+MsgBox(0,"",$Crypt)
+MsgBox(0,"",DecryptPassword($Crypt, "Sawzs645wh354blt"))
+
+Func CryptPassword($CryptPassword, $PasswordSalt)
+	$CryptPassword = _Crypt_EncryptData($CryptPassword & $PasswordSalt, $Password, $CALG_RC4)
+	return $CryptPassword
+EndFunc
+
+Func DecryptPassword($CryptPassword, $PasswordSalt)
+	Local $PasswordWithSalt = BinaryToString(_Crypt_DecryptData($CryptPassword, $Password, $CALG_RC4))
+	return StringLeft(BinaryToString($PasswordWithSalt), StringLen($PasswordWithSalt) - StringLen($PasswordSalt))
+EndFunc
