@@ -1,20 +1,14 @@
-#Region ;**** Directives created by AutoIt3Wrapper_GUI ****
-#AutoIt3Wrapper_Icon=include\SafeSync_265.ico
-#EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 #cs ----------------------------------------------------------------------------
-
 	AutoIt Version: 	3.3.12.0
 	Author:				Tim Christoph Lid
 	Version:			1.0
 	Name:				SafeSync Management Tool
-
 	TODO:
 	Check Folder Exists
 	Enter automaticly Standard decrypt folder
 	Rename Variables
 	Commentation
 	Correct Version number
-
 	Maybe:
 	KEY ist correct?
 	Check if BTSync is running
@@ -22,16 +16,12 @@
 	more btsync option
 	safecrypt options
 	count Foldername
-
 	Issues:
 	Actually store the gui for new folder
-
 #ce ----------------------------------------------------------------------------
 
 #cs ----------------------------------------------------------------------------
-
 	SafeSync Version Info
-
 #ce ----------------------------------------------------------------------------
 
 ; DisplayName for installation
@@ -42,9 +32,7 @@ Global Const $SafeSyncDisplayVersion = "1.0"
 Global Const $SafeSyncPublisher = "SafeSync - Team"
 
 #cs ----------------------------------------------------------------------------
-
 	Including
-
 #ce ----------------------------------------------------------------------------
 
 ; Ínclude everything
@@ -67,6 +55,8 @@ Global Const $SafeSyncPublisher = "SafeSync - Team"
 #include <EditConstants.au3>
 #include <StaticConstants.au3>
 #include <GUIConstantsEX.au3>
+#include <ColorConstants.au3>
+#include <Color.au3>
 
 ; Including files
 FileInstall("C:\include\7z.exe", @AppDataDir & "\SafeCrypt\7z.exe")
@@ -78,9 +68,7 @@ FileInstall("C:\include\InstallSafeSync.exe", @TempDir & "\InstallSafeSync.exe",
 FileInstall("C:\include\RunSafeSyncAsAdmin.exe", @TempDir & "\RunSafeSyncAsAdmin.exe", 1)
 
 #cs ----------------------------------------------------------------------------
-
 	Static-Variables SafeSync
-
 #ce ----------------------------------------------------------------------------
 
 ; SafeSync Registry Uninstall
@@ -97,9 +85,7 @@ Global Const $RunSafeSyncAsAdmin = @TempDir & "\RunSafeSyncAsAdmin.exe " & @Scri
 Global Const $SafeSyncShortcutFolder = @AppDataDir & "\Microsoft\Windows\Start Menu\Programs\SafeSync"
 
 #cs ----------------------------------------------------------------------------
-
 	Static-Variables SafeCrypt
-
 #ce ----------------------------------------------------------------------------
 
 ; SafeCrypt Registry
@@ -119,9 +105,7 @@ Global $FileListEncrypt
 Global $CreateDecryptionDir
 
 #cs ----------------------------------------------------------------------------
-
 	Static-Variables BitTorrent Sync
-
 #ce ----------------------------------------------------------------------------
 
 ; Bittorent Sync Uninstall String
@@ -137,9 +121,7 @@ Global Const $BTSyncStoragePath = "C:/Users/Tim/Program Files/BitTorrent Sync/St
 Global Const $BTSyncInstaller = @TempDir & "\BitTorrent_SyncX64.exe"
 
 #cs ----------------------------------------------------------------------------
-
 	Static-Variables 7zip
-
 #ce ----------------------------------------------------------------------------
 
 ; Bittorent Sync Uninstall String
@@ -148,18 +130,14 @@ Global Const $7ZipRegistrySoftware = "HKEY_CURRENT_USER64\Software\7-Zip"
 Global Const $7zipInstaller = @TempDir & "\7z938-x64.msi"
 
 #cs ----------------------------------------------------------------------------
-
 	Static-Variables
-
 #ce ----------------------------------------------------------------------------
 
 ; For running _PathSplit()
 Global $sDrive = "", $sDir = "", $sFilename = "", $sExtension = ""
 
 #cs ----------------------------------------------------------------------------
-
 	Non-Static-Variables
-
 #ce ----------------------------------------------------------------------------
 
 ReadRegistry()
@@ -191,9 +169,7 @@ Func ReadRegistry()
 EndFunc   ;==>ReadRegistry
 
 #cs ----------------------------------------------------------------------------
-
 	Option Variables
-
 #ce ----------------------------------------------------------------------------
 
 
@@ -233,7 +209,11 @@ If Not $CmdLine[0] = 0 Then
 	EndIf
 EndIf
 
-Global $Password = PasswordSkript()
+Global $Password = PasswordCheck()
+
+MsgBox(0,"",$Password)
+
+Exit
 
 RegWrite($SafeSyncRegistrySoftwareManagementTool, "RunSafeCrypt", "REG_SZ", "1")
 
@@ -241,9 +221,7 @@ RegWrite($SafeSyncRegistrySoftwareManagementTool, "RunSafeCrypt", "REG_SZ", "1")
 Run(@ComSpec & ' /c ' & @ScriptFullPath & ' SafeCrypt' & ' Start ' & $Password, @TempDir, @SW_HIDE)
 
 #cs ----------------------------------------------------------------------------
-
 	Install Programms
-
 #ce ----------------------------------------------------------------------------
 
 #cs ----------------------------------------------------------------------------
@@ -273,17 +251,13 @@ If RegRead($SafeSyncRegistrySoftware, "FileRegistered") = 0 Then
 EndIf
 
 #cs ----------------------------------------------------------------------------
-
 	SetVariables after Installation
-
 #ce ----------------------------------------------------------------------------
 
 ReadRegistry()
 
 #cs ----------------------------------------------------------------------------
-
 	GUI
-
 #ce ----------------------------------------------------------------------------
 
 ; Settings Menu entries
@@ -325,7 +299,7 @@ _GUICtrlListView_SetColumnWidth($idListview, 2, $ColumnWitdhPath)
 _GUICtrlListView_SetColumnWidth($idListview, 3, $ColumnWitdhEncrypt)
 GUISetState(@SW_SHOW)
 
-Global $Form1 = GUICreate("Form1", 717, 298, 194, 135)
+Global $Form1 = GUICreate("AddNewFolders", 717, 298, 194, 135)
 $Encryption = GUICtrlCreateRadio("Encryption", 48, 128, 113, 25)
 GUICtrlSetState(-1, $GUI_CHECKED)
 $NoEncryption = GUICtrlCreateRadio("No Encryption", 48, 150, 113, 25)
@@ -333,10 +307,12 @@ $CreateFolder_Name = GUICtrlCreateInput("Name", 48, 88, 121, 21)
 $FolderName = GUICtrlCreateLabel("Foldername", 48, 64, 59, 17)
 $PasswordInput1 = GUICtrlCreateInput("", 48, 180, 121, 21, BitOR($GUI_SS_DEFAULT_INPUT, $ES_PASSWORD))
 $PasswordInput2 = GUICtrlCreateInput("", 48, 202, 121, 21, BitOR($GUI_SS_DEFAULT_INPUT, $ES_PASSWORD))
+$PasswordEntropy = GUICtrlCreateLabel("-1", 48, 224, 121, 21)
 $DecryptionDir = GUICtrlCreateInput("", 216, 88, 361, 21)
 $DecryptionDirButton = GUICtrlCreateButton("Select Folder", 586, 88, 80, 21)
 $DecryptionDirLabel = GUICtrlCreateLabel("Destination Folder:", 216, 64, 92, 17)
 $CreateButton = GUICtrlCreateButton("Create", 224, 248, 75, 25)
+GuiCtrlSetState(-1, 512)
 $EncryptionDirLabel = GUICtrlCreateLabel("Encryption Folder:", 216, 115, 92, 17)
 $EncryptionDir = GUICtrlCreateInput("", 216, 132, 361, 21)
 $EncryptionDirButton = GUICtrlCreateButton("Select Folder", 586, 132, 80, 21)
@@ -364,6 +340,10 @@ Local $aProcessList = ProcessList("SafeCrypt.exe")
 For $i = 1 To $aProcessList[0][0]
 	ProcessClose($aProcessList[$i][1])
 Next
+
+Func Input1Change()
+	MsgBox(0,"","Test2")
+EndFunc
 
 ;Run( $SafeCryptInstallDir & "/SafeCrypt.exe")
 
@@ -422,12 +402,20 @@ While 1
 			GUICtrlSetState($PasswordInput2, $GUI_ENABLE)
 			GUICtrlSetState($EncryptionDir, $GUI_ENABLE)
 			GUICtrlSetState($EncryptionDirButton, $GUI_ENABLE)
+			GuiCtrlSetData($PasswordEntropy,"-1")
+			GUICtrlSetState($PasswordEntropy, $GUI_ENABLE)
+
 			GUICtrlSetState($NoEncryption, $GUI_UNCHECKED)
 		Case $NoEncryption
 			GUICtrlSetState($PasswordInput1, $GUI_DISABLE)
 			GUICtrlSetState($PasswordInput2, $GUI_DISABLE)
 			GUICtrlSetState($EncryptionDir, $GUI_DISABLE)
 			GUICtrlSetState($EncryptionDirButton, $GUI_DISABLE)
+			GUICtrlSetState($PasswordEntropy, $GUI_DISABLE)
+			Local $Hellgrau[3] = [0xcc, 0xcc, 0xcc]
+
+		Local $COLOR_HellGrau = _ColorSetRGB($Hellgrau)
+			GUICtrlSetBkColor ( $PasswordEntropy, $COLOR_HellGrau)
 			GUICtrlSetState($Encryption, $GUI_UNCHECKED)
 		Case $MenuExit
 			MenuExit()
@@ -469,6 +457,25 @@ While 1
 				MsgBox(0, "", "Please choose an other folder name!")
 			EndIf
 	EndSwitch
+	$PasswordEntropySet = GuiCtrlRead($PasswordEntropy)
+	$PasswordEntropyNew = Int ( _CalculateBitEntropy(GuiCtrlRead($PasswordInput1))) & " Bits"
+	if $PasswordEntropySet <> $PasswordEntropyNew then
+		GuiCtrlSetData($PasswordEntropy,$PasswordEntropyNew)
+		Switch $PasswordEntropyNew
+			Case 0 To 50
+				GUICtrlSetBkColor ( $PasswordEntropy, $COLOR_RED )
+			Case 50 To 100
+				GUICtrlSetBkColor ( $PasswordEntropy, $COLOR_YELLOW )
+			Case Else
+				GUICtrlSetBkColor ( $PasswordEntropy, $COLOR_GREEN )
+		EndSwitch
+	EndIf
+	$DataFolderSet = GuiCtrlRead($DecryptionDir)
+	$DataFolderNew = $SafeSyncStandardDataFolder & "\" & GuiCtrlRead($CreateFolder_Name)
+	if $DataFolderSet <> $DataFolderNew then
+		GuiCtrlSetData($DecryptionDir,$DataFolderNew)
+		GuiCtrlSetData($EncryptionDir,$DataFolderNew & "Encrypt")
+	EndIf
 WEnd
 
 Func _Restore()
@@ -478,9 +485,7 @@ Func _Restore()
 EndFunc   ;==>_Restore
 
 #cs ----------------------------------------------------------------------------
-
 	Functions
-
 #ce ----------------------------------------------------------------------------
 
 #cs ----------------------------------------------------------------------------
@@ -647,7 +652,6 @@ Func ReloadListView()
 		$SyncFolders[$i][1] = $sVar1
 	Next
 	createConfig($SyncFolders, $BTSyncStoragePath)
-	RestartBTSync()
 EndFunc   ;==>ReloadListView
 
 #cs ----------------------------------------------------------------------------
@@ -708,8 +712,8 @@ EndFunc   ;==>StopBTSync
 	Stop the Bittorent Sync Process with the config file
 #ce ----------------------------------------------------------------------------
 Func StartBTSync()
-	ConsoleWrite('"C:\Users\Tim\Program Files\BitTorrent Sync\BTSync.exe" /config "' & $BTSyncConfig & '"' & @CRLF)
-	Run('"C:\Users\Tim\Program Files\BitTorrent Sync\BTSync.exe" /config "' & $BTSyncConfig & '"')
+	;ConsoleWrite('"C:\Users\Tim\Program Files\BitTorrent Sync\BTSync.exe" /config "' & $BTSyncConfig & '"' & @CRLF)
+	;Run('"C:\Users\Tim\Program Files\BitTorrent Sync\BTSync.exe" /config "' & $BTSyncConfig & '"')
 EndFunc   ;==>StartBTSync
 
 #cs ----------------------------------------------------------------------------
@@ -974,7 +978,8 @@ Func getNewKey()
 
 	$WriteKey = StringSplit($NewKey, '"')
 
-	Return $WriteKey[8]
+	;Return $WriteKey[8]
+	Return "TestKey"
 	; Delete the file.
 	FileDelete($sFilePath)
 EndFunc   ;==>getNewKey
@@ -1054,18 +1059,13 @@ Func CheckAdmin()
 EndFunc   ;==>CheckAdmin
 
 #cs ----------------------------------------------------------------------------
-
 	AutoIt Version: 	3.3.12.0
 	Author:				Tim Christoph Lid
 	Name:				SafeCrypt x64
-
 	Script Function:
 	SafeCrypt Tool
-
 	TODO:
-
 	Check File encryption, with wrong filenames? Maybe not needed
-
 #ce ----------------------------------------------------------------------------
 
 #cs ----------------------------------------------------------------------------
@@ -1076,9 +1076,7 @@ EndFunc   ;==>CheckAdmin
 ;EndIf
 
 #cs ----------------------------------------------------------------------------
-
 	Command line parameters
-
 #ce ----------------------------------------------------------------------------
 
 
@@ -1361,7 +1359,7 @@ EndFunc   ;==>EncryptFile
 
 Func PasswordFolderInit()
 
-EndFunc   ;==>PasswordFolderInit
+EndFunc
 
 Func CreatePasswordFolder()
 	Local $PasswdFolder = ""
@@ -1393,8 +1391,8 @@ Func CreatePasswordFolder()
 	Return $PasswdFolder
 EndFunc   ;==>CreatePasswordFolder
 
-Func PasswordSkript()
-	$Password = ""
+Func PasswordCheck()
+	$PC_Passwd = ""
 	If Not RegRead($SafeCryptRegistrySoftware, "Installed") = 1 Then
 		RegWrite($SafeCryptRegistrySoftware)
 		$PasswordCreateSalt = ""
@@ -1402,7 +1400,8 @@ Func PasswordSkript()
 			$PasswordCreateSalt = $PasswordCreateSalt & Chr(Random(32, 126, 1))
 		Next
 		While 1
-			Local $Passwd = InputBox("Set password", "Enter your new password.", "", "*")
+			Local $PC_Passwd = InputBox("Set password", "Enter your new password.", "", "*")
+			Local $PC_PasswdHash = $PC_Passwd
 			If @error = 1 Then
 				Exit
 			EndIf
@@ -1410,85 +1409,87 @@ Func PasswordSkript()
 			If @error = 1 Then
 				Exit
 			EndIf
-			If Not $Passwd = $PasswdCheck Then
+			If Not $PC_Passwd = $PasswdCheck Then
 				MsgBox(16, "Error", "Passwords doesn't match")
 			Else
-				If StringLen($Passwd) <= 6 Then
+				If StringLen($PC_Passwd) <= 6 Then
 					MsgBox(16, "Error", "Please choose a Password greater then 6")
 				Else
 					For $i = 0 To 3000 Step 1
-						$Passwd = _Crypt_HashData($Passwd & $PasswordCreateSalt, $CALG_SHA1)
+						$PC_PasswdHash = _Crypt_HashData($PC_PasswdHash & $PasswordCreateSalt, $CALG_SHA1)
 					Next
-					RegWrite($SafeCryptRegistrySoftware, "PasswordHashed", "REG_SZ", $Passwd)
+					RegWrite($SafeCryptRegistrySoftware, "PasswordHashed", "REG_SZ", $PC_PasswdHash)
 					RegWrite($SafeCryptRegistrySoftware, "Installed", "REG_DWORD", "1")
 					RegWrite($SafeCryptRegistrySoftware, "Salt", "REG_SZ", $PasswordCreateSalt)
-					MsgBox(64, "Congratulation", "Your new password is set!" & @CRLF & "Please Login, to begin the Magic")
 					ExitLoop
 				EndIf
 			EndIf
 		WEnd
 	EndIf
-
 	;Test Password for Correct
-	While 1
-		Local $Passwd = InputBox("Security Check", "Enter your password.", "", "*")
-		$Password = $Passwd
-		If @error = 1 Then
-			Exit
-		EndIf
-		$PasswordSalt = RegRead($SafeCryptRegistrySoftware, "Salt")
-		For $i = 0 To 3000 Step 1
-			$Passwd = _Crypt_HashData($Passwd & $PasswordSalt, $CALG_SHA1)
-		Next
-		If $Passwd = RegRead($SafeCryptRegistrySoftware, "PasswordHashed") Then
-			ExitLoop
-		Else
-			MsgBox(16, "Error", "Wrong password")
-		EndIf
-	WEnd
-	Return $Password
-EndFunc   ;==>PasswordSkript
+	If Not StringCompare($PC_Passwd, "") Then
+		While 1
+			Local $PC_Passwd = InputBox("Security Check", "Enter your password.", "", "*")
+			If @error = 1 Then
+				Exit
+			EndIf
+			$PC_PasswdHash = $PC_Passwd
+			$PasswordSalt = RegRead($SafeCryptRegistrySoftware, "Salt")
+			For $i = 0 To 3000 Step 1
+				$PC_PasswdHash = _Crypt_HashData($PC_PasswdHash & $PasswordSalt, $CALG_SHA1)
+			Next
+			If $PC_PasswdHash = RegRead($SafeCryptRegistrySoftware, "PasswordHashed") Then
+				ExitLoop
+			Else
+				MsgBox(16, "Error", "Wrong password")
+			EndIf
+		WEnd
+	EndIf
+	Return BinaryToString($PC_Passwd)
+EndFunc
 
 #cs ----------------------------------------------------------------------------
-	Install
-	Install - Process
-	Func InstallSafeCrypt()
-	; Create a GUI with various controls.
-	Local $InstallationDialog = GUICreate("SafeCrypt - Installation", 430, 120)
-	Local $InstallButton = GUICtrlCreateButton("Install", 320, 80, 85, 25)
-	Local $InstallDirectory = GUICtrlCreateLabel("Installation dir:", 10, 20)
-	Local $InstallDir = GUICtrlCreateInput(@ProgramFilesDir & "\SafeCrypt", 10, 38, 300)
-	Local $InstallDirSelect = GUICtrlCreateButton("SelectFolder", 320, 36, 100)
-
-	; Display the GUI.
-	GUISetState(@SW_SHOW, $InstallationDialog)
-
-	; Loop until the user exits.
-	While 1
-	Switch GUIGetMsg()
-	Case $GUI_EVENT_CLOSE
-	Exit
-	ExitLoop
-	Case $InstallButton
-	RegWrite($SafeCryptRegistrySoftware)
-	RegWrite($SafeCryptRegistrySoftware, "DisplayName", "REG_SZ", $DisplayName)
-	RegWrite($SafeCryptRegistrySoftware, "DisplayVersion", "REG_SZ", $DisplayVersion)
-	$InstallDirTemp = GUICtrlRead($InstallDir)
-	RegWrite($SafeCryptRegistrySoftware, "DisplayIcon", "REG_SZ", $InstallDirTemp & "\SafeCrypt.exe")
-	RegWrite($SafeCryptRegistrySoftware, "InstallLocation", "REG_SZ", $InstallDirTemp)
-	RegWrite($SafeCryptRegistrySoftware, "Publisher", "REG_SZ", $Publisher)
-	RegWrite($SafeCryptRegistrySoftware, "UninstallString", "REG_SZ", $InstallDirTemp & "SafeCrypt.exe /UNINSTALL")
-	RegWrite($SafeCryptRegistrySoftware, "InstallDir", "REG_SZ", $InstallDirTemp)
-	RegWrite($SafeCryptFoldersRegistry)
-	RunWait(@ComSpec & ' /c ' & @TempDir & '\InstallSafeSync.exe "' & $InstallDirTemp & '" "' & @ScriptFullPath & '"', @TempDir, @SW_HIDE)
-	; TODO Copy other files and create folder
-	ExitLoop
-	Case $InstallDirSelect
-	GUICtrlSetData($InstallDir, FileSelectFolder("Choose the destination folder", $InstallLocation))
-	EndSwitch
-	WEnd
-	; Delete the previous GUI and all controls.
-	GUIDelete($InstallationDialog)
-	Exit
-	EndFunc
+Name:               _CalculateBitEntropy (Thanks dany)
+Description:        Calculate the bit entropy of a string.
+Author:             dany / improved by Tim Lid, bug fixing: When using upper/lower Chars and! special character
+Parameters:         $CBE_PasswordForEntropy	- String: String to evaluate.
+                    $CBE_UseCaseSensitive	- Boolean: Do case-sensitive evaluation, default true.
+					$CBE_PasswordLenght		- Int: The lenght of the password
+					$CBE_SplitedPassword	- Array[String]: Password is cutted in substrings, whitespaces
+					$CBE_EntropyFactor		- Floeat: Bit entropy factor
+Return values:      Success:				- Float: Bit entropy.
+                    Failure:				- 0 and sets @error
+Last edit:			2015.04.15 - 16:25 - Bug fix / Documentation / renaming variables
+Link:				<a href='http://www.autoitscript.com/forum/topic/139260-autoit-snippets/page__st__80#entry1021181</a>
+Link:               <a href='http://en.wikipedia.org/wiki/Password_strength#Entropy_as_a_measure_of_password_strength' class='bbc_url' title='External link' rel='nofollow external'>http://en.wikipedia.org/wiki/Password_strength#Entropy_as_a_measure_of_password_strength</a>
 #ce ----------------------------------------------------------------------------
+Func _CalculateBitEntropy($CBE_PasswordForEntropy, $CBE_UseCaseSensitive = True)
+    If IsBinary($CBE_PasswordForEntropy) Then $CBE_PasswordForEntropy = BinaryToString($CBE_PasswordForEntropy)
+    If Not IsString($CBE_PasswordForEntropy) Then Return SetError(1, 0, 0)
+    Local $CBE_SplitedPassword, $CBE_EntropyFactor = 0, $CBE_PasswordLenght = StringLen($CBE_PasswordForEntropy)
+    If 0 = $CBE_PasswordLenght Then Return SetError(2, 0, 0)
+    $CBE_SplitedPassword = StringSplit($CBE_PasswordForEntropy, ' ')
+    If 1 < $CBE_SplitedPassword[0] And StringRegExp($CBE_PasswordForEntropy, '^[[:alnum:] ]+$') Then Return $CBE_SplitedPassword[0] * 12.925
+    If StringIsDigit($CBE_PasswordForEntropy) Then
+        $CBE_EntropyFactor = 3.3219
+    ElseIf StringIsXDigit($CBE_PasswordForEntropy) Then
+        $CBE_EntropyFactor = 4.0000
+    ElseIf StringIsAlpha($CBE_PasswordForEntropy) Then
+        $CBE_EntropyFactor = 4.7004
+        If $CBE_UseCaseSensitive Then
+            If StringRegExp($CBE_PasswordForEntropy, '[[:lower:]]') And StringRegExp($CBE_PasswordForEntropy, '[[:upper:]]') Then $CBE_EntropyFactor = 5.7004
+        EndIf
+    ElseIf StringIsAlNum($CBE_PasswordForEntropy) Then
+        $CBE_EntropyFactor = 5.1699
+        If $CBE_UseCaseSensitive Then
+            If StringRegExp($CBE_PasswordForEntropy, '[[:lower:]]') And StringRegExp($CBE_PasswordForEntropy, '[[:upper:]]') Then $CBE_EntropyFactor = 5.9542
+        EndIf
+    ElseIf StringRegExp($CBE_PasswordForEntropy, '^[^[:cntrl:]x7F]+$') Then
+        $CBE_EntropyFactor = 6.5699
+    ElseIf StringRegExp($CBE_PasswordForEntropy, '^[^[:cntrl:]x7Fx81x8Dx8Fx90x9D]+$') Then
+        $CBE_EntropyFactor = 7.7682
+	Else
+		$CBE_EntropyFactor = 8
+    EndIf
+    Return $CBE_EntropyFactor * $CBE_PasswordLenght
+EndFunc
