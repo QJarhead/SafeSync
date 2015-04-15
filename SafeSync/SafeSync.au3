@@ -3,13 +3,14 @@
 	Author:				Tim Christoph Lid
 	Version:			1.0
 	Name:				SafeSync Management Tool
+
 	TODO:
-	Check Folder Exists
-	Enter automaticly Standard decrypt folder
 	Rename Variables
 	Commentation
 	Correct Version number
+
 	Maybe:
+	Check Folder Exists
 	KEY ist correct?
 	Check if BTSync is running
 	Stop btsync with api
@@ -18,6 +19,7 @@
 	count Foldername
 	Issues:
 	Actually store the gui for new folder
+
 #ce ----------------------------------------------------------------------------
 
 #cs ----------------------------------------------------------------------------
@@ -209,16 +211,12 @@ If Not $CmdLine[0] = 0 Then
 	EndIf
 EndIf
 
-Global $Password = PasswordCheck()
-
-MsgBox(0,"",$Password)
-
-Exit
-
 RegWrite($SafeSyncRegistrySoftwareManagementTool, "RunSafeCrypt", "REG_SZ", "1")
 
+Global $Password = PasswordCheck()
+
 ;Start SafeCrypt
-Run(@ComSpec & ' /c ' & @ScriptFullPath & ' SafeCrypt' & ' Start ' & $Password, @TempDir, @SW_HIDE)
+;Run(@ComSpec & ' /c ' & @ScriptFullPath & ' SafeCrypt' & ' Start ' & $Password, @TempDir, @SW_HIDE)
 
 #cs ----------------------------------------------------------------------------
 	Install Programms
@@ -712,8 +710,8 @@ EndFunc   ;==>StopBTSync
 	Stop the Bittorent Sync Process with the config file
 #ce ----------------------------------------------------------------------------
 Func StartBTSync()
-	;ConsoleWrite('"C:\Users\Tim\Program Files\BitTorrent Sync\BTSync.exe" /config "' & $BTSyncConfig & '"' & @CRLF)
-	;Run('"C:\Users\Tim\Program Files\BitTorrent Sync\BTSync.exe" /config "' & $BTSyncConfig & '"')
+	ConsoleWrite('"C:\Users\Tim\Program Files\BitTorrent Sync\BTSync.exe" /config "' & $BTSyncConfig & '"' & @CRLF)
+	Run('"C:\Users\Tim\Program Files\BitTorrent Sync\BTSync.exe" /config "' & $BTSyncConfig & '"')
 EndFunc   ;==>StartBTSync
 
 #cs ----------------------------------------------------------------------------
