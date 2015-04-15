@@ -5,6 +5,7 @@
 	Name:				SafeSync Management Tool
 
 	TODO:
+	1. Write documentation
 	Rename Variables
 	Commentation
 	Correct Version number
@@ -456,7 +457,7 @@ While 1
 			EndIf
 	EndSwitch
 	$PasswordEntropySet = GuiCtrlRead($PasswordEntropy)
-	$PasswordEntropyNew = Int ( _CalculateBitEntropy(GuiCtrlRead($PasswordInput1))) & " Bits"
+	$PasswordEntropyNew = Int ( CalculateBitEntropy(GuiCtrlRead($PasswordInput1))) & " Bits"
 	if $PasswordEntropySet <> $PasswordEntropyNew then
 		GuiCtrlSetData($PasswordEntropy,$PasswordEntropyNew)
 		Switch $PasswordEntropyNew
@@ -1317,7 +1318,19 @@ Func CheckChangedFiles($LogListFileDecrypt, $LogListFileEncrypt, $DataFolderDecr
 	EndIf
 EndFunc   ;==>CheckChangedFiles
 
-; Function, return a Array of the Files in the Folder to Scan and the Checksum, create a .txt file, which includes the full path and the Checksum
+#cs GenerateList - Documentation
+Name:               GenerateList
+Version:			0.1
+Description:        Function, return a Array of the Files in the Folder to Scan and the Checksum, create a .txt file, which includes the full path and the Checksum
+Author:             Tim Lid
+Parameters:         $DF_DecryptFolder		- String: The decrypt folder location
+					$DF_EncryptFile			- String: The encrypt file location
+					$EF_Password			- String: The password for the encryption
+Return values:      Success:				- String: The file is decrypt
+                    Failure:				- TODO
+Last edit:			2015.04.15 - 22:10 - Documentation
+TODO:				Commentation; Failure; rename variables
+#ce
 Func GenerateList($FolderScan, $OutputFileList, $Param)
 	; List all the files and folders in the desktop directory using the default parameters and return the full path.
 	FileDelete($OutputFileList)
@@ -1341,113 +1354,117 @@ Func GenerateList($FolderScan, $OutputFileList, $Param)
 		FileClose($OutputFileListOpen)
 	EndIf
 	Return $FileList
-EndFunc   ;==>GenerateList
-
-; Decrypt File
-Func DecryptFile($EncryptFile, $DecryptFolder, $Password)
-	ConsoleWrite("Decript:" & @ComSpec & ' /c ' & $7zLocation & ' x -y -t7z -o"' & $DecryptFolder & '" -p"' & $Password & '" "' & $EncryptFile & '"' & @CRLF)
-	RunWait(@ComSpec & ' /c ' & $7zLocation & ' x -y -t7z -o"' & $DecryptFolder & '" -p"' & $Password & '" "' & $EncryptFile & '"', @TempDir, @SW_HIDE)
-EndFunc   ;==>DecryptFile
-
-; Encrypt File
-Func EncryptFile($DecryptFile, $EncryptFile, $Password)
-	ConsoleWrite("Encrypt: " & @ComSpec & ' /c ' & $7zLocation & ' a -y -t7z -p"' & $Password & '" "' & $EncryptFile & '" "' & $DecryptFile & '"' & @CRLF)
-	RunWait(@ComSpec & ' /c ' & $7zLocation & ' a -y -t7z -p"' & $Password & '" "' & $EncryptFile & '" "' & $DecryptFile & '"', @TempDir, @SW_HIDE)
-EndFunc   ;==>EncryptFile
-
-Func PasswordFolderInit()
-
 EndFunc
 
-Func CreatePasswordFolder()
-	Local $PasswdFolder = ""
-	While 1
-		$PasswordCreateSalt = ""
-		For $i = 0 To 100 Step 1
-			$PasswordCreateSalt = $PasswordCreateSalt & Chr(Random(32, 126, 1))
-		Next
-		$PasswdFolder = InputBox("Set password", "Enter your new password.", "", "*")
-		If @error = 1 Then
-			Exit
-		EndIf
-		Local $PasswdCheck = InputBox("Set password", "Retype your password.", "", "*")
-		If @error = 1 Then
-			Exit
-		EndIf
-		If Not $PasswdFolder = $PasswdCheck Then
-			MsgBox(16, "Error", "Passwords doesn't match")
-		Else
-			If StringLen($PasswdFolder) <= 6 Then
-				MsgBox(16, "Error", "Please choose a Password greater then 6")
-			Else
-				For $i = 0 To 30 Step 1
-					$PasswdFolder = _Crypt_EncryptData($PasswdFolder, $PasswordCreateSalt, $CALG_RC4)
-				Next
-			EndIf
-		EndIf
-	WEnd
-	Return $PasswdFolder
-EndFunc   ;==>CreatePasswordFolder
+#cs DecryptFile - Documentation
+Name:               DecryptFile
+Version:			0.1
+Description:        Decrypt a file with a password by using 7zip
+Author:             Tim Lid
+Parameters:         $DF_DecryptFolder		- String: The decrypt folder location
+					$DF_EncryptFile			- String: The encrypt file location
+					$EF_Password			- String: The password for the encryption
+Return values:      Success:				- String: The file is decrypt
+                    Failure:				- TODO
+Last edit:			2015.04.15 - 22:10 - Documentation
+TODO:				Commentation; Failure
+#ce
+Func DecryptFile($DF_EncryptFile, $DF_DecryptFolder, $Password)
+	ConsoleWrite("Decript:" & @ComSpec & ' /c ' & $7zLocation & ' x -y -t7z -o"' & $DF_DecryptFolder & '" -p"' & "%Password%" & '" "' & $DF_EncryptFile & '"' & @CRLF)
+	RunWait(@ComSpec & ' /c ' & $7zLocation & ' x -y -t7z -o"' & $DF_DecryptFolder & '" -p"' & $Password & '" "' & $DF_EncryptFile & '"', @TempDir, @SW_HIDE)
+EndFunc
 
+#cs EncryptFile - Documentation
+Name:               EncryptFile
+Version:			0.1
+Description:        Encrypt a file with a password by using 7zip
+Author:             Tim Lid
+Parameters:         $EF_DecryptFile			- String: The decrypt file location
+					$EF_EncryptFile			- String: The encrypt file location
+					$EF_Password			- String: The password for the encryption
+Return values:      Success:				- String: The file is encrypt
+                    Failure:				- TODO
+Last edit:			2015.04.15 - 22:10 - Documentation
+TODO:				Commentation; Failure
+#ce
+Func EncryptFile($EF_DecryptFile, $EF_EncryptFile, $EF_Password)
+	ConsoleWrite("Encrypt: " & @ComSpec & ' /c ' & $7zLocation & ' a -y -t7z -p"' & "%Password%" & '" "' & $EF_EncryptFile & '" "' & $EF_DecryptFile & '"' & @CRLF)
+	RunWait(@ComSpec & ' /c ' & $7zLocation & ' a -y -t7z -p"' & $EF_Password & '" "' & $EF_EncryptFile & '" "' & $EF_DecryptFile & '"', @TempDir, @SW_HIDE)
+EndFunc
+
+#cs PasswordCheck - Documentation
+Name:               PasswordCheck
+Version:			0.1
+Description:        Check if Password is set. If not, create a new Masterpassword for the SafeSyncManagementool
+Author:             Tim Lid
+Parameters:         $PC_Password			- String: The password
+                    $PC_Salt				- String: A salt, for englarging the password
+					$PC_PasswordHash		- String: The hash of the current password
+					$PC_PasswordCheck		- String: The second password input from the user
+Return values:      Success:				- String: The password.
+                    Failure:				- Restart until the password is correct
+Last edit:			2015.04.15 - 22:03 - Documentation
+TODO:				Commentation
+#ce
 Func PasswordCheck()
-	$PC_Passwd = ""
+	$PC_Password = ""
 	If Not RegRead($SafeCryptRegistrySoftware, "Installed") = 1 Then
 		RegWrite($SafeCryptRegistrySoftware)
-		$PasswordCreateSalt = ""
+		$PC_Salt = ""
 		For $i = 0 To 100 Step 1
-			$PasswordCreateSalt = $PasswordCreateSalt & Chr(Random(32, 126, 1))
+			$PC_Salt = $PC_Salt & Chr(Random(32, 126, 1))
 		Next
 		While 1
-			Local $PC_Passwd = InputBox("Set password", "Enter your new password.", "", "*")
-			Local $PC_PasswdHash = $PC_Passwd
+			Local $PC_Password = InputBox("Set password", "Enter your new password.", "", "*")
+			Local $PC_PasswordHash = $PC_Password
 			If @error = 1 Then
 				Exit
 			EndIf
-			Local $PasswdCheck = InputBox("Set password", "Retype your password.", "", "*")
+			Local $PC_PasswordCheck = InputBox("Set password", "Retype your password.", "", "*")
 			If @error = 1 Then
 				Exit
 			EndIf
-			If Not $PC_Passwd = $PasswdCheck Then
+			If Not $PC_Password = $PC_PasswordCheck Then
 				MsgBox(16, "Error", "Passwords doesn't match")
 			Else
-				If StringLen($PC_Passwd) <= 6 Then
+				If StringLen($PC_Password) <= 6 Then
 					MsgBox(16, "Error", "Please choose a Password greater then 6")
 				Else
 					For $i = 0 To 3000 Step 1
-						$PC_PasswdHash = _Crypt_HashData($PC_PasswdHash & $PasswordCreateSalt, $CALG_SHA1)
+						$PC_PasswordHash = _Crypt_HashData($PC_PasswordHash & $PC_Salt, $CALG_SHA1)
 					Next
-					RegWrite($SafeCryptRegistrySoftware, "PasswordHashed", "REG_SZ", $PC_PasswdHash)
+					RegWrite($SafeCryptRegistrySoftware, "PasswordHashed", "REG_SZ", $PC_PasswordHash)
 					RegWrite($SafeCryptRegistrySoftware, "Installed", "REG_DWORD", "1")
-					RegWrite($SafeCryptRegistrySoftware, "Salt", "REG_SZ", $PasswordCreateSalt)
+					RegWrite($SafeCryptRegistrySoftware, "Salt", "REG_SZ", $PC_Salt)
 					ExitLoop
 				EndIf
 			EndIf
 		WEnd
 	EndIf
-	;Test Password for Correct
-	If Not StringCompare($PC_Passwd, "") Then
+	If Not StringCompare($PC_Password, "") Then
 		While 1
-			Local $PC_Passwd = InputBox("Security Check", "Enter your password.", "", "*")
+			Local $PC_Password = InputBox("Security Check", "Enter your password.", "", "*")
 			If @error = 1 Then
 				Exit
 			EndIf
-			$PC_PasswdHash = $PC_Passwd
-			$PasswordSalt = RegRead($SafeCryptRegistrySoftware, "Salt")
+			$PC_PasswordHash = $PC_Password
+			$PC_Salt = RegRead($SafeCryptRegistrySoftware, "Salt")
 			For $i = 0 To 3000 Step 1
-				$PC_PasswdHash = _Crypt_HashData($PC_PasswdHash & $PasswordSalt, $CALG_SHA1)
+				$PC_PasswordHash = _Crypt_HashData($PC_PasswordHash & $PC_Salt, $CALG_SHA1)
 			Next
-			If $PC_PasswdHash = RegRead($SafeCryptRegistrySoftware, "PasswordHashed") Then
+			If $PC_PasswordHash = RegRead($SafeCryptRegistrySoftware, "PasswordHashed") Then
 				ExitLoop
 			Else
 				MsgBox(16, "Error", "Wrong password")
 			EndIf
 		WEnd
 	EndIf
-	Return BinaryToString($PC_Passwd)
+	Return BinaryToString($PC_Password)
 EndFunc
 
-#cs ----------------------------------------------------------------------------
+#cs _CalculateBitEntropy - Documentation
 Name:               _CalculateBitEntropy (Thanks dany)
+Version:			0.2
 Description:        Calculate the bit entropy of a string.
 Author:             dany / improved by Tim Lid, bug fixing: When using upper/lower Chars and! special character
 Parameters:         $CBE_PasswordForEntropy	- String: String to evaluate.
@@ -1460,8 +1477,9 @@ Return values:      Success:				- Float: Bit entropy.
 Last edit:			2015.04.15 - 16:25 - Bug fix / Documentation / renaming variables
 Link:				<a href='http://www.autoitscript.com/forum/topic/139260-autoit-snippets/page__st__80#entry1021181</a>
 Link:               <a href='http://en.wikipedia.org/wiki/Password_strength#Entropy_as_a_measure_of_password_strength' class='bbc_url' title='External link' rel='nofollow external'>http://en.wikipedia.org/wiki/Password_strength#Entropy_as_a_measure_of_password_strength</a>
-#ce ----------------------------------------------------------------------------
-Func _CalculateBitEntropy($CBE_PasswordForEntropy, $CBE_UseCaseSensitive = True)
+TODO:				Commentation
+#ce
+Func CalculateBitEntropy($CBE_PasswordForEntropy, $CBE_UseCaseSensitive = True)
     If IsBinary($CBE_PasswordForEntropy) Then $CBE_PasswordForEntropy = BinaryToString($CBE_PasswordForEntropy)
     If Not IsString($CBE_PasswordForEntropy) Then Return SetError(1, 0, 0)
     Local $CBE_SplitedPassword, $CBE_EntropyFactor = 0, $CBE_PasswordLenght = StringLen($CBE_PasswordForEntropy)
