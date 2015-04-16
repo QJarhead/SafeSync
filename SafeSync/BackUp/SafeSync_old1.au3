@@ -552,17 +552,10 @@ Func CreateShortcut($ShortcutSourceFile, $ShortcutDestinationFile)
 	FileCreateShortcut($ShortcutSourceFile, $ShortcutDestinationFile)
 EndFunc   ;==>CreateShortcut
 
-#cs RegistryCreateNewFolder - Documentation
-Name:               RegistryCreateNewFolder
-Version:			0.1
-Description:        Create new Folder by clicking Sync with SafeSync from Context menu
-Author:             Tim Lid
-Parameters:
-Return values:      Success:			- String: The decrypted password
-                    Failure:			- TODO
-Last edit:			2015.04.16 - 19:55 - renaming variables
-TODO:				Commentation
-#ce
+#cs ----------------------------------------------------------------------------
+	SyncNewFolder
+	Create new Folder by clicking Sync with SafeSync from Context menu
+#ce ----------------------------------------------------------------------------
 Func SyncNewFolder($NewFolderName)
 	Global $ChooseForm = GUICreate("Form1", 165, 160, 200, 124)
 	$Radio1 = GUICtrlCreateRadio("Generate new Key", 32, 20, 113, 25)
@@ -608,18 +601,20 @@ Func SyncNewFolder($NewFolderName)
 		EndSwitch
 	WEnd
 	ReloadListView()
-EndFunc
+EndFunc   ;==>SyncNewFolder
 
-#cs ReloadListView - Documentation
-Name:               ReloadListView
+#cs RegistryCreateNewFolder - Documentation
+Name:               RegistryCreateNewFolder
 Version:			0.1
 Description:        Function reloads the list view from the registry, to see the entries in the GUI
 Author:             Tim Lid
 Parameters:			$RLV_FolderCounter				- Integer: Counter for folders
 					$RLV_Counter					- Integer: Counter
-					$RLV_RegistryValueEntry			- String: Registry folder entry
-					$RLV_RegistryValue				- String: Registry folder entry
-					$RLV_Item1						- ListViewItem: Current List view Item
+					$RCNF_NewFolderName				- String: new folder name
+					$RCNF_NewFolderKey				- String: new folder key
+					$RCNF_CreateFolderEncryption	- Boolean: Use encryption or not
+					$RCNF_CreateFolderPassword		- String: The password
+					$RCNF_PasswordSalt				- String: The password salt
 Return values:      Success:			- String: The decrypted password
                     Failure:			- TODO
 Last edit:			2015.04.16 - 19:19 - renaming variables
@@ -627,27 +622,26 @@ TODO:				Commentation
 #ce
 Func ReloadListView()
 	RegWrite($SafeSyncRegistrySoftwareManagementTool, "refreshGUI", "REG_SZ", 0)
-	Local $RLV_RegistryValueEntry
 	_GUICtrlListView_DeleteAllItems($idListview)
 	Local $RLV_FolderCounter = 0
 	For $RLV_Counter = 1 To 1000
-		$RLV_RegistryValue = RegEnumVal($SafeSyncRegistryFolders, $RLV_Counter)
+		$RLV_Counter = RegEnumVal($SafeSyncRegistryFolders, $RLV_Counter)
 		$RLV_FolderCounter = $RLV_Counter
 		If @error <> 0 Then ExitLoop
-		$RLV_RegistryValueEntry = RegRead($SafeSyncRegistryFolders, $RLV_RegistryValue)
-		Local $RLV_Item1 = GUICtrlCreateListViewItem("" & $RLV_RegistryValue & "| " & $RLV_RegistryValueEntry & " | " & RegRead($SafeSyncRegistryFolders & "\" & $RLV_RegistryValue, "Encrypt") & " | " & RegRead($SafeSyncRegistryFolders & "\" & $RLV_RegistryValue, "Decrypt") & " ", $idListview)
+		$sVar1 = RegRead($SafeSyncRegistryFolders, $RLV_RegistryValue)
+		Local $idItem1 = GUICtrlCreateListViewItem("" & $RLV_RegistryValue & "| " & $sVar1 & " | " & RegRead($SafeSyncRegistryFolders & "\" & $RLV_RegistryValue, "Encrypt") & " | " & RegRead($SafeSyncRegistryFolders & "\" & $RLV_RegistryValues, "Decrypt") & " ", $idListview)
 	Next
 	Global $SyncFolders[$RLV_FolderCounter][2]
 	For $RLV_Counter = 1 To $RLV_FolderCounter + 1
-		$RLV_RegistryValue = RegEnumVal($SafeSyncRegistryFolders, $RLV_Counter)
+		$RLV_RegistryValues = RegEnumVal($SafeSyncRegistryFolders, $RLV_Counter)
 		If @error <> 0 Then ExitLoop
-		$RLV_RegistryValueEntry = RegRead($SafeSyncRegistryFolders, $RLV_RegistryValue)
-		If RegRead($SafeSyncRegistryFolders & "\" & $RLV_RegistryValue, "UseEncryption") = 1 Then
-			$SyncFolders[$RLV_Counter][0] = RegRead($SafeSyncRegistryFolders & "\" & $RLV_RegistryValue, "Encrypt")
+		$sVar1 = RegRead($SafeSyncRegistryFolders, $RLV_RegistryValues)
+		If RegRead($SafeSyncRegistryFolders & "\" & $RLV_RegistryValues, "UseEncryption") = 1 Then
+			$SyncFolders[$RLV_Counter][0] = RegRead($SafeSyncRegistryFolders & "\" & $RLV_RegistryValues, "Encrypt")
 		Else
-			$SyncFolders[$RLV_Counter][0] = RegRead($SafeSyncRegistryFolders & "\" & $RLV_RegistryValue, "Decrypt")
+			$SyncFolders[$RLV_Counter][0] = RegRead($SafeSyncRegistryFolders & "\" & $RLV_RegistryValues, "Decrypt")
 		EndIf
-		$SyncFolders[$RLV_Counter][1] = $RLV_RegistryValueEntry
+		$SyncFolders[$RLV_Counter][1] = $sVar1
 	Next
 	createConfig($SyncFolders, $BTSyncStoragePath)
 EndFunc
