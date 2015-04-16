@@ -1,1 +1,0 @@
-SafeSync.exe /UNINSTALL

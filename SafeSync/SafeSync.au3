@@ -1,4 +1,4 @@
-#cs ----------------------------------------------------------------------------
+#cs SafeSync - Information
 	AutoIt Version: 	3.3.12.0
 	Author:				Tim Christoph Lid
 	Version:			1.0
@@ -10,6 +10,7 @@
 	Commentation
 	Output log file, with function for output file, and console output
 	Correct Version number
+	Write registry for ssf-support in the msi
 
 	Maybe:
 	Check Folder Exists
@@ -19,19 +20,21 @@
 	more btsync option
 	safecrypt options
 	count Foldername
-	Issues:
-	Actually store the gui for new folder
 
-#ce ----------------------------------------------------------------------------
+	Issues:
+	Actually store the gui for new folder (delete gui?)
+
+#ce
 
 #cs ----------------------------------------------------------------------------
-	SafeSync Version Info
+	SafeSync - Version info
+	SafeSync - Version info
 #ce ----------------------------------------------------------------------------
 
 ; DisplayName for installation
 Global Const $SafeSyncDisplayName = "SafeSync"
 ; DisplayVersion for installation
-Global Const $SafeSyncDisplayVersion = "1.0"
+Global Const $SafeSyncDisplayVersion = "0.9"
 ; DisplayVersion for installation
 Global Const $SafeSyncPublisher = "SafeSync - Team"
 
@@ -50,15 +53,11 @@ Global Const $SafeSyncPublisher = "SafeSync - Team"
 #include <INet.au3>
 #include <Array.au3>
 #include <MsgBoxConstants.au3>
-#include <Array.au3>
-#include <File.au3>
-#include <MsgBoxConstants.au3>
 #include <Crypt.au3>
 #include <ComboConstants.au3>
 #include <StringConstants.au3>
 #include <EditConstants.au3>
 #include <StaticConstants.au3>
-#include <GUIConstantsEX.au3>
 #include <ColorConstants.au3>
 #include <Color.au3>
 
@@ -229,25 +228,6 @@ Global $Password = PasswordCheck()
 #ce ----------------------------------------------------------------------------
 If RegRead($BTSyncRegistryUninstall, "DisplayIcon") == "" Then
 	RunWait('"' & $BTSyncInstaller & '" /PERFORMINSTALL /AUTOMATION')
-EndIf
-
-#cs ----------------------------------------------------------------------------
-	Install 7Zip if not installed yes
-#ce ----------------------------------------------------------------------------
-RegRead($7ZipRegistrySoftware, "Path")
-If @error Then
-	ConsoleWrite("Install 7zip")
-	CheckAdmin()
-	RunWait(@ComSpec & ' /c ' & $7zipInstaller & "/quiet /passive ", @TempDir, @SW_HIDE)
-EndIf
-
-#cs ----------------------------------------------------------------------------
-	Install SafeSync if not installed yes
-#ce ----------------------------------------------------------------------------TODO
-If RegRead($SafeSyncRegistrySoftware, "FileRegistered") = 0 Then
-	ConsoleWrite("FileRegister" & @CRLF)
-	RegisterFileExtension($InstallLocationSafeSync, $SafeSyncStandardDataFolder)
-	ConsoleWrite("Ready" & @CRLF)
 EndIf
 
 #cs ----------------------------------------------------------------------------
@@ -440,7 +420,7 @@ While 1
 							For $i = 0 To 100 Step 1
 								$PasswordCreateSalt = $PasswordCreateSalt & Chr(Random(32, 126, 1))
 							Next
-							$PasswordCrypt = CryptPassword(GUICtrlRead($PasswordInput1), $PasswordCreateSalt)
+							$PasswordCrypt = EncryptPassword(GUICtrlRead($PasswordInput1), $PasswordCreateSalt)
 							RegistryCreateNewFolder(GUICtrlRead($EncryptionDir), GUICtrlRead($DecryptionDir), GUICtrlRead($CreateFolder_Name), GUICtrlRead($CreateFolder_KeyInput), 1, $PasswordCrypt, $PasswordCreateSalt)
 							ReloadListView()
 							GUISetState(@SW_SHOW, $SafeSyncManagementTool)
@@ -526,7 +506,6 @@ Func Install()
 				RegWrite($SafeSyncRegistryUninstall, "UninstallString", "REG_SZ", GUICtrlRead($InstallDir) & "\SafeSync.exe /UNINSTALL")
 				$SafeSyncDataFolder = RegRead($SafeSyncRegistryUninstall, "DataFolder")
 				$SafeSyncDataCryptFolder = RegRead($SafeSyncRegistryUninstall, "DataCryptFolder")
-				RegisterFileExtension(GUICtrlRead($InstallDir), GUICtrlRead($DataDir))
 				FileCopy(@TempDir & "/InstallSafeSync.exe", GUICtrlRead($InstallDir) & "/")
 				; TODO Copy other files and create folder
 				ExitLoop
@@ -668,141 +647,239 @@ Func RegistryCreateNewFolder($NewFolderKeyDataEncrypt, $NewFolderKeyDataDecrypt,
 	RegWrite($SafeSyncRegistryFolders & "\" & $NewFolderName, "UseEncryption", "REG_SZ", $CreateFolder_Encryption)
 	RegWrite($SafeSyncRegistryFolders & "\" & $NewFolderName, "Decrypt", "REG_SZ", $NewFolderKeyDataDecrypt)
 	RegWrite($SafeSyncRegistryFolders & "\" & $NewFolderName, "PasswordSalt", "REG_SZ", $PasswordSalt)
-
-
-
 	RegWrite($SafeSyncRegistryFolders & "\" & $NewFolderName, "Password", "REG_SZ", $CreateFolder_Password)
 	;RunWait( @ComSpec & ' /c ""' & $SafeCryptInstallDir & '\SafeCrypt.exe" AddFolder ""' & $NewFolderName & '"" ""' & $NewFolderKeyDataDecrypt & '"" ""' & $NewFolderKeyDataEncrypt & '"" ""' )
 	;RestartBTSync()
-EndFunc   ;==>RegistryCreateNewFolder
+EndFunc
 
-Func CryptPassword($CryptPassword, $PasswordSalt)
-	$CryptPassword = _Crypt_EncryptData($CryptPassword & $PasswordSalt, $Password, $CALG_RC4)
-	Return $CryptPassword
+#cs EncryptPassword - Documentation
+Name:               EncryptPassword
+Version:			0.1
+Description:        Function decrypt a Password
+Author:             Tim Lid
+Parameters:			$DP_CryptPassword	- String: The crypted password
+					$PD_PasswordSalt	- String: The password salt
+Return values:      Success:			- String: The decrypted password
+                    Failure:			- TODO
+Last edit:			2015.04.16 - 17:02 - renaming variables
+TODO:				Commentation
+#ce
+Func EncryptPassword($EP_CryptPassword, $EP_PasswordSalt)
+	Local $EP_Password = _Crypt_EncryptData($EP_CryptPassword & $EP_PasswordSalt, $Password, $CALG_RC4)
+	Return $EP_Password
 EndFunc   ;==>CryptPassword
 
-Func DecryptPassword($CryptPassword, $PasswordSalt)
-	Local $PasswordWithSalt = BinaryToString(_Crypt_DecryptData($CryptPassword, $Password, $CALG_RC4))
-	Return StringLeft(BinaryToString($PasswordWithSalt), StringLen($PasswordWithSalt) - StringLen($PasswordSalt))
-EndFunc   ;==>DecryptPassword
+#cs DecryptPassword - Documentation
+Name:               DecryptPassword
+Version:			0.1
+Description:        Function decrypt a Password
+Author:             Tim Lid
+Parameters:			$DP_CryptPassword	- String: The crypted password
+					$PD_PasswordSalt	- String: The password salt
+Return values:      Success:			- String: The decrypted password
+                    Failure:			- TODO
+Last edit:			2015.04.16 - 17:02 - renaming variables
+TODO:				Commentation
+#ce
+Func DecryptPassword($DP_Password, $PD_PasswordSalt)
+	Local $DP_PasswordWithSalt = BinaryToString(_Crypt_DecryptData($DP_Password, $Password, $CALG_RC4))
+	Return StringLeft(BinaryToString($DP_PasswordWithSalt), StringLen($DP_PasswordWithSalt) - StringLen($PD_PasswordSalt))
+EndFunc
 
-#cs ----------------------------------------------------------------------------
-	RegistryDeleteFolder
-	Function to delete a New Folder
-#ce ----------------------------------------------------------------------------
-Func RegistryDeleteFolder($FolderName)
-	RegDelete($SafeSyncRegistryFolders, $FolderName)
-	RegDelete($SafeSyncRegistryFolders & "\" & $FolderName)
+#cs RegistryDeleteFolder - Documentation
+Name:               RegistryDeleteFolder
+Version:			0.1
+Description:        Function delete a Folder from the Registry
+Author:             Tim Lid
+Parameters:			$RDF_FolderName		- String: Foldername
+Return values:      Success:			- Delete the folder
+                    Failure:			- TODO
+Last edit:			2015.04.16 - 17:00 - renaming variables
+TODO:				Commentation
+#ce
+Func RegistryDeleteFolder($RDF_FolderName)
+	RegDelete($SafeSyncRegistryFolders, $RDF_FolderName)
+	RegDelete($SafeSyncRegistryFolders & "\" & $RDF_FolderName)
 	ReloadListView()
 	RestartBTSync()
-EndFunc   ;==>RegistryDeleteFolder
+EndFunc
 
-#cs ----------------------------------------------------------------------------
-	StopBTSync
-	Stop the Bittorent Sync Process
-#ce ----------------------------------------------------------------------------
+#cs StopBTSync - Documentation
+Name:               StopBTSync
+Version:			0.1
+Description:        Function stop the BTSync programm
+Author:             Tim Lid
+Return values:      Success:			- Delete the folder
+                    Failure:			- TODO
+Last edit:			2015.04.16 - 16:59 - renaming variables
+TODO:				Commentation
+#ce
 Func StopBTSync()
 	;Stopping both processes, for better compatibility
 	StopProcess("BitTorrent_SyncX64.exe")
 	StopProcess("BTSync.exe")
 EndFunc   ;==>StopBTSync
 
-#cs ----------------------------------------------------------------------------
-	StartBTSync
-	Stop the Bittorent Sync Process with the config file
-#ce ----------------------------------------------------------------------------
+#cs StartBTSync - Documentation
+Name:               StartBTSync
+Version:			0.1
+Description:        Function start the BTSync programm
+Author:             Tim Lid
+Return values:      Success:			- Delete the folder
+                    Failure:			- TODO
+Last edit:			2015.04.16 - 16:58 - renaming variables
+TODO:				Commentation
+#ce
 Func StartBTSync()
 	ConsoleWrite('"C:\Users\Tim\Program Files\BitTorrent Sync\BTSync.exe" /config "' & $BTSyncConfig & '"' & @CRLF)
 	Run('"C:\Users\Tim\Program Files\BitTorrent Sync\BTSync.exe" /config "' & $BTSyncConfig & '"')
-EndFunc   ;==>StartBTSync
+EndFunc
 
-#cs ----------------------------------------------------------------------------
-	RestartBTSync
-	Restart the BTSync with config File
-#ce ----------------------------------------------------------------------------
+#cs RestartBTSync - Documentation
+Name:               RestartBTSync
+Version:			0.1
+Description:        Function restart the BTSync programm
+Author:             Tim Lid
+Return values:      Success:			- Delete the folder
+                    Failure:			- TODO
+Last edit:			2015.04.16 - 16:57 - renaming variables
+TODO:				Commentation
+#ce
 Func RestartBTSync()
 	StopBTSync()
 	Sleep(200)
 	StartBTSync()
-EndFunc   ;==>RestartBTSync
+EndFunc
 
+#cs MenuDelete - Documentation
+Name:               MenuDelete
+Version:			0.1
+Description:        Function deletes a choosen entry from the gui
+Author:             Tim Lid
+Parameters:         $MD_SelectEntry			- ContorlListView: the choosen entry
+					$MD_SelectEntryText		- String: the name of the folder
+					$MD_MsgBoxAnswer		- Integer: Answer from the MsgBox
+Return values:      Success:			- Delete the folder
+                    Failure:			- TODO
+Last edit:			2015.04.16 - 16:52 - renaming variables
+TODO:				Commentation; expand the function
+#ce
 Func MenuDelete()
-	$iSelect = ControlListView($SafeSyncManagementTool, "", $idListview, "GetSelected")
-	$sSelect = ControlListView($SafeSyncManagementTool, "", $idListview, "GetText", $iSelect)
+	$MD_SelectEntry = ControlListView($SafeSyncManagementTool, "", $idListview, "GetSelected")
+	$MD_SelectEntryText = ControlListView($SafeSyncManagementTool, "", $idListview, "GetText", $MD_SelectEntry)
 
-	$iMsgBoxAnswer = MsgBox(33, "Delete Folder?", "Delete '" & $sSelect & "'?")
+	$MD_MsgBoxAnswer = MsgBox(33, "Delete Folder?", "Delete '" & $MD_SelectEntryText & "'?")
 	Select
-		Case $iMsgBoxAnswer = 1
-			RegistryDeleteFolder($sSelect)
-		Case $iMsgBoxAnswer = 2
+		Case $MD_MsgBoxAnswer = 1
+			RegistryDeleteFolder($MD_SelectEntryText)
+		Case $MD_MsgBoxAnswer = 2
 	EndSelect
 	ReloadListView()
-EndFunc   ;==>MenuDelete
+EndFunc
 
+#cs MenuExport - Documentation
+Name:               MenuExport
+Version:			0.1
+Description:        Function export a choosen entry from the gui and export it to a file
+Author:             Tim Lid
+Return values:      Success:			- Stops SafeSync
+Last edit:			2015.04.16 - 16:34 - insert the new ExitSafeSync - Function
+TODO:				Commentation; Log
+#ce
 Func MenuExport()
-	$kSelect = ControlListView($SafeSyncManagementTool, "", $idListview, "GetSelected")
-	;$iSelect = ControlListView($SafeSyncManagementTool, "", $idListview, "GetSelected", 1)
-	;$jSelect = ControlListView($SafeSyncManagementTool, "", $idListview, "GetSelected", 1)
-	;$sSelect = ControlListView($SafeSyncManagementTool, "", $idListview, "GetSelected", 1)
-
-	$TempInt = Number($kSelect)
-	$FolderKey = _GUICtrlListView_GetItemText($idListview, $TempInt, 1)
-	$FolderName = _GUICtrlListView_GetItemText($idListview, $TempInt, 0)
-	Local Const $sMessage = "Choose a filename."
+	$ME_SelectEntry = ControlListView($SafeSyncManagementTool, "", $idListview, "GetSelected")
+	$ME_SelectEntryNumber = Number($ME_SelectEntry)
+	$ME_FolderKey = _GUICtrlListView_GetItemText($idListview, $ME_SelectEntryNumber, 1)
+	$ME_FolderName = _GUICtrlListView_GetItemText($idListview, $ME_SelectEntryNumber, 0)
 
 	; Display a save dialog to select a file.
-	Local $sFileSaveDialog = FileSaveDialog($sMessage, "::{450D8FBA-AD25-11D0-98A8-0800361B1103}", "Scripts (*.ssf)", $FD_PATHMUSTEXIST, $FolderName)
+	Local $ME_SaveFile = FileSaveDialog("Chose a filename", "::{450D8FBA-AD25-11D0-98A8-0800361B1103}", "Scripts (*.ssf)", $FD_PATHMUSTEXIST, $ME_FolderName)
 
-	FileDelete($sFileSaveDialog)
+	FileDelete($ME_SaveFile)
 	Sleep(100)
-	_FileCreate($sFileSaveDialog)
+	_FileCreate($ME_SaveFile)
 	Sleep(100)
-	$SaveFile = FileOpen($sFileSaveDialog, 1)
-	FileWrite($SaveFile, $FolderName & "" & $FolderKey)
-	FileClose($SaveFile)
+	$ME_SaveFileOpen = FileOpen($ME_SaveFile, 1)
+	FileWrite($ME_SaveFileOpen, $ME_FolderName & "" & $ME_FolderKey)
+	FileClose($ME_SaveFileOpen)
 	ReloadListView()
-EndFunc   ;==>MenuExport
+EndFunc
 
+#cs MenuExit - Documentation
+Name:               MenuExit
+Version:			0.1
+Description:        Function stops SafeSync, from the GUI File - Exit
+Author:             Tim Lid
+Return values:      Success:			- Stops SafeSync
+Last edit:			2015.04.16 - 16:39 - insert the new ExitSafeSync - Function
+TODO:				Commentation; Log
+#ce
 Func MenuExit()
-	_Exit()
-EndFunc   ;==>MenuExit
+	ExitSafeSync()
+EndFunc
 
-Func CheckNewName($NewFolderNameCheck)
-	If StringCompare($NewFolderNameCheck, "") Then
+#cs CheckNewName - Documentation
+Name:               CheckNewName
+Version:			0.1
+Description:        Function checks the new name for a folder
+Author:             Tim Lid
+Parameters:         $CNN_FolderName		- String: The new name of the folder to create
+Return values:      Success:			- Integer: 1 Correct, 0 Uncorrect
+                    Failure:			- TODO
+Last edit:			2015.04.16 - 16:50 - renaming variables
+TODO:				Commentation; expand the function
+#ce
+Func CheckNewName($CNN_FolderName)
+	If StringCompare($CNN_FolderName, "") Then
 		Return 1
 	Else
 		Return 0
 	EndIf
-EndFunc   ;==>CheckNewName
+EndFunc
 
+#cs MenuBitTorrent - Documentation
+Name:               SafeCrypt
+Version:			0.1
+Description:        Function, run gui with btsync options
+Author:             Tim Lid
+Parameters:         $MBT_GUI_BittorentSyncSettings		- String: The name of the sync folder
+					$MBT_GUI_BUTTON_Save				- String: Path of the decrypt data folder
+					$MBT_RADIO_ShowGui_True				- String: Path of the encrypt data folder
+					$MBT_RADIO_ShowGui_False			- String: Path to log list of decrypt file
+					$MBT_RADIO_UseRelayServer_True		- String: Path to log list of decrypt file
+					$MBT_RADIO_UseRelayServer_False		- String: Path to log list of decrypt folder
+Return values:      Success:				- Set the new Bittorent Sync options
+                    Failure:				- TODO
+Last edit:			2015.04.16 - 16:18 - renaming variables
+TODO:				Commentation; Failure; Console output
+#ce
 Func MenuBitTorrent()
-	$hGUI = GUICreate("Settings", 150, 230)
-	$BTSyncOption_Button_Save = GUICtrlCreateButton("Save", 30, 180, 65, 35)
+	$MBT_GUI_BittorentSyncSettings = GUICreate("Bittorent Sync - Settings", 150, 230)
+	$MBT_GUI_BUTTON_Save = GUICtrlCreateButton("Save", 30, 180, 65, 35)
 	GUIStartGroup()
-	$BTSyncOption_ShowGUI_True = GUICtrlCreateRadio("True", 20, 30, 100, 20)
-	$BTSyncOption_ShowGUI_False = GUICtrlCreateRadio("False", 20, 50, 100, 20)
+	$MBT_RADIO_ShowGui_True = GUICtrlCreateRadio("True", 20, 30, 100, 20)
+	$MBT_RADIO_ShowGui_False = GUICtrlCreateRadio("False", 20, 50, 100, 20)
 
 	If $BTSyncShowGUI = "true" Then
-		GUICtrlSetState($BTSyncOption_ShowGUI_True, $GUI_CHECKED)
+		GUICtrlSetState($MBT_RADIO_ShowGui_True, $GUI_CHECKED)
 	Else
-		GUICtrlSetState($BTSyncOption_ShowGUI_False, $GUI_CHECKED)
+		GUICtrlSetState($MBT_RADIO_ShowGui_False, $GUI_CHECKED)
 	EndIf
 	GUIStartGroup()
-	$BTSyncOption_UseRelayServer_True = GUICtrlCreateRadio("True", 20, 110, 100, 20)
-	$BTSyncOption_UseRelayServer_False = GUICtrlCreateRadio("False", 20, 130, 100, 20)
+	$MBT_RADIO_UseRelayServer_True = GUICtrlCreateRadio("True", 20, 110, 100, 20)
+	$MBT_RADIO_UseRelayServer_False = GUICtrlCreateRadio("False", 20, 130, 100, 20)
 	GUIStartGroup()
-	$hGroup_1 = GUICtrlCreateGroup("Show GUI?", 10, 10, 120, 70)
-	$hGroup_2 = GUICtrlCreateGroup("UseRelayServer?", 10, 90, 120, 70)
+	$MBT_RADIO_ShowGui = GUICtrlCreateGroup("Show GUI?", 10, 10, 120, 70)
+	$MBT_RADIO_UseRelayServer = GUICtrlCreateGroup("UseRelayServer?", 10, 90, 120, 70)
 
 	GUISetState(@SW_HIDE, $SafeSyncManagementTool)
-	GUISetState(@SW_SHOW, $hGUI)
-	$test = 1
-	While $test
+	GUISetState(@SW_SHOW, $MBT_GUI_BittorentSyncSettings)
+	While 1
 		Switch GUIGetMsg()
 			Case $GUI_EVENT_CLOSE
-				GUIDelete($hGUI)
-			Case $BTSyncOption_Button_Save
-				If BitAND(GUICtrlRead($BTSyncOption_ShowGUI_True), $GUI_CHECKED) = $GUI_CHECKED Then
+				GUIDelete($MBT_GUI_BittorentSyncSettings)
+			Case $MBT_GUI_BUTTON_Save
+				If BitAND(GUICtrlRead($MBT_RADIO_ShowGui_True), $GUI_CHECKED) = $GUI_CHECKED Then
 					RegWrite($SafeSyncRegistrySoftwareManagementTool, "ShowGUI", "REG_SZ", "true")
 					$BTSyncShowGUI = "true"
 				Else
@@ -811,297 +888,274 @@ Func MenuBitTorrent()
 				EndIf
 				ReloadListView()
 				GUISetState(@SW_SHOW, $SafeSyncManagementTool)
-				GUIDelete($hGUI)
-				$test = 0
+				GUIDelete($MBT_GUI_BittorentSyncSettings)
+				ExitLoop
 		EndSwitch
 	WEnd
-EndFunc   ;==>MenuBitTorrent
+EndFunc
 
+#cs MenuCrypt - Documentation
+Name:               MenuCrypt
+Version:			0.1
+Description:        SafeCrypt settings
+Author:             Tim Lid
+Return values:      Success:	- TODO
+					Failure:	- TODO
+Last edit:			2015.04.16 - 15:30 - Documentation (TL)
+TODO:				Create windows for options
+#ce
 Func MenuCrypt()
 	MsgBox(0, "TODO", "Open real CryptSync?")
 EndFunc   ;==>MenuCrypt
 
+#cs MenuOther - Documentation
+Name:               MenuOther
+Version:			0.1
+Description:        Other settings
+Author:             Tim Lid
+Return values:      Success:	- TODO
+					Failure:	- TODO
+Last edit:			2015.04.16 - 15:30 - Documentation (TL)
+TODO:				Create windows for options
+#ce
 Func MenuOther()
 	MsgBox(0, "TODO", "General settings")
-EndFunc   ;==>MenuOther
+EndFunc
 
+#cs MenuAbout - Documentation
+Name:               MenuAbout
+Version:			0.1
+Description:        Function to output information
+Author:             Tim Lid
+Return values:      Success:	- Output information
+Last edit:			2015.04.16 - 15:26 - Documentation (TL)
+TODO:				Print variables
+#ce
 Func MenuAbout()
-	MsgBox(0, "About SafeSync", "SafeSync" & @LF & "Version 0.0.1.2" & @LF & "  16.02.2015" & @LF & "by SafeSync-Team")
-EndFunc   ;==>MenuAbout
+	; Output "About SafeSync" - Information
+	MsgBox(0, "About SafeSync", "SafeSync" & @LF & "Version 0.0.1.2" & @LF & "  16.04.2015" & @LF & "by SafeSync-Team")
+EndFunc
 
-Func _Exit()
+#cs ExitSafeSync - Documentation
+Name:               ExitSafeSync
+Version:			0.1
+Description:        Function to stop SafeSync and subprograms
+Author:             Tim Lid
+Return values:      Success:	- Stops SafeSync and subprograms
+                    Failure:	- TODO
+Last edit:			2015.04.16 - 15:24 - Documentation (TL)
+TODO:				Commentation; Failure; Console output
+#ce
+Func ExitSafeSync()
+	StopBTSync()
+	StopSafeCrypt()
 	Exit
-EndFunc   ;==>_Exit
+EndFunc
 
-Func WM_NOTIFY($hWnd, $iMsg, $iwParam, $ilParam)
-	#forceref $hWnd, $iMsg, $iwParam
-	Local $hWndFrom, $iIDFrom, $iCode, $tNMHDR, $hWndListView, $tInfo
-	$hWndListView = $idListview
-	If Not IsHWnd($idListview) Then $hWndListView = GUICtrlGetHandle($idListview)
+#cs StopSafeCrypt - Documentation
+Name:               StopSafeCrypt
+Version:			0.1
+Description:        Function to stop SafeCrypt
+Author:             Tim Lid
+Return values:      Success:	- Stops SafeCrypt
+                    Failure:	- TODO
+Last edit:			2015.04.16 - 15:23 - Create the function (TL)
+TODO:				Commentation; Failure; Console output
+#ce
+Func StopSafeCrypt()
+	RegWrite($SafeSyncRegistrySoftwareManagementTool, "RunSafeCrypt", "REG_SZ", "0")
+EndFunc
 
-	$tNMHDR = DllStructCreate($tagNMHDR, $ilParam)
-	$hWndFrom = HWnd(DllStructGetData($tNMHDR, "hWndFrom"))
-	$iIDFrom = DllStructGetData($tNMHDR, "IDFrom")
-	$iCode = DllStructGetData($tNMHDR, "Code")
-	Switch $hWndFrom
-		Case $hWndListView
-			Switch $iCode
-				Case $NM_CLICK ; Sent by a list-view control when the user clicks an item with the left mouse button
-					$tInfo = DllStructCreate($tagNMITEMACTIVATE, $ilParam)
-					_DebugPrint("$NM_CLICK" & @LF & "--> hWndFrom:" & @TAB & $hWndFrom & @LF & _
-							"-->IDFrom:" & @TAB & $iIDFrom & @LF & _
-							"-->Code:" & @TAB & $iCode & @LF & _
-							"-->Index:" & @TAB & DllStructGetData($tInfo, "Index") & @LF & _
-							"-->SubItem:" & @TAB & DllStructGetData($tInfo, "SubItem") & @LF & _
-							"-->NewState:" & @TAB & DllStructGetData($tInfo, "NewState") & @LF & _
-							"-->OldState:" & @TAB & DllStructGetData($tInfo, "OldState") & @LF & _
-							"-->Changed:" & @TAB & DllStructGetData($tInfo, "Changed") & @LF & _
-							"-->ActionX:" & @TAB & DllStructGetData($tInfo, "ActionX") & @LF & _
-							"-->ActionY:" & @TAB & DllStructGetData($tInfo, "ActionY") & @LF & _
-							"-->lParam:" & @TAB & DllStructGetData($tInfo, "lParam") & @LF & _
-							"-->KeyFlags:" & @TAB & DllStructGetData($tInfo, "KeyFlags"))
-				Case $NM_RCLICK ; Sent by a list-view control when the user clicks an item with the right mouse button
-					$tInfo = DllStructCreate($tagNMITEMACTIVATE, $ilParam)
-					_DebugPrint("$NM_RCLICK" & @LF & "--> hWndFrom:" & @TAB & $hWndFrom & @LF & _
-							"-->IDFrom:" & @TAB & $iIDFrom & @LF & _
-							"-->Code:" & @TAB & $iCode & @LF & _
-							"-->Index:" & @TAB & DllStructGetData($tInfo, "Index") & @LF & _
-							"-->SubItem:" & @TAB & DllStructGetData($tInfo, "SubItem") & @LF & _
-							"-->NewState:" & @TAB & DllStructGetData($tInfo, "NewState") & @LF & _
-							"-->OldState:" & @TAB & DllStructGetData($tInfo, "OldState") & @LF & _
-							"-->Changed:" & @TAB & DllStructGetData($tInfo, "Changed") & @LF & _
-							"-->ActionX:" & @TAB & DllStructGetData($tInfo, "ActionX") & @LF & _
-							"-->ActionY:" & @TAB & DllStructGetData($tInfo, "ActionY") & @LF & _
-							"-->lParam:" & @TAB & DllStructGetData($tInfo, "lParam") & @LF & _
-							"-->KeyFlags:" & @TAB & DllStructGetData($tInfo, "KeyFlags"))
-					FolderEdit()
-					Return 0 ; allow the default processing
-				Case $NM_RETURN ; The control has the input focus and that the user has pressed the ENTER key
-					_DebugPrint("$NM_RETURN" & @LF & "--> hWndFrom:" & @TAB & $hWndFrom & @LF & _
-							"-->IDFrom:" & @TAB & $iIDFrom & @LF & _
-							"-->Code:" & @TAB & $iCode)
-			EndSwitch
-	EndSwitch
-	Return $GUI_RUNDEFMSG
-EndFunc   ;==>WM_NOTIFY
-
-#cs ----------------------------------------------------------------------------
-	_DebugPrint
-	Print debuggingtext in the console
-#ce ----------------------------------------------------------------------------
-Func _DebugPrint($s_text, $line = @ScriptLineNumber)
-	ConsoleWrite( _
-			"!===========================================================" & @LF & _
-			"+======================================================" & @LF & _
-			"-->Line(" & StringFormat("%04d", $line) & "):" & @TAB & $s_text & @LF & _
-			"+======================================================" & @LF)
-EndFunc   ;==>_DebugPrint
-
-
-Func FolderEdit()
-	Local $iTimeout = 10
-	; Display a message box with a nested variable in its text.
-	MsgBox($MB_SYSTEMMODAL, "Title", "This message box will timeout after " & $iTimeout & " seconds or select the OK button.", $iTimeout)
-EndFunc   ;==>FolderEdit
-
-#cs ----------------------------------------------------------------------------
-	createConfig
-	Function to create the config File, from the entries on the registry
-#ce ----------------------------------------------------------------------------
-Func createConfig($SyncFolders, $Storage_Path)
-	DirCreate($Storage_Path)
+#cs createConfig - Documentation
+Name:               createConfig
+Version:			0.1
+Description:        Function create the config File, from the entries on the registry
+Author:             Tim Lid
+Parameters:         $CC_SyncFolders			- String: The name of the sync folder
+					$CC_StoragePath			- String: Path to the BTSync storage path
+					$CC_BTSyncConfigOpen	- OpenFile: The file to write the config
+					$CC_Element				- Counter the rounds in the for-loop
+					$CC_Counter				- Count the number of folders
+Return values:      Success:				- Write the config file for BTSync
+                    Failure:				- TODO
+Last edit:			2015.04.16 - 14:52 - renaming variables/Documentation (TL)
+TODO:				Commentation; Failure; Console output
+#ce
+Func createConfig($CC_SyncFolders, $CC_StoragePath)
+	DirCreate($CC_StoragePath)
 	_FileCreate($BTSyncConfig)
-	Local $hFileOpen = FileOpen($BTSyncConfig, 1)
-	If $hFileOpen = -1 Then
+	Local $CC_BTSyncConfigOpen = FileOpen($BTSyncConfig, 1)
+	If $CC_BTSyncConfigOpen = -1 Then
 		MsgBox("Test", "", "An error occurred when reading the file.")
 	EndIf
 	; Write data to the file using the handle returned by FileOpen.
-	FileWrite($hFileOpen, '{' & @CRLF)
-	FileWrite($hFileOpen, '     "storage_path" : "' & $Storage_Path & '",' & @CRLF)
-	FileWrite($hFileOpen, '     "check_for_updates" : false,' & @CRLF)
-	FileWrite($hFileOpen, '     "use_gui" : ' & $BTSyncShowGUI & ',' & @CRLF)
-	FileWrite($hFileOpen, '     "webui" :' & @CRLF)
-	FileWrite($hFileOpen, '     {' & @CRLF)
-	FileWrite($hFileOpen, '          "listen" : "127.0.0.1:7878",' & @CRLF)
-	;   FileWrite($hFileOpen, '          "login" : "login",'& @CRLF)
-	;   FileWrite($hFileOpen, '          "password" : "passwd",'& @CRLF)
-	FileWrite($hFileOpen, '          "api_key" : "UPK4TNW735M6D4UERSZ7EW6A2VRRPMA5JJKFJ6JTYSPTNGTN4JGCLBUOJ46I6ZDXHRLT3PHGQD76I4SGVJWLNII7TPNFNMBOJ4J3KBAPDMVBKCXLNNSCJUMDLQTRW4BMQ6OZHPA"' & @CRLF)
-	FileWrite($hFileOpen, '     }' & @CRLF)
-	FileWrite($hFileOpen, '     ,' & @CRLF)
-	FileWrite($hFileOpen, '     "shared_folders" :' & @CRLF)
-	FileWrite($hFileOpen, '     [' & @CRLF)
-	$Counter = UBound($SyncFolders, $UBOUND_ROWS) - 1
-	For $element = 1 To $Counter
-		If $element <= $Counter And $element >= 2 Then
-			FileWrite($hFileOpen, '     ,' & @CRLF)
+	FileWrite($CC_BTSyncConfigOpen, '{' & @CRLF)
+	FileWrite($CC_BTSyncConfigOpen, '     "storage_path" : "' & $CC_StoragePath & '",' & @CRLF)
+	FileWrite($CC_BTSyncConfigOpen, '     "check_for_updates" : false,' & @CRLF)
+	FileWrite($CC_BTSyncConfigOpen, '     "use_gui" : ' & $BTSyncShowGUI & ',' & @CRLF)
+	FileWrite($CC_BTSyncConfigOpen, '     "webui" :' & @CRLF)
+	FileWrite($CC_BTSyncConfigOpen, '     {' & @CRLF)
+	FileWrite($CC_BTSyncConfigOpen, '          "listen" : "127.0.0.1:7878",' & @CRLF)
+	;FileWrite($hFileOpen, '          "login" : "login",'& @CRLF)
+	;FileWrite($hFileOpen, '          "password" : "passwd",'& @CRLF)
+	FileWrite($CC_BTSyncConfigOpen, '          "api_key" : "UPK4TNW735M6D4UERSZ7EW6A2VRRPMA5JJKFJ6JTYSPTNGTN4JGCLBUOJ46I6ZDXHRLT3PHGQD76I4SGVJWLNII7TPNFNMBOJ4J3KBAPDMVBKCXLNNSCJUMDLQTRW4BMQ6OZHPA"' & @CRLF)
+	FileWrite($CC_BTSyncConfigOpen, '     }' & @CRLF)
+	FileWrite($CC_BTSyncConfigOpen, '     ,' & @CRLF)
+	FileWrite($CC_BTSyncConfigOpen, '     "shared_folders" :' & @CRLF)
+	FileWrite($CC_BTSyncConfigOpen, '     [' & @CRLF)
+	Local $CC_Counter = UBound($CC_SyncFolders, $UBOUND_ROWS) - 1
+	For $CC_Element = 1 To $CC_Counter
+		If $CC_Element <= $CC_Counter And $CC_Element >= 2 Then
+			FileWrite($CC_BTSyncConfigOpen, '     ,' & @CRLF)
 		EndIf
-		FileWrite($hFileOpen, '     {' & @CRLF)
-		FileWrite($hFileOpen, '     "secret" : "' & $SyncFolders[$element][1] & '",' & @CRLF)
-		FileWrite($hFileOpen, '     "dir" : "' & StringReplace($SyncFolders[$element][0], "\", "/") & '",' & @CRLF)
-		FileWrite($hFileOpen, '     "use_relay_server" : true,' & @CRLF)
-		FileWrite($hFileOpen, '     "use_tracker" : true,' & @CRLF)
-		FileWrite($hFileOpen, '     "use_dht" : false,' & @CRLF)
-		FileWrite($hFileOpen, '     "search_lan" : true,' & @CRLF)
-		FileWrite($hFileOpen, '     "use_sync_trash" : true' & @CRLF)
-		FileWrite($hFileOpen, '     }' & @CRLF)
+		FileWrite($CC_BTSyncConfigOpen, '     {' & @CRLF)
+		FileWrite($CC_BTSyncConfigOpen, '     "secret" : "' & $CC_SyncFolders[$CC_Element][1] & '",' & @CRLF)
+		FileWrite($CC_BTSyncConfigOpen, '     "dir" : "' & StringReplace($CC_SyncFolders[$CC_Element][0], "\", "/") & '",' & @CRLF)
+		FileWrite($CC_BTSyncConfigOpen, '     "use_relay_server" : true,' & @CRLF)
+		FileWrite($CC_BTSyncConfigOpen, '     "use_tracker" : true,' & @CRLF)
+		FileWrite($CC_BTSyncConfigOpen, '     "use_dht" : false,' & @CRLF)
+		FileWrite($CC_BTSyncConfigOpen, '     "search_lan" : true,' & @CRLF)
+		FileWrite($CC_BTSyncConfigOpen, '     "use_sync_trash" : true' & @CRLF)
+		FileWrite($CC_BTSyncConfigOpen, '     }' & @CRLF)
 	Next
-	FileWrite($hFileOpen, '     ]' & @CRLF)
-	FileWrite($hFileOpen, '}' & @CRLF)
-EndFunc   ;==>createConfig
+	FileWrite($CC_BTSyncConfigOpen, '     ]' & @CRLF)
+	FileWrite($CC_BTSyncConfigOpen, '}' & @CRLF)
+EndFunc
 
-#cs ----------------------------------------------------------------------------
-	getNewKEy
-	get a New BitTorrent Sync Key
-#ce ----------------------------------------------------------------------------
+#cs getNewKey - Documentation
+Name:               getNewKey
+Version:			0.1
+Description:        Function, get a new BitTorrent Sync Key
+Author:             Tim Lid
+Parameters:         $SP_ProcessName			- String: The name of the sync folder
+					$SP_ProcessList			- Array[String] a List of processes with the given name
+Return values:      Success:				- Stops a process
+                    Failure:				- TODO
+Last edit:			2015.04.16 - 14:36 - renaming variables (TL)
+TODO:				Commentation; Failure; Console output
+#ce
 Func getNewKey()
 	; Save the downloaded file to the temporary folder.
-	Local $sFilePath = @TempDir & "\secretKey.temp"
+	Local $GNK_FilePath = @TempDir & "\secretKey.temp"
 
 	; Download the file in the background with the selected option of 'force a reload from the remote site.'
-	Local $hDownload = InetGet("http://admin:passwd@127.0.0.1:7878/api?method=get_secrets", @TempDir & "\secretKey.temp", $INET_FORCERELOAD, $INET_DOWNLOADBACKGROUND)
+	Local $GNK_Download = InetGet("http://admin:passwd@127.0.0.1:7878/api?method=get_secrets", @TempDir & "\secretKey.temp", $INET_FORCERELOAD, $INET_DOWNLOADBACKGROUND)
 
 	; Wait for the download to complete by monitoring when the 2nd index value of InetGetInfo returns True.
 	Do
-		Sleep(250)
-	Until InetGetInfo($hDownload, $INET_DOWNLOADCOMPLETE)
-
-	; Retrieve the number of total bytes received and the filesize.
-	Local $iBytesSize = InetGetInfo($hDownload, $INET_DOWNLOADREAD)
-	Local $iFileSize = FileGetSize($sFilePath)
+		Sleep(100)
+	Until InetGetInfo($GNK_Download, $INET_DOWNLOADCOMPLETE)
 
 	; Close the handle returned by InetGet.
-	InetClose($hDownload)
+	InetClose($GNK_Download)
 
-	$NewKey = FileReadLine($sFilePath, 1)
+	Local $GNK_ReadFile = FileReadLine($GNK_FilePath, 1)
 
-	$NewKey = StringRegExpReplace($NewKey, "{*:", "")
+	$GNK_ReadFile = StringRegExpReplace($GNK_ReadFile, "{*:", "")
 
-	$WriteKey = StringSplit($NewKey, '"')
+	$GNK_NewKey = StringSplit($GNK_ReadFile, '"')
 
-	;Return $WriteKey[8]
-	Return "TestKey"
 	; Delete the file.
-	FileDelete($sFilePath)
-EndFunc   ;==>getNewKey
+	FileDelete($GNK_FilePath)
 
-#cs ----------------------------------------------------------------------------
-	StopProcess
-#ce ----------------------------------------------------------------------------
-Func StopProcess($ProcessName)
-	Local $aProcessList = ProcessList($ProcessName)
-	For $i = 1 To $aProcessList[0][0]
-		ProcessClose($aProcessList[$i][1])
+	;Return $GNK_NewKey[8]
+	Return "TestKey"
+EndFunc
+
+#cs StopProcess - Documentation
+Name:               StopProcess
+Version:			0.1
+Description:        Function, stops a process with the given name
+Author:             Tim Lid
+Parameters:         $SP_ProcessName			- String: The name of the sync folder
+					$SP_ProcessList			- Array[String] a List of processes with the given name
+Return values:      Success:				- Stops a process
+                    Failure:				- TODO
+Last edit:			2015.04.16 - 14:11 - renaming variables (TL)
+TODO:				Commentation; Failure; Console output
+#ce
+Func StopProcess($SP_ProcessName)
+	Local $SP_ProcessList = ProcessList($SP_ProcessName)
+	For $i = 1 To $SP_ProcessList[0][0]
+		ProcessClose($SP_ProcessList[$i][1])
 	Next
-EndFunc   ;==>StopProcess
+EndFunc
 
-#cs ----------------------------------------------------------------------------
-	StopProcess
-#ce ----------------------------------------------------------------------------
-Func ChooseDecryptEncryptFolder($FolderName, $FolderData)
-	; Create a GUI with various controls.
-	$TempString = ""
-	If StringCompare($TempString, $FolderData) = 0 Then
-		$FolderData = $SafeSyncStandardDataFolder & "\" & $FolderName
+#cs ChooseDecryptEncryptFolder - Documentation
+Name:               ChooseDecryptEncryptFolder
+Version:			0.1
+Description:        Function, GUI for choosing a new encrypt and decrypt folder
+Author:             Tim Lid
+Parameters:         $CDEF_FolderName								- String: The name of the sync folder
+					$CDEF_FolderData								- String: Path of the decrypt data folder
+					$CDEF_EmptyString								- String: Temp string, TODO: Delete this one, and test it.
+					$CDEF_GUI_GUI_ChooseDecryptEncryptFolderDialog	- String: Path to log list of decrypt file
+					$CDEF_GUI_BUTTON_Ok								- BUTTON: OK Button
+					$CDEF_GUI_LABEL_DecryptDir						- LABEL: Label decrypt folder input
+					$CDEF_GUI_INPUT_DecryptDir						- INPUT: The Input for the decrypt folder
+					$CDEF_GUI_BUTTON_DecryptDir						- BUTTOM: Button for selecting the decrypt folder
+					$CDEF_GUI_LABEL_EncryptDir						- LABEL: Label encrypt folder input
+					$CDEF_GUI_INPUT_EncryptDir						- INPUT: The Input for the encrypt folder
+					$CDEF_GUI_BUTTON_EncryptDir						- BUTTOM: Button for selecting the encrypt folder
+Return values:      Success:				- Array[String]: The choosen encrypt and decrypt folder
+                    Failure:				- TODO
+Last edit:			2015.04.16 - 14:09 - renaming variables
+TODO:				Commentation; Failure; Console output
+#ce
+Func ChooseDecryptEncryptFolder($CDEF_FolderName, $CDEF_FolderData)
+	$CDEF_EmptyString = ""
+	If StringCompare($CDEF_EmptyString, $CDEF_FolderData) = 0 Then
+		$CDEF_FolderData = $SafeSyncStandardDataFolder & "\" & $CDEF_FolderName
 	EndIf
-	Local $InstallationDialog = GUICreate("SafeSync - Select Folder", 430, 170)
-	Local $OKButton = GUICtrlCreateButton("OK", 320, 130, 85, 25)
-	Local $DecryptDirectory = GUICtrlCreateLabel("DecryptFolder:", 10, 20)
-	Local $DecryptDir = GUICtrlCreateInput($FolderData, 10, 38, 300)
-	Local $DecryptDirSelect = GUICtrlCreateButton("SelectFolder", 320, 36, 100)
-	Local $EncryptDirectory = GUICtrlCreateLabel("EncryptFolder:", 10, 70)
-	Local $EncryptDir = GUICtrlCreateInput($FolderData & "Encrypt", 10, 88, 300)
-	Local $EncryptDirSelect = GUICtrlCreateButton("SelectFolder", 320, 86, 100)
-	;Local $DataCryptDirectory = GUICtrlCreateLabel("CryptDirectory:",10,120)
-	;Local $DataCryptDir = GUICtrlCreateInput($InstallLocationSafeSync & "\Crypt", 10, 138, 300)
-	;Local $DataCryptDirSelect = GUICtrlCreateButton( "SelectFolder", 320,136,100)
-	; Display the GUI.
-	GUISetState(@SW_SHOW, $InstallationDialog)
-	; Loop until the user exits.
+	Local $CDEF_GUI_ChooseDecryptEncryptFolderDialog = GUICreate("SafeSync - Select Folder", 430, 170)
+	Local $CDEF_GUI_BUTTON_Ok = GUICtrlCreateButton("OK", 320, 130, 85, 25)
+	GuiCtrlSetState(-1, 512)
+	Local $CDEF_GUI_LABEL_DecryptDir = GUICtrlCreateLabel("DecryptFolder:", 10, 20)
+	Local $CDEF_GUI_INPUT_DecryptDir = GUICtrlCreateInput($CDEF_FolderData, 10, 38, 300)
+	Local $CDEF_GUI_BUTTON_DecryptDir = GUICtrlCreateButton("SelectFolder", 320, 36, 100)
+	Local $CDEF_GUI_LABEL_EncryptDir = GUICtrlCreateLabel("EncryptFolder:", 10, 70)
+	Local $CDEF_GUI_INPUT_EncryptDir = GUICtrlCreateInput($CDEF_FolderData & "Encrypt", 10, 88, 300)
+	Local $CDEF_GUI_BUTTON_EncryptDir = GUICtrlCreateButton("SelectFolder", 320, 86, 100)
+	GUISetState(@SW_SHOW, $CDEF_GUI_ChooseDecryptEncryptFolderDialog)
 	While 1
 		Switch GUIGetMsg()
 			Case $GUI_EVENT_CLOSE
 				Exit
 				ExitLoop
-			Case $OKButton
+			Case $CDEF_GUI_BUTTON_Ok
 				ExitLoop
-			Case $DecryptDirSelect
-				GUICtrlSetData($DecryptDir, FileSelectFolder("Choose the destination folder", $InstallLocationSafeSync))
-			Case $EncryptDirSelect
-				GUICtrlSetData($EncryptDir, FileSelectFolder("Choose Standard Data Folder", $InstallLocationSafeSync))
+			Case $CDEF_GUI_BUTTON_DecryptDir
+				GUICtrlSetData($CDEF_GUI_INPUT_DecryptDir, FileSelectFolder("Choose the destination folder", $InstallLocationSafeSync))
+			Case $CDEF_GUI_BUTTON_EncryptDir
+				GUICtrlSetData($CDEF_GUI_INPUT_EncryptDir, FileSelectFolder("Choose Standard Data Folder", $InstallLocationSafeSync))
 		EndSwitch
 	WEnd
-	Local $arr[2]
-	$arr[0] = GUICtrlRead($DecryptDir)
-	$arr[1] = GUICtrlRead($EncryptDir)
-	GUIDelete($InstallationDialog)
+	Local $CDEF_EncryptDecryptFolder[2]
+	$CDEF_EncryptDecryptFolder[0] = GUICtrlRead($CDEF_GUI_INPUT_DecryptDir)
+	$CDEF_EncryptDecryptFolder[1] = GUICtrlRead($CDEF_GUI_INPUT_EncryptDir)
+	GUIDelete($CDEF_GUI_ChooseDecryptEncryptFolderDialog)
 	GUISetState(@SW_SHOW, $SafeSyncManagementTool)
-	Return $arr
-EndFunc   ;==>ChooseDecryptEncryptFolder
+	Return $CDEF_EncryptDecryptFolder
+EndFunc
 
-#cs ----------------------------------------------------------------------------
-	run Register file Extision, for supporting .ssf - files
-#ce ----------------------------------------------------------------------------
-Func RegisterFileExtension($InstallPath, $DataDir)
-	;RunWait( @ComSpec & ' /c ' & @TempDir & '\InstallSafeSync.exe "' & $InstallPath & '" "' & @ScriptFullPath & '"', @TempDir , @SW_HIDE )
-	;RunWait( @ComSpec & ' /c ' & @TempDir & '\InstallSafeSync.exe "' & $DataDir & '"', @TempDir , @SW_HIDE )
-	ConsoleWrite("Run File-Extension support" & @CRLF)
-	ConsoleWrite("Run: " & @TempDir & "\RegisterSSF.exe" & @CRLF)
-	RunWait(@ComSpec & ' /c ' & @TempDir & "\RegisterSSF.exe", @TempDir, @SW_HIDE)
-	RegWrite($SafeSyncRegistrySoftware, "FileRegistered", "REG_SZ", "1")
-EndFunc   ;==>RegisterFileExtension
-
-Func CheckAdmin()
-	If Not IsAdmin() Then
-		ConsoleWrite($RunSafeSyncAsAdmin)
-		Run(@ComSpec & ' /c ' & $RunSafeSyncAsAdmin, @TempDir, @SW_HIDE)
-		Exit
-	EndIf
-EndFunc   ;==>CheckAdmin
-
-#cs ----------------------------------------------------------------------------
-	AutoIt Version: 	3.3.12.0
-	Author:				Tim Christoph Lid
-	Name:				SafeCrypt x64
-	Script Function:
-	SafeCrypt Tool
-	TODO:
-	Check File encryption, with wrong filenames? Maybe not needed
-#ce ----------------------------------------------------------------------------
-
-#cs ----------------------------------------------------------------------------
-	Install SafeSync if not installed yes
-#ce ----------------------------------------------------------------------------
-;If Not StringCompare( $DisplayName, RegRead( $SafeCryptRegistry, "DisplayName")) = 0 Then
-;	Install()
-;EndIf
-
-#cs ----------------------------------------------------------------------------
-	Command line parameters
-#ce ----------------------------------------------------------------------------
-
-
-
-; Read command line parameters
-; Create Registry, if an external file is open with command line parameter "ImportFile"
-#cs
-	If Not $CmdLine[0] = 0 Then
-	If $CmdLine[1] == "AddFolder" Then
-	FileOpen($CmdLine[2])
-	RegWrite($SafeCryptFoldersRegistry)
-	RegWrite($SafeCryptFoldersRegistry & "\" & $CmdLine[2])
-	RegWrite($SafeCryptFoldersRegistry & "\" & $CmdLine[2], "Encrypt", "REG_SZ", $CmdLine[3])
-	RegWrite($SafeCryptFoldersRegistry & "\" & $CmdLine[2], "Decrypt", "REG_SZ", $CmdLine[4])
-	Exit
-	EndIf
-	If $CmdLine[1] == "/Install" Then
-	Install()
-	Exit
-	EndIf
-	EndIf
+#cs SafeCrypt - Documentation
+Name:               SafeCrypt
+Version:			0.1
+Description:        Function, run SafeCrypt in a loop, and sync two folders with encryption in both ways
+Author:             Tim Lid
+Parameters:         $SC_FolderName				- String: The name of the sync folder
+					$SC_DataFolderDecrypt		- String: Path of the decrypt data folder
+					$SC_DataFolderEncrypt		- String: Path of the encrypt data folder
+					$SC_LogListFolderDecrypt	- String: Path to log list of decrypt file
+					$SC_LogListFolderEncrypt	- String: Path to log list of decrypt file
+					$SC_LogListFileDecrypt		- String: Path to log list of decrypt folder
+					$SC_LogListFileEncrypt		- String: Path to log list of encrypt folder
+					$SC_PasswordFolder			- String: Password of the folder
+Return values:      Success:				- Delete files on the other location
+                    Failure:				- TODO
+Last edit:			2015.04.16 - 12:27 - renaming variables
+TODO:				Commentation; Failure; Console output
 #ce
-
-
-
 Func RunSafeCrypt()
 	While 1
 		For $i = 1 To 100
@@ -1117,109 +1171,140 @@ Func RunSafeCrypt()
 		Next
 		Sleep(5000)
 	WEnd
-EndFunc   ;==>RunSafeCrypt
+EndFunc
 
-Func SafeCrypt($FolderName, $DataFolderDecrypt, $DataFolderEncrypt, $LogListFolderDecrypt, $LogListFolderEncrypt, $LogListFileDecrypt, $LogListFileEncrypt, $PasswordFolder)
+#cs SafeCrypt - Documentation
+Name:               SafeCrypt
+Version:			0.1
+Description:        Function, Check for deleted Files and delete the file on the other side
+Author:             Tim Lid
+Parameters:         $SC_FolderName				- String: The name of the sync folder
+					$SC_DataFolderDecrypt		- String: Path of the decrypt data folder
+					$SC_DataFolderEncrypt		- String: Path of the encrypt data folder
+					$SC_LogListFolderDecrypt	- String: Path to log list of decrypt file
+					$SC_LogListFolderEncrypt	- String: Path to log list of decrypt file
+					$SC_LogListFileDecrypt		- String: Path to log list of decrypt folder
+					$SC_LogListFileEncrypt		- String: Path to log list of encrypt folder
+					$SC_PasswordFolder			- String: Password of the folder
+Return values:      Success:				- Delete files on the other location
+                    Failure:				- TODO
+Last edit:			2015.04.16 - 12:27 - renaming variables
+TODO:				Commentation; Failure; Console output
+#ce
+Func SafeCrypt($SC_FolderName, $SC_DataFolderDecrypt, $SC_DataFolderEncrypt, $SC_LogListFolderDecrypt, $SC_LogListFolderEncrypt, $SC_LogListFileDecrypt, $SC_LogListFileEncrypt, $SC_PasswordFolder)
 
-	DirGetSize($DataFolderDecrypt)
+	DirGetSize($SC_DataFolderDecrypt)
 	If @error Then
-		ConsoleWrite("Folder not exists: " & $DataFolderDecrypt & @CRLF)
+		ConsoleWrite("Folder not exists: " & $SC_DataFolderDecrypt & @CRLF)
 	Else
-		DirGetSize($DataFolderDecrypt)
+		DirGetSize($SC_DataFolderDecrypt)
 		If @error Then
-			ConsoleWrite("Folder not exists: " & $DataFolderDecrypt)
+			ConsoleWrite("Folder not exists: " & $SC_DataFolderDecrypt)
 		Else
 			DirCreate(@AppDataDir & "\SafeCrypt")
-			DirCreate(@AppDataDir & "\SafeCrypt\" & $FolderName)
+			DirCreate(@AppDataDir & "\SafeCrypt\" & $SC_FolderName)
 
-			$AppDir = @AppDataDir & "\SafeCrypt\" & $FolderName
-			$LogListFolderDecrypt = $AppDir & "\FolderDecrypt.txt"
-			$LogListFolderEncrypt = $AppDir & "\FolderEncrypt.txt"
-			$LogListFileDecrypt = $AppDir & "\FileDecrypt.txt"
-			$LogListFileEncrypt = $AppDir & "\FileEncrypt.txt"
+			$SC_AppDir = @AppDataDir & "\SafeCrypt\" & $SC_FolderName
+			$SC_LogListFolderDecrypt = $SC_AppDir & "\FolderDecrypt.txt"
+			$SC_LogListFolderEncrypt = $SC_AppDir & "\FolderEncrypt.txt"
+			$SC_LogListFileDecrypt = $SC_AppDir & "\FileDecrypt.txt"
+			$SC_LogListFileEncrypt = $SC_AppDir & "\FileEncrypt.txt"
 
-			If Not FileExists($LogListFolderDecrypt) Then
-				_FileCreate($LogListFolderDecrypt)
+			If Not FileExists($SC_LogListFolderDecrypt) Then
+				_FileCreate($SC_LogListFolderDecrypt)
 			EndIf
 
-			If Not FileExists($LogListFolderEncrypt) Then
-				_FileCreate($LogListFolderEncrypt)
+			If Not FileExists($SC_LogListFolderEncrypt) Then
+				_FileCreate($SC_LogListFolderEncrypt)
 			EndIf
 
-			If Not FileExists($LogListFileDecrypt) Then
-				_FileCreate($LogListFileDecrypt)
+			If Not FileExists($SC_LogListFileDecrypt) Then
+				_FileCreate($SC_LogListFileDecrypt)
 			EndIf
 
-			If Not FileExists($LogListFileEncrypt) Then
-				_FileCreate($LogListFileEncrypt)
+			If Not FileExists($SC_LogListFileEncrypt) Then
+				_FileCreate($SC_LogListFileEncrypt)
 			EndIf
 
 			; Check Deleted Folder
 			ConsoleWrite("Check Deleted Folder" & @CRLF)
-			CheckDeletedFilesOrFolders(2, $DataFolderDecrypt, $DataFolderEncrypt, $LogListFileEncrypt, $LogListFileDecrypt, $LogListFolderEncrypt, $LogListFolderDecrypt)
+			CheckDeletedFilesOrFolders(2, $SC_DataFolderDecrypt, $SC_DataFolderEncrypt, $SC_LogListFileEncrypt, $SC_LogListFileDecrypt, $SC_LogListFolderEncrypt, $SC_LogListFolderDecrypt)
 
 			; Check Deleted Files
 			ConsoleWrite("Check Deleted Files" & @CRLF)
-			CheckDeletedFilesOrFolders(1, $DataFolderDecrypt, $DataFolderEncrypt, $LogListFileEncrypt, $LogListFileDecrypt, $LogListFolderEncrypt, $LogListFolderDecrypt)
+			CheckDeletedFilesOrFolders(1, $SC_DataFolderDecrypt, $SC_DataFolderEncrypt, $SC_LogListFileEncrypt, $SC_LogListFileDecrypt, $SC_LogListFolderEncrypt, $SC_LogListFolderDecrypt)
 
 			; Check for Changes in Files
 			ConsoleWrite("Check Deleted Files" & @CRLF)
-			CheckChangedFiles($LogListFileDecrypt, $LogListFileEncrypt, $DataFolderDecrypt, $DataFolderEncrypt, $PasswordFolder)
+			CheckChangedFiles($SC_LogListFileDecrypt, $SC_LogListFileEncrypt, $SC_DataFolderDecrypt, $SC_DataFolderEncrypt, $SC_PasswordFolder)
 
 			; Copy Folder from Decrypt to Encrypt
 			ConsoleWrite("Copy Folder from Decrypt to Encrypt" & @CRLF)
-			CopyFilesOrFolder($DataFolderDecrypt, $DataFolderEncrypt, 2, 0, $PasswordFolder)
+			CopyFilesOrFolder($SC_DataFolderDecrypt, $SC_DataFolderEncrypt, 2, 0, $SC_PasswordFolder)
 
 			; Copy Folder from Encrypt to Decrypt
 			ConsoleWrite("Copy Folder from Encrypt to Decrypt" & @CRLF)
-			CopyFilesOrFolder($DataFolderEncrypt, $DataFolderDecrypt, 2, 0, $PasswordFolder)
+			CopyFilesOrFolder($SC_DataFolderEncrypt, $SC_DataFolderDecrypt, 2, 0, $SC_PasswordFolder)
 
 			; Copy Files from Encrypt to Decrypt
 			ConsoleWrite("Copy Files from Encrypt to Decrypt" & @CRLF)
-			CopyFilesOrFolder($DataFolderEncrypt, $DataFolderDecrypt, 1, 1, $PasswordFolder)
+			CopyFilesOrFolder($SC_DataFolderEncrypt, $SC_DataFolderDecrypt, 1, 1, $SC_PasswordFolder)
 			ConsoleWrite("Copy Files from Encrypt to Decrypt Ends" & @CRLF)
 
 			; Copy Files from Decrypt to Encrypt
 			ConsoleWrite("Copy Files from Decrypt to Encrypt" & @CRLF)
-			CopyFilesOrFolder($DataFolderDecrypt, $DataFolderEncrypt, 1, 0, $PasswordFolder)
+			CopyFilesOrFolder($SC_DataFolderDecrypt, $SC_DataFolderEncrypt, 1, 0, $SC_PasswordFolder)
 			ConsoleWrite("Copy Files from Decrypt to Encrypt Ends" & @CRLF)
 
 			; Generate New File Lists, for the Next run
 			ConsoleWrite("Generate Lists" & @CRLF)
-			GenerateList($DataFolderDecrypt, $LogListFileDecrypt, 1)
-			GenerateList($DataFolderEncrypt, $LogListFileEncrypt, 1)
-			GenerateList($DataFolderDecrypt, $LogListFolderDecrypt, 2)
-			GenerateList($DataFolderEncrypt, $LogListFolderEncrypt, 2)
+			GenerateList($SC_DataFolderDecrypt, $SC_LogListFileDecrypt, 1)
+			GenerateList($SC_DataFolderEncrypt, $SC_LogListFileEncrypt, 1)
+			GenerateList($SC_DataFolderDecrypt, $SC_LogListFolderDecrypt, 2)
+			GenerateList($SC_DataFolderEncrypt, $SC_LogListFolderEncrypt, 2)
 			ConsoleWrite("Generate Lists End" & @CRLF)
 		EndIf
 	EndIf
-EndFunc   ;==>SafeCrypt
+EndFunc
 
-; Copy Files from Decrypt to Encrypt
-Func CopyFilesOrFolder($LeftFolder, $RightFolder, $Param, $Decrypt, $PasswordFolder)
-	$FileList = _FileListToArrayRec($LeftFolder, "*|.sync|.sync", $Param, 1, Default, 2)
+#cs CheckChangedFiles - Documentation
+Name:               CheckChangedFiles
+Version:			0.1
+Description:        Function, Check for deleted Files and delete the file on the other side
+Author:             Tim Lid
+Parameters:         $CFOF_LeftFolder		- String: The folder to scan
+					$CFOF_RightFolder		- String: Path of the decrypt data folder
+					$CFOF_Param				- String: Path of the encrypt data folder
+					$CFOF_Decrypt			- String: Path to log list of decrypt file
+					$CFOF_PasswordFolder	- String: Path to log list of decrypt file
+					$GL_SplitPath			- Array[String] The Path splited into their elements
+Return values:      Success:				- Delete files on the other location
+                    Failure:				- TODO
+Last edit:			2015.04.16 - 10:36 - renaming variables
+TODO:				Commentation; Failure; Console output; rename left/right folder
+#ce
+Func CopyFilesOrFolder($CFOF_LeftFolder, $CFOF_RightFolder, $CFOF_Param, $CFOF_Decrypt, $CFOF_PasswordFolder)
+	$CFOF_FileList = _FileListToArrayRec($CFOF_LeftFolder, "*|.sync|.sync", $CFOF_Param, 1, Default, 2)
 	If Not @error Then
-		For $i = 1 To $FileList[0] Step 1
-			If $Param = 1 Then
-				$PathSplit = _PathSplit(StringReplace($FileList[$i], $LeftFolder, $RightFolder, 1), $sDrive, $sDir, $sFilename, $sExtension)
-				If $Decrypt Then
-					If Not FileExists($PathSplit[1] & $PathSplit[2] & $PathSplit[3]) Then
-						ConsoleWrite("Decrypt File1: " & $PathSplit[1] & $PathSplit[2] & $PathSplit[3] & @CRLF)
-						DecryptFile($FileList[$i], $PathSplit[1] & $PathSplit[2], $PasswordFolder)
-						;FileCopy( $FileList[$i], StringReplace($FileList[$i], $LeftFolder, $RightFolder, 1))
+		For $i = 1 To $CFOF_FileList[0] Step 1
+			If $CFOF_Param = 1 Then
+				$CFOF_SplitPath = _PathSplit(StringReplace($CFOF_FileList[$i], $CFOF_LeftFolder, $CFOF_RightFolder, 1), $sDrive, $sDir, $sFilename, $sExtension)
+				If $CFOF_Decrypt Then
+					If Not FileExists($CFOF_SplitPath[1] & $CFOF_SplitPath[2] & $CFOF_SplitPath[3]) Then
+						ConsoleWrite("Decrypt File1: " & $CFOF_SplitPath[1] & $CFOF_SplitPath[2] & $CFOF_SplitPath[3] & @CRLF)
+						DecryptFile($CFOF_FileList[$i], $CFOF_SplitPath[1] & $CFOF_SplitPath[2], $CFOF_PasswordFolder)
 					EndIf
 				Else
-					If Not FileExists(StringReplace($FileList[$i], $LeftFolder, $RightFolder, 1) & ".7z") Then
-						EncryptFile($FileList[$i], StringReplace($FileList[$i], $LeftFolder, $RightFolder, 1) & ".7z", $PasswordFolder)
-						ConsoleWrite("Encrypt File1: " & StringReplace($FileList[$i], $LeftFolder, $RightFolder, 1) & @CRLF)
-						;FileCopy( $FileList[$i], StringReplace($FileList[$i], $LeftFolder, $RightFolder, 1))
+					If Not FileExists(StringReplace($CFOF_FileList[$i], $CFOF_LeftFolder, $CFOF_RightFolder, 1) & ".7z") Then
+						EncryptFile($CFOF_FileList[$i], StringReplace($CFOF_FileList[$i], $CFOF_LeftFolder, $CFOF_RightFolder, 1) & ".7z", $CFOF_PasswordFolder)
+						ConsoleWrite("Encrypt File1: " & StringReplace($CFOF_FileList[$i], $CFOF_LeftFolder, $CFOF_RightFolder, 1) & @CRLF)
 					EndIf
 				EndIf
-			ElseIf $Param = 2 Then
-				DirGetSize(StringReplace($FileList[$i], $LeftFolder, $RightFolder, 1))
+			ElseIf $CFOF_Param = 2 Then
+				DirGetSize(StringReplace($CFOF_FileList[$i], $CFOF_LeftFolder, $CFOF_RightFolder, 1))
 				If @error Then
-					ConsoleWrite("Dir Create: " & StringReplace($FileList[$i], $LeftFolder, $RightFolder, 1) & @CRLF)
-					DirCreate(StringReplace($FileList[$i], $LeftFolder, $RightFolder, 1))
+					ConsoleWrite("Dir Create: " & StringReplace($CFOF_FileList[$i], $CFOF_LeftFolder, $CFOF_RightFolder, 1) & @CRLF)
+					DirCreate(StringReplace($CFOF_FileList[$i], $CFOF_LeftFolder, $CFOF_RightFolder, 1))
 				EndIf
 			EndIf
 		Next
@@ -1231,7 +1316,7 @@ Name:               CheckChangedFiles
 Version:			0.1
 Description:        Function, Check for deleted Files and delete the file on the other side
 Author:             Tim Lid
-Parameters:         $CDFOF_Param		- String: The folder to scan
+Parameters:         $CDFOF_Param					- String: The folder to scan
 					$CDFOF_DataFolderDecrypt		- String: Path of the decrypt data folder
 					$CDFOF_DataFolderEncrypt		- String: Path of the encrypt data folder
 					$CDFOF_LogListFileEncrypt		- String: Path to log list of decrypt file
