@@ -8,6 +8,7 @@
 	1. Write documentation
 	Rename Variables
 	Commentation
+	Output log file, with function for output file, and console output
 	Correct Version number
 
 	Maybe:
@@ -1223,137 +1224,169 @@ Func CopyFilesOrFolder($LeftFolder, $RightFolder, $Param, $Decrypt, $PasswordFol
 			EndIf
 		Next
 	EndIf
-EndFunc   ;==>CopyFilesOrFolder
+EndFunc
 
-; Check for Deleted Files
-Func CheckDeletedFilesOrFolders($Param, $DataFolderDecrypt, $DataFolderEncrypt, $LogListFileEncrypt, $LogListFileDecrypt, $LogListFolderEncrypt, $LogListFolderDecrypt)
-	If $Param = 1 Then
-		_FileReadToArray($LogListFileDecrypt, $ListDecrypt)
+#cs CheckChangedFiles - Documentation
+Name:               CheckChangedFiles
+Version:			0.1
+Description:        Function, Check for deleted Files and delete the file on the other side
+Author:             Tim Lid
+Parameters:         $CDFOF_Param		- String: The folder to scan
+					$CDFOF_DataFolderDecrypt		- String: Path of the decrypt data folder
+					$CDFOF_DataFolderEncrypt		- String: Path of the encrypt data folder
+					$CDFOF_LogListFileEncrypt		- String: Path to log list of decrypt file
+					$CDFOF_LogListFileDecrypt		- String: Path to log list of decrypt file
+					$CDFOF_LogListFolderEncrypt		- String: Path to log list of encrypt folder
+					$CDFOF_LogListFolderDecrypt		- String: Path to log list of decrypt folder
+Return values:      Success:				- Delete files on the other location
+                    Failure:				- TODO
+Last edit:			2015.04.16 - 10:27 - renaming variables
+TODO:				Commentation; Failure; Console output
+#ce
+Func CheckDeletedFilesOrFolders($CDFOF_Param, $CDFOF_DataFolderDecrypt, $CDFOF_DataFolderEncrypt, $CDFOF_LogListFileEncrypt, $CDFOF_LogListFileDecrypt, $CDFOF_LogListFolderEncrypt, $CDFOF_LogListFolderDecrypt)
+	Local $CDFOF_ListDecrypt
+	Local $CDFOF_ListEncrypt
+	If $CDFOF_Param = 1 Then
+		_FileReadToArray($CDFOF_LogListFileDecrypt, $CDFOF_ListDecrypt)
 		If Not @error Then
-			For $i = 1 To $ListDecrypt[0] Step 3
-				If Not FileExists($ListDecrypt[$i] & $ListDecrypt[$i + 1]) Then
-					$EncryptFile = StringReplace($ListDecrypt[$i], $DataFolderDecrypt, $DataFolderEncrypt, 1) & $ListDecrypt[$i + 1] & ".7z"
-					If FileExists($EncryptFile) Then
-						ConsoleWrite("Delete Encrypted File: " & $EncryptFile & @CRLF)
-						Local $iDelete = FileDelete($EncryptFile)
+			For $i = 1 To $CDFOF_ListDecrypt[0] Step 3
+				If Not FileExists($CDFOF_ListDecrypt[$i] & $CDFOF_ListDecrypt[$i + 1]) Then
+					Local $CDFOF_EncryptFile = StringReplace($CDFOF_ListDecrypt[$i], $CDFOF_DataFolderDecrypt, $CDFOF_DataFolderEncrypt, 1) & $CDFOF_ListDecrypt[$i + 1] & ".7z"
+					If FileExists($CDFOF_EncryptFile) Then
+						ConsoleWrite("Delete Encrypted File: " & $CDFOF_EncryptFile & @CRLF)
+						Local $iDelete = FileDelete($CDFOF_EncryptFile)
 					EndIf
 				EndIf
 			Next
 		EndIf
-		_FileReadToArray($LogListFileEncrypt, $ListEncrypt)
+		_FileReadToArray($CDFOF_LogListFileEncrypt, $CDFOF_ListEncrypt)
 		If Not @error Then
-			For $i = 1 To $ListEncrypt[0] Step 3
-				If Not FileExists($ListEncrypt[$i] & $ListEncrypt[$i + 1]) Then
-					$PathSplit = _PathSplit(StringReplace($ListEncrypt[$i], $DataFolderEncrypt, $DataFolderDecrypt, 1) & $ListEncrypt[$i + 1], $sDrive, $sDir, $sFilename, $sExtension)
-					$DecryptFile = $PathSplit[1] & $PathSplit[2] & $PathSplit[3]
-					If FileExists($DecryptFile) Then
-						ConsoleWrite("Delete Decrypted File: " & $DecryptFile & @CRLF)
-						Local $iDelete = FileDelete($DecryptFile)
+			For $i = 1 To $CDFOF_ListEncrypt[0] Step 3
+				If Not FileExists($CDFOF_ListEncrypt[$i] & $CDFOF_ListEncrypt[$i + 1]) Then
+					$PathSplit = _PathSplit(StringReplace($CDFOF_ListEncrypt[$i], $CDFOF_DataFolderEncrypt, $CDFOF_DataFolderDecrypt, 1) & $CDFOF_ListEncrypt[$i + 1], $sDrive, $sDir, $sFilename, $sExtension)
+					$CDFOF_DecryptFile = $PathSplit[1] & $PathSplit[2] & $PathSplit[3]
+					If FileExists($CDFOF_DecryptFile) Then
+						ConsoleWrite("Delete Decrypted File: " & $CDFOF_DecryptFile & @CRLF)
+						Local $iDelete = FileDelete($CDFOF_DecryptFile)
 					EndIf
 				EndIf
 			Next
 		EndIf
-	ElseIf $Param = 2 Then
-		_FileReadToArray($LogListFolderDecrypt, $ListDecrypt)
+	ElseIf $CDFOF_Param = 2 Then
+		_FileReadToArray($CDFOF_LogListFolderDecrypt, $CDFOF_ListDecrypt)
 		If Not @error Then
-			For $i = 1 To $ListDecrypt[0] Step 3
-				DirGetSize($ListDecrypt[$i] & $ListDecrypt[$i + 1])
+			For $i = 1 To $CDFOF_ListDecrypt[0] Step 3
+				DirGetSize($CDFOF_ListDecrypt[$i] & $CDFOF_ListDecrypt[$i + 1])
 				If @error Then
-					ConsoleWrite("Delete Folder1: " & StringReplace($ListDecrypt[$i], $DataFolderDecrypt, $DataFolderEncrypt, 1) & $ListDecrypt[$i + 1] & @CRLF)
-					DirRemove(StringReplace($ListDecrypt[$i], $DataFolderDecrypt, $DataFolderEncrypt, 1) & $ListDecrypt[$i + 1], 1)
+					ConsoleWrite("Delete Folder1: " & StringReplace($CDFOF_ListDecrypt[$i], $CDFOF_DataFolderDecrypt, $CDFOF_DataFolderEncrypt, 1) & $CDFOF_ListDecrypt[$i + 1] & @CRLF)
+					DirRemove(StringReplace($CDFOF_ListDecrypt[$i], $CDFOF_DataFolderDecrypt, $CDFOF_DataFolderEncrypt, 1) & $CDFOF_ListDecrypt[$i + 1], 1)
 				EndIf
 			Next
 		EndIf
-		_FileReadToArray($LogListFolderEncrypt, $ListEncrypt)
+		_FileReadToArray($CDFOF_LogListFolderEncrypt, $CDFOF_ListEncrypt)
 		If Not @error Then
-			For $i = 1 To $ListEncrypt[0] Step 3
-				DirGetSize($ListEncrypt[$i] & $ListEncrypt[$i + 1])
+			For $i = 1 To $CDFOF_ListEncrypt[0] Step 3
+				DirGetSize($CDFOF_ListEncrypt[$i] & $CDFOF_ListEncrypt[$i + 1])
 				If @error Then
-					$EncryptFolder = StringReplace($ListEncrypt[$i], $DataFolderEncrypt, $DataFolderDecrypt, 1) & $ListEncrypt[$i + 1]
+					$EncryptFolder = StringReplace($CDFOF_ListEncrypt[$i], $CDFOF_DataFolderEncrypt, $CDFOF_DataFolderDecrypt, 1) & $CDFOF_ListEncrypt[$i + 1]
 					ConsoleWrite("Delete Folder2: " & $EncryptFolder & @CRLF)
 					DirRemove($EncryptFolder, 1)
 				EndIf
 			Next
 		EndIf
 	EndIf
-EndFunc   ;==>CheckDeletedFilesOrFolders
+EndFunc
 
-; Check for Changes in Files with MD5 Checksum
-Func CheckChangedFiles($LogListFileDecrypt, $LogListFileEncrypt, $DataFolderDecrypt, $DataFolderEncrypt, $PasswordFolder)
-	Local $LeftFolder
-	Local $RightFolder
-	_FileReadToArray($LogListFileEncrypt, $LeftFolder)
+#cs CheckChangedFiles - Documentation
+Name:               CheckChangedFiles
+Version:			0.1
+Description:        Function, Check for Changes in Files with MD5 Checksum
+Author:             Tim Lid
+Parameters:         $CCF_LogListFileDecrypt		- String: The folder to scan
+					$CCF_LogListFileEncrypt		- String: The encrypt file location
+					$CCF_DataFolderDecrypt		- String: Parameter 1: choosing Folder / 2: choosing File
+					$CCF_DataFolderEncrypt		- Array[String] Files/Folders in $GL_ScanFolder
+					$CCF_PasswordFolder			- String: Password for de/encryption
+Return values:      Success:				- Changed files, are updated to the other location
+                    Failure:				- TODO
+Last edit:			2015.04.16 - 08:51 - Documentation
+TODO:				Commentation; Failure; rename variables
+#ce
+Func CheckChangedFiles($CCF_LogListFileDecrypt, $CCF_LogListFileEncrypt, $CCF_DataFolderDecrypt, $CCF_DataFolderEncrypt, $CCF_PasswordFolder)
+	Local $CCF_LeftFolder
+	Local $CCF_RightFolder
+	_FileReadToArray($CCF_LogListFileEncrypt, $CCF_LeftFolder)
 	If Not @error Then
-		For $i = 1 To $LeftFolder[0] Step 3
-			$NewHash = _Crypt_HashFile($LeftFolder[$i] & $LeftFolder[$i + 1], $CALG_MD5)
-			$OldHash = $LeftFolder[$i + 2]
-			$PathSplit = _PathSplit(StringReplace($LeftFolder[$i], $DataFolderEncrypt, $DataFolderDecrypt, 1) & $LeftFolder[$i + 1], $sDrive, $sDir, $sFilename, $sExtension)
+		For $i = 1 To $CCF_LeftFolder[0] Step 3
+			$NewHash = _Crypt_HashFile($CCF_LeftFolder[$i] & $CCF_LeftFolder[$i + 1], $CALG_MD5)
+			$OldHash = $CCF_LeftFolder[$i + 2]
+			$PathSplit = _PathSplit(StringReplace($CCF_LeftFolder[$i], $CCF_DataFolderEncrypt, $CCF_DataFolderDecrypt, 1) & $CCF_LeftFolder[$i + 1], $sDrive, $sDir, $sFilename, $sExtension)
 			If $OldHash <> $NewHash Then
-				If FileExists($LeftFolder[$i] & $LeftFolder[$i + 1]) Then
-					ConsoleWrite("Change in File: " & $LeftFolder[$i] & $LeftFolder[$i + 1] & @CRLF)
-					ConsoleWrite("Decrypt To: " & StringReplace($LeftFolder[$i], $DataFolderEncrypt, $DataFolderDecrypt, 1) & $LeftFolder[$i + 1] & @CRLF)
-					FileDelete(StringReplace($LeftFolder[$i], $DataFolderEncrypt, $DataFolderDecrypt, 1) & $LeftFolder[$i + 1])
-					$From = $LeftFolder[$i] & $LeftFolder[$i + 1]
-					$To = StringReplace($LeftFolder[$i], $DataFolderEncrypt, $DataFolderDecrypt, 1) & $LeftFolder[$i + 1]
-					ConsoleWrite($LeftFolder[$i] & $LeftFolder[$i + 1] & "    " & $PathSplit[1] & $PathSplit[2] & $PathSplit[3] & @CRLF)
-					DecryptFile($LeftFolder[$i] & $LeftFolder[$i + 1], $PathSplit[1] & $PathSplit[2], $PasswordFolder)
+				If FileExists($CCF_LeftFolder[$i] & $CCF_LeftFolder[$i + 1]) Then
+					ConsoleWrite("Change in File: " & $CCF_LeftFolder[$i] & $CCF_LeftFolder[$i + 1] & @CRLF)
+					ConsoleWrite("Decrypt To: " & StringReplace($CCF_LeftFolder[$i], $CCF_DataFolderEncrypt, $CCF_DataFolderDecrypt, 1) & $CCF_LeftFolder[$i + 1] & @CRLF)
+					FileDelete(StringReplace($CCF_LeftFolder[$i], $CCF_DataFolderEncrypt, $CCF_DataFolderDecrypt, 1) & $CCF_LeftFolder[$i + 1])
+					$From = $CCF_LeftFolder[$i] & $CCF_LeftFolder[$i + 1]
+					$To = StringReplace($CCF_LeftFolder[$i], $CCF_DataFolderEncrypt, $CCF_DataFolderDecrypt, 1) & $CCF_LeftFolder[$i + 1]
+					ConsoleWrite($CCF_LeftFolder[$i] & $CCF_LeftFolder[$i + 1] & "    " & $PathSplit[1] & $PathSplit[2] & $PathSplit[3] & @CRLF)
+					DecryptFile($CCF_LeftFolder[$i] & $CCF_LeftFolder[$i + 1], $PathSplit[1] & $PathSplit[2], $CCF_PasswordFolder)
 					;FileCopy( $LeftFolder[$i] & $LeftFolder[$i+1], StringReplace($LeftFolder[$i], $DataFolderEncrypt, $DataFolderDecrypt, 1) & $LeftFolder[$i+1] )
 				EndIf
 			EndIf
 		Next
 	EndIf
-	_FileReadToArray($LogListFileDecrypt, $RightFolder)
+	_FileReadToArray($CCF_LogListFileDecrypt, $CCF_RightFolder)
 	If Not @error Then
-		For $i = 1 To $RightFolder[0] Step 3
-			$NewHash = _Crypt_HashFile($RightFolder[$i] & $RightFolder[$i + 1], $CALG_MD5)
-			$OldHash = $RightFolder[$i + 2]
+		For $i = 1 To $CCF_RightFolder[0] Step 3
+			$NewHash = _Crypt_HashFile($CCF_RightFolder[$i] & $CCF_RightFolder[$i + 1], $CALG_MD5)
+			$OldHash = $CCF_RightFolder[$i + 2]
 			If $OldHash <> $NewHash Then
-				If FileExists($RightFolder[$i] & $RightFolder[$i + 1]) Then
-					FileDelete(StringReplace($RightFolder[$i], $DataFolderDecrypt, $DataFolderEncrypt, 1) & $RightFolder[$i + 1])
-					EncryptFile($RightFolder[$i] & $RightFolder[$i + 1], StringReplace($RightFolder[$i], $DataFolderDecrypt, $DataFolderEncrypt, 1) & $RightFolder[$i + 1] & ".7z", $PasswordFolder)
-					;FileCopy( $RightFolder[$i] + $RightFolder[$i+1], StringReplace($RightFolder[$i], $DataFolderDecrypt, $DataFolderEncrypt, 1) & $RightFolder[$i+1])
+				If FileExists($CCF_RightFolder[$i] & $CCF_RightFolder[$i + 1]) Then
+					FileDelete(StringReplace($CCF_RightFolder[$i], $CCF_DataFolderDecrypt, $CCF_DataFolderEncrypt, 1) & $CCF_RightFolder[$i + 1])
+					EncryptFile($CCF_RightFolder[$i] & $CCF_RightFolder[$i + 1], StringReplace($CCF_RightFolder[$i], $CCF_DataFolderDecrypt, $CCF_DataFolderEncrypt, 1) & $CCF_RightFolder[$i + 1] & ".7z", $CCF_PasswordFolder)
 				EndIf
 			EndIf
 		Next
 	EndIf
-EndFunc   ;==>CheckChangedFiles
+EndFunc
 
 #cs GenerateList - Documentation
 Name:               GenerateList
 Version:			0.1
-Description:        Function, return a Array of the Files in the Folder to Scan and the Checksum, create a .txt file, which includes the full path and the Checksum
+Description:        Function, List all the files or folders in the desktop directory using the default parameters and return the array.
 Author:             Tim Lid
-Parameters:         $DF_DecryptFolder		- String: The decrypt folder location
-					$DF_EncryptFile			- String: The encrypt file location
-					$EF_Password			- String: The password for the encryption
-Return values:      Success:				- String: The file is decrypt
+Parameters:         $GL_ScanFolder			- String: The folder to scan
+					$GL_OutputList			- String: The encrypt file location
+					$GL_Param				- String: Parameter 1: choosing Folder / 2: choosing File
+					$GL_GeneratedList		- Array[String] Files/Folders in $GL_ScanFolder
+					$GL_SplitPath			- Array[String] The Path splited into their elements
+Return values:      Success:				- String: Generated list of Files/Folders in an array
                     Failure:				- TODO
-Last edit:			2015.04.15 - 22:10 - Documentation
+Last edit:			2015.04.16 - 08:51 - Documentation
 TODO:				Commentation; Failure; rename variables
 #ce
-Func GenerateList($FolderScan, $OutputFileList, $Param)
-	; List all the files and folders in the desktop directory using the default parameters and return the full path.
-	FileDelete($OutputFileList)
-	Local $FileList = _FileListToArrayRec($FolderScan, "*|.sync|.sync", $Param, 1, Default, 2)
+Func GenerateList($GL_ScanFolder, $GL_OutputList, $GL_Param)
+	FileDelete($GL_OutputList)
+	Local $GL_GeneratedList = _FileListToArrayRec($GL_ScanFolder, "*|.sync|.sync", $GL_Param, 1, Default, 2)
 	If Not @error Then
-		_FileCreate($OutputFileList)
-		Local $OutputFileListOpen = FileOpen($OutputFileList, $FO_APPEND)
-		If $OutputFileListOpen = -1 Then
+		_FileCreate($GL_OutputList)
+		Local $GL_OutputListOpen = FileOpen($GL_OutputList, $FO_APPEND)
+		If $GL_OutputListOpen = -1 Then
 			MsgBox($MB_SYSTEMMODAL, "", "An error occurred when reading the file.")
 			Return False
 		EndIf
-		Local $FileListWithHash[$FileList[0] + 1][2]
-		For $i = 1 To $FileList[0]
-			$FileListWithHash[$i][0] = $FileList[$i]
-			$FileListWithHash[$i][1] = _Crypt_HashFile($FileList[$i], $CALG_MD5)
-			Local $aPathSplit = _PathSplit($FileList[$i], $sDrive, $sDir, $sFilename, $sExtension)
-			FileWriteLine($OutputFileListOpen, $aPathSplit[1] & $aPathSplit[2] & @CRLF)
-			FileWriteLine($OutputFileListOpen, $aPathSplit[3] & $aPathSplit[4] & @CRLF)
-			FileWriteLine($OutputFileListOpen, $FileListWithHash[$i][1] & @CRLF)
+		Local $GL_GeneratedListWithHash[$GL_GeneratedList[0] + 1][2]
+		For $i = 1 To $GL_GeneratedList[0]
+			$GL_GeneratedListWithHash[$i][0] = $GL_GeneratedList[$i]
+			$GL_GeneratedListWithHash[$i][1] = _Crypt_HashFile($GL_GeneratedList[$i], $CALG_MD5)
+			Local $GL_SplitPath = _PathSplit($GL_GeneratedList[$i], $sDrive, $sDir, $sFilename, $sExtension)
+			FileWriteLine($GL_OutputListOpen, $GL_SplitPath[1] & $GL_SplitPath[2] & @CRLF)
+			FileWriteLine($GL_OutputListOpen, $GL_SplitPath[3] & $GL_SplitPath[4] & @CRLF)
+			FileWriteLine($GL_OutputListOpen, $GL_GeneratedListWithHash[$i][1] & @CRLF)
 		Next
-		FileClose($OutputFileListOpen)
+		FileClose($GL_OutputListOpen)
 	EndIf
-	Return $FileList
+	Return $GL_GeneratedList
 EndFunc
 
 #cs DecryptFile - Documentation
@@ -1366,12 +1399,12 @@ Parameters:         $DF_DecryptFolder		- String: The decrypt folder location
 					$EF_Password			- String: The password for the encryption
 Return values:      Success:				- String: The file is decrypt
                     Failure:				- TODO
-Last edit:			2015.04.15 - 22:10 - Documentation
+Last edit:			2015.04.16 - 08:42 - renaming variables
 TODO:				Commentation; Failure
 #ce
-Func DecryptFile($DF_EncryptFile, $DF_DecryptFolder, $Password)
+Func DecryptFile($DF_EncryptFile, $DF_DecryptFolder, $DF_Password)
 	ConsoleWrite("Decript:" & @ComSpec & ' /c ' & $7zLocation & ' x -y -t7z -o"' & $DF_DecryptFolder & '" -p"' & "%Password%" & '" "' & $DF_EncryptFile & '"' & @CRLF)
-	RunWait(@ComSpec & ' /c ' & $7zLocation & ' x -y -t7z -o"' & $DF_DecryptFolder & '" -p"' & $Password & '" "' & $DF_EncryptFile & '"', @TempDir, @SW_HIDE)
+	RunWait(@ComSpec & ' /c ' & $7zLocation & ' x -y -t7z -o"' & $DF_DecryptFolder & '" -p"' & $DF_Password & '" "' & $DF_EncryptFile & '"', @TempDir, @SW_HIDE)
 EndFunc
 
 #cs EncryptFile - Documentation
