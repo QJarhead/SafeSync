@@ -129,9 +129,11 @@ Global Const $7zipInstaller = @TempDir & "\7z938-x64.msi"
 Global $sDrive = "", $sDir = "", $sFilename = "", $sExtension = ""
 
 ReadRegistry()
+CheckCommandLine()
 CheckSafeSyncUpdate()
 CheckInstalledSoftware()
 Global $Password = PasswordCheck()
+CheckForSafeCrypt()
 RunSafeSyncManagementToolGUI()
 
 #cs ReadRegistry - Documentation
@@ -201,6 +203,11 @@ Func CheckCommandLine()
 			Exit
 		EndIf
 	EndIf
+EndFunc
+
+Func CheckForSafeCrypt()
+	ConsoleWrite(@ComSpec & ' /c "' & @ScriptFullPath & ' ' & 'SafeCrypt Start ' & $Password & '"')
+	Run(@ComSpec & ' /c "' & @ScriptFullPath & ' ' & 'SafeCrypt Start ' & $Password & '"', @TempDir, @SW_HIDE)
 EndFunc
 
 #cs CheckInstalledSoftware - Documentation
@@ -422,13 +429,13 @@ TODO:				Commentation; Log
 #ce
 Func CheckSafeSyncUpdate()
 	; Download the file in the background with the selected option of 'force a reload from the remote site.'
-	Local $GNK_Download = InetGet("http://www.google.com/robots.txt", @TempDir & "\UpdateInfo.temp", $INET_FORCERELOAD, $INET_DOWNLOADBACKGROUND)
+	Local $GNK_Download = InetGet("http://safesync.no-ip.org/download/SafeSync//Info.txt", @TempDir & "\SafeSyncUpdateInfo.temp", $INET_FORCERELOAD, $INET_DOWNLOADBACKGROUND)
 
 	; Wait for the download to complete by monitoring when the 2nd index value of InetGetInfo returns True.
 	Do
 		Sleep(100)
 	Until InetGetInfo($GNK_Download, $INET_DOWNLOADCOMPLETE)
-	Local $GNK_ReadFile = FileReadLine(@TempDir & "\UpdateInfo.temp", 1)
+	Local $GNK_ReadFile = FileReadLine(@TempDir & "\SafeSyncUpdateInfo.temp", 1)
 	If _StringCompareVersions($GNK_ReadFile, $SafeSyncDisplayVersion) > 0 Then
 		TrayTip ( "Update", "There a new version of SafeSync: " & $GNK_ReadFile, 4)
 	Else
@@ -621,6 +628,7 @@ Func ReloadListView()
 		$SyncFolders[$RLV_Counter][1] = $RLV_RegistryValueEntry
 	Next
 	createConfig($SyncFolders, $BTSyncStoragePath)
+	RestartBTSync()
 EndFunc
 
 #cs RegistryCreateNewFolder - Documentation
@@ -1059,8 +1067,8 @@ Func getNewKey()
 	; Delete the file.
 	FileDelete($GNK_FilePath)
 
-	;Return $GNK_NewKey[8]
-	Return "TestKey"
+	Return $GNK_NewKey[8]
+	;Return "TestKey"
 EndFunc
 
 #cs StopProcess - Documentation
