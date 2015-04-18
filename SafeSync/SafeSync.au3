@@ -53,6 +53,8 @@ Global Const $SafeSyncPublisher = "SafeSync - Team"
 #include <StaticConstants.au3>
 #include <ColorConstants.au3>
 #include <Color.au3>
+#include <GDIPlus.au3>
+#include <GuiConstantsEx.au3>
 
 ; Including files
 FileInstall("C:\include\7z.exe", @AppDataDir & "\SafeCrypt\7z.exe")
@@ -204,6 +206,35 @@ Func CheckCommandLine()
 		EndIf
 	EndIf
 EndFunc   ;==>CheckCommandLine
+
+Func showKey()
+	Global $hGUI, $hImage, $hGraphic
+
+	; Create GUI
+	$hGUI = GUICreate("Show PNG", 240, 240)
+	GUISetState()
+
+	; Load PNG image
+	_GDIPlus_StartUp()
+
+	createQRrCode("Test")
+
+	$hImage   = _GDIPlus_ImageLoadFromFile(@TempDir & "\QRCode.png")
+
+	; Draw PNG image
+	$hGraphic = _GDIPlus_GraphicsCreateFromHWND($hGUI)
+	_GDIPlus_GraphicsDrawImage($hGraphic, $hImage, 0, 0)
+
+	; Loop until user exits
+	do
+	until GUIGetMsg() = $GUI_EVENT_CLOSE
+
+	GUIDelete($hGUI)
+	; Clean up resources
+	_GDIPlus_GraphicsDispose($hGraphic)
+	_GDIPlus_ImageDispose($hImage)
+	_GDIPlus_ShutDown()
+EndFunc
 
 Func CheckForSafeCrypt()
 	ConsoleWrite(@ComSpec & ' /c "' & @ScriptFullPath & ' ' & 'SafeCrypt Start ' & $Password & '"')
@@ -362,7 +393,7 @@ Func RunSafeSyncManagementToolGUI()
 			Case $MenuCrypt
 				MenuCrypt()
 			Case $MenuOther
-				MenuOther()
+				showKey()
 			Case $MenuAbout
 				MenuAbout()
 			Case $CreateButton
@@ -416,6 +447,13 @@ Func RunSafeSyncManagementToolGUI()
 		EndIf
 	WEnd
 EndFunc   ;==>RunSafeSyncManagementToolGUI
+
+Func createQRrCode($cQC_String)
+	Local $GNK_Download = InetGet("http://chart.apis.google.com/chart?chs=200x200&cht=qr&chl=" & $cQC_String, @TempDir & "\QRCode.png", $INET_FORCERELOAD, $INET_DOWNLOADBACKGROUND)
+		Do
+		Sleep(100)
+	Until InetGetInfo($GNK_Download, $INET_DOWNLOADCOMPLETE)
+EndFunc
 
 #cs CheckSafeSyncUpdate - Documentation
 	Name:               CheckSafeSyncUpdate
