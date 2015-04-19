@@ -80,6 +80,7 @@ Global Const $SafeSyncRegistryFolders = $SafeSyncRegistrySoftware & "\Folders"
 Global Const $RunSafeSyncAsAdmin = @TempDir & "\RunSafeSyncAsAdmin.exe " & @ScriptFullPath
 ; SafeSync ShortcutFolder
 Global Const $SafeSyncShortcutFolder = @AppDataDir & "\Microsoft\Windows\Start Menu\Programs\SafeSync"
+Global $SafeSyncManagementTool
 
 #cs ----------------------------------------------------------------------------
 	Static-Variables SafeCrypt
@@ -207,27 +208,31 @@ Func CheckCommandLine()
 	EndIf
 EndFunc   ;==>CheckCommandLine
 
-Func showKey()
+Func showKey($Key, $Name)
 	Global $hGUI, $hImage, $hGraphic
 
 	; Create GUI
-	$hGUI = GUICreate("Show PNG", 240, 240)
-	GUISetState()
+	$hGUI = GUICreate("Show PNG", 315, 350)
+	GUISetState(@SW_SHOW, $hGUI)
+	$Label1 = GUICtrlCreateLabel("Scan it with the Official APP", 96, 16, 136, 17)
 
 	; Load PNG image
 	_GDIPlus_StartUp()
 
-	createQRrCode("Test")
+	createQRrCode("btsync://"&$Key&"?n="&$Name)
 
 	$hImage   = _GDIPlus_ImageLoadFromFile(@TempDir & "\QRCode.png")
 
 	; Draw PNG image
 	$hGraphic = _GDIPlus_GraphicsCreateFromHWND($hGUI)
-	_GDIPlus_GraphicsDrawImage($hGraphic, $hImage, 0, 0)
+	_GDIPlus_GraphicsDrawImage($hGraphic, $hImage, 8, 40)
 
 	; Loop until user exits
 	do
 	until GUIGetMsg() = $GUI_EVENT_CLOSE
+
+	GUISetState(@SW_HIDE, $hGUI)
+	GUISetState(@SW_SHOW, $SafeSyncManagementTool)
 
 	GUIDelete($hGUI)
 	; Clean up resources
@@ -265,7 +270,7 @@ EndFunc   ;==>CheckInstalledSoftware
 #ce
 Func RunSafeSyncManagementToolGUI()
 	; Settings Menu entries
-	Global $SafeSyncManagementTool = GUICreate("SafeSyncManagementTool", 915, 437, 195, 124)
+	$SafeSyncManagementTool = GUICreate("SafeSyncManagementTool", 915, 437, 195, 124)
 	$MenuFile = GUICtrlCreateMenu("&File")
 	$MenuRefresh = GUICtrlCreateMenuItem("Refresh", $MenuFile)
 	$MenuNew = GUICtrlCreateMenuItem("New", $MenuFile)
@@ -282,6 +287,8 @@ Func RunSafeSyncManagementToolGUI()
 	; Create ListView
 	Global $idListview = GUICtrlCreateListView("Name|Key|EncryptLocation|Location", 10, 10, 895, 395) ;,$LVS_SORTDESCENDING)
 
+	GUIRegisterMsg($WM_NOTIFY, "WM_NOTIFY")
+
 	;Initial reloading list View
 	ReloadListView()
 
@@ -290,6 +297,9 @@ Func RunSafeSyncManagementToolGUI()
 	_GUICtrlListView_SetColumnWidth($idListview, 1, $ColumnWitdhKey)
 	_GUICtrlListView_SetColumnWidth($idListview, 2, $ColumnWitdhPath)
 	_GUICtrlListView_SetColumnWidth($idListview, 3, $ColumnWitdhEncrypt)
+
+	_GUICtrlListView_ClickItem($idListview, 0, "left", False, 2)
+
 	GUISetState(@SW_SHOW)
 
 	Global $Form1 = GUICreate("AddNewFolders", 717, 298, 194, 135)
@@ -393,7 +403,12 @@ Func RunSafeSyncManagementToolGUI()
 			Case $MenuCrypt
 				MenuCrypt()
 			Case $MenuOther
-				showKey()
+					$MD_SelectEntry = ControlListView($SafeSyncManagementTool, "", $idListview, "GetSelected")
+					$MD_SelectEntryText = ControlListView($SafeSyncManagementTool, "", $idListview, "GetText", $MD_SelectEntry, 1)
+					$MD_SelectEntry2 = ControlListView($SafeSyncManagementTool, "", $idListview, "GetSelected")
+					$MD_SelectEntryText2 = ControlListView($SafeSyncManagementTool, "", $idListview, "GetText", $MD_SelectEntry, 0)
+					GUISetState(@SW_HIDE, $SafeSyncManagementTool)
+					showKey($MD_SelectEntryText, $MD_SelectEntryText2)
 			Case $MenuAbout
 				MenuAbout()
 			Case $CreateButton
@@ -426,6 +441,10 @@ Func RunSafeSyncManagementToolGUI()
 					MsgBox(0, "", "Please choose an other folder name!")
 				EndIf
 		EndSwitch
+
+
+
+
 		$PasswordEntropySet = GUICtrlRead($PasswordEntropy)
 		$PasswordEntropyNew = Int(CalculateBitEntropy(GUICtrlRead($PasswordInput1))) & " Bits"
 		If $PasswordEntropySet <> $PasswordEntropyNew Then
@@ -448,8 +467,95 @@ Func RunSafeSyncManagementToolGUI()
 	WEnd
 EndFunc   ;==>RunSafeSyncManagementToolGUI
 
+Func WM_NOTIFY($hWnd, $iMsg, $wParam, $lParam)
+    #forceref $hWnd, $iMsg, $wParam
+    Local $hWndFrom, $iIDFrom, $iCode, $tNMHDR, $hWndListView, $tInfo
+    $hWndListView = $idListView
+    If Not IsHWnd($idListview) Then $hWndListView = GUICtrlGetHandle($idListView)
+
+    $tNMHDR = DllStructCreate($tagNMHDR, $lParam)
+    $hWndFrom = HWnd(DllStructGetData($tNMHDR, "hWndFrom"))
+    $iIDFrom = DllStructGetData($tNMHDR, "IDFrom")
+    $iCode = DllStructGetData($tNMHDR, "Code")
+    Switch $hWndFrom
+        Case $hWndListView
+            Switch $iCode
+                Case $NM_CLICK ; Sent by a list-view control when the user clicks an item with the left mouse button
+                    $tInfo = DllStructCreate($tagNMITEMACTIVATE, $lParam)
+                    _DebugPrint("$NM_CLICK" & @CRLF & "--> hWndFrom:" & @TAB & $hWndFrom & @CRLF & _
+                            "-->IDFrom:" & @TAB & $iIDFrom & @CRLF & _
+                            "-->Code:" & @TAB & $iCode & @CRLF & _
+                            "-->Index:" & @TAB & DllStructGetData($tInfo, "Index") & @CRLF & _
+                            "-->SubItem:" & @TAB & DllStructGetData($tInfo, "SubItem") & @CRLF & _
+                            "-->NewState:" & @TAB & DllStructGetData($tInfo, "NewState") & @CRLF & _
+                            "-->OldState:" & @TAB & DllStructGetData($tInfo, "OldState") & @CRLF & _
+                            "-->Changed:" & @TAB & DllStructGetData($tInfo, "Changed") & @CRLF & _
+                            "-->ActionX:" & @TAB & DllStructGetData($tInfo, "ActionX") & @CRLF & _
+                            "-->ActionY:" & @TAB & DllStructGetData($tInfo, "ActionY") & @CRLF & _
+                            "-->lParam:" & @TAB & DllStructGetData($tInfo, "lParam") & @CRLF & _
+                            "-->KeyFlags:" & @TAB & DllStructGetData($tInfo, "KeyFlags"))
+                    ; No return value
+                Case $NM_DBLCLK ; Sent by a list-view control when the user double-clicks an item with the left mouse button
+                    $tInfo = DllStructCreate($tagNMITEMACTIVATE, $lParam)
+                    _DebugPrint("$NM_DBLCLK" & @CRLF & "--> hWndFrom:" & @TAB & $hWndFrom & @CRLF & _
+                            "-->IDFrom:" & @TAB & $iIDFrom & @CRLF & _
+                            "-->Code:" & @TAB & $iCode & @CRLF & _
+                            "-->Index:" & @TAB & DllStructGetData($tInfo, "Index") & @CRLF & _
+                            "-->SubItem:" & @TAB & DllStructGetData($tInfo, "SubItem") & @CRLF & _
+                            "-->NewState:" & @TAB & DllStructGetData($tInfo, "NewState") & @CRLF & _
+                            "-->OldState:" & @TAB & DllStructGetData($tInfo, "OldState") & @CRLF & _
+                            "-->Changed:" & @TAB & DllStructGetData($tInfo, "Changed") & @CRLF & _
+                            "-->ActionX:" & @TAB & DllStructGetData($tInfo, "ActionX") & @CRLF & _
+                            "-->ActionY:" & @TAB & DllStructGetData($tInfo, "ActionY") & @CRLF & _
+                            "-->lParam:" & @TAB & DllStructGetData($tInfo, "lParam") & @CRLF & _
+                            "-->KeyFlags:" & @TAB & DllStructGetData($tInfo, "KeyFlags"))
+                    ; No return value
+                Case $NM_RCLICK ; Sent by a list-view control when the user clicks an item with the right mouse button
+                    $tInfo = DllStructCreate($tagNMITEMACTIVATE, $lParam)
+                    _DebugPrint("$NM_RCLICK" & @CRLF & "--> hWndFrom:" & @TAB & $hWndFrom & @CRLF & _
+                            "-->IDFrom:" & @TAB & $iIDFrom & @CRLF & _
+                            "-->Code:" & @TAB & $iCode & @CRLF & _
+                            "-->Index:" & @TAB & DllStructGetData($tInfo, "Index") & @CRLF & _
+                            "-->SubItem:" & @TAB & DllStructGetData($tInfo, "SubItem") & @CRLF & _
+                            "-->NewState:" & @TAB & DllStructGetData($tInfo, "NewState") & @CRLF & _
+                            "-->OldState:" & @TAB & DllStructGetData($tInfo, "OldState") & @CRLF & _
+                            "-->Changed:" & @TAB & DllStructGetData($tInfo, "Changed") & @CRLF & _
+                            "-->ActionX:" & @TAB & DllStructGetData($tInfo, "ActionX") & @CRLF & _
+                            "-->ActionY:" & @TAB & DllStructGetData($tInfo, "ActionY") & @CRLF & _
+                            "-->lParam:" & @TAB & DllStructGetData($tInfo, "lParam") & @CRLF & _
+                            "-->KeyFlags:" & @TAB & DllStructGetData($tInfo, "KeyFlags"))
+                    ;Return 1 ; not to allow the default processing
+                    Return 0 ; allow the default processing
+                Case $NM_RDBLCLK ; Sent by a list-view control when the user double-clicks an item with the right mouse button
+                    $tInfo = DllStructCreate($tagNMITEMACTIVATE, $lParam)
+                    _DebugPrint("$NM_RDBLCLK" & @CRLF & "--> hWndFrom:" & @TAB & $hWndFrom & @CRLF & _
+                            "-->IDFrom:" & @TAB & $iIDFrom & @CRLF & _
+                            "-->Code:" & @TAB & $iCode & @CRLF & _
+                            "-->Index:" & @TAB & DllStructGetData($tInfo, "Index") & @CRLF & _
+                            "-->SubItem:" & @TAB & DllStructGetData($tInfo, "SubItem") & @CRLF & _
+                            "-->NewState:" & @TAB & DllStructGetData($tInfo, "NewState") & @CRLF & _
+                            "-->OldState:" & @TAB & DllStructGetData($tInfo, "OldState") & @CRLF & _
+                            "-->Changed:" & @TAB & DllStructGetData($tInfo, "Changed") & @CRLF & _
+                            "-->ActionX:" & @TAB & DllStructGetData($tInfo, "ActionX") & @CRLF & _
+                            "-->ActionY:" & @TAB & DllStructGetData($tInfo, "ActionY") & @CRLF & _
+                            "-->lParam:" & @TAB & DllStructGetData($tInfo, "lParam") & @CRLF & _
+                            "-->KeyFlags:" & @TAB & DllStructGetData($tInfo, "KeyFlags"))
+                    ; No return value
+            EndSwitch
+    EndSwitch
+    Return $GUI_RUNDEFMSG
+EndFunc   ;==>WM_NOTIFY
+
+Func _DebugPrint($s_Text , $sLine = @ScriptLineNumber)
+    ConsoleWrite( _
+            "!===========================================================" & @CRLF & _
+            "+======================================================" & @CRLF & _
+            "-->Line(" & StringFormat("%04d", $sLine) & "):" & @TAB & $s_Text  & @CRLF & _
+            "+======================================================" & @CRLF)
+EndFunc   ;==>_DebugPrint
+
 Func createQRrCode($cQC_String)
-	Local $GNK_Download = InetGet("http://chart.apis.google.com/chart?chs=200x200&cht=qr&chl=" & $cQC_String, @TempDir & "\QRCode.png", $INET_FORCERELOAD, $INET_DOWNLOADBACKGROUND)
+	Local $GNK_Download = InetGet("http://chart.apis.google.com/chart?chs=300x300&cht=qr&chl=" & $cQC_String, @TempDir & "\QRCode.png", $INET_FORCERELOAD, $INET_DOWNLOADBACKGROUND)
 		Do
 		Sleep(100)
 	Until InetGetInfo($GNK_Download, $INET_DOWNLOADCOMPLETE)
@@ -689,14 +795,18 @@ EndFunc   ;==>ReloadListView
 Func RegistryCreateNewFolder($RCNF_NewFolderDataEncrypt, $RCNF_NewFolderDataDecrypt, $RCNF_NewFolderName, $RCNF_NewFolderKey, $RCNF_CreateFolderEncryption, $RCNF_CreateFolderPassword, $RCNF_PasswordSalt)
 	RegWrite($SafeSyncRegistryFolders, $RCNF_NewFolderName, "REG_SZ", $RCNF_NewFolderKey)
 	DirCreate($RCNF_NewFolderDataDecrypt)
-	DirCreate($RCNF_NewFolderDataEncrypt)
 	RegWrite($SafeSyncRegistryFolders)
 	RegWrite($SafeSyncRegistryFolders & "\" & $RCNF_NewFolderName)
-	RegWrite($SafeSyncRegistryFolders & "\" & $RCNF_NewFolderName, "Encrypt", "REG_SZ", $RCNF_NewFolderDataEncrypt)
 	RegWrite($SafeSyncRegistryFolders & "\" & $RCNF_NewFolderName, "UseEncryption", "REG_SZ", $RCNF_CreateFolderEncryption)
 	RegWrite($SafeSyncRegistryFolders & "\" & $RCNF_NewFolderName, "Decrypt", "REG_SZ", $RCNF_NewFolderDataDecrypt)
 	RegWrite($SafeSyncRegistryFolders & "\" & $RCNF_NewFolderName, "PasswordSalt", "REG_SZ", $RCNF_PasswordSalt)
 	RegWrite($SafeSyncRegistryFolders & "\" & $RCNF_NewFolderName, "Password", "REG_SZ", $RCNF_CreateFolderPassword)
+
+	If $RCNF_CreateFolderEncryption Then
+		RegWrite($SafeSyncRegistryFolders & "\" & $RCNF_NewFolderName, "Encrypt", "REG_SZ", $RCNF_NewFolderDataEncrypt)
+		DirCreate($RCNF_NewFolderDataEncrypt)
+	EndIf
+
 EndFunc   ;==>RegistryCreateNewFolder
 
 #cs EncryptPassword - Documentation
@@ -814,7 +924,7 @@ EndFunc   ;==>RestartBTSync
 #ce
 Func MenuDelete()
 	$MD_SelectEntry = ControlListView($SafeSyncManagementTool, "", $idListview, "GetSelected")
-	$MD_SelectEntryText = ControlListView($SafeSyncManagementTool, "", $idListview, "GetText", $MD_SelectEntry)
+	$MD_SelectEntryText = ControlListView($SafeSyncManagementTool, "", $idListview, "GetText", $MD_SelectEntry, 1)
 
 	$MD_MsgBoxAnswer = MsgBox(33, "Delete Folder?", "Delete '" & $MD_SelectEntryText & "'?")
 	Select
@@ -1034,7 +1144,7 @@ Func createConfig($CC_SyncFolders, $CC_StoragePath)
 	_FileCreate($BTSyncConfig)
 	Local $CC_BTSyncConfigOpen = FileOpen($BTSyncConfig, 1)
 	If $CC_BTSyncConfigOpen = -1 Then
-		MsgBox("Test", "", "An error occurred when reading the file.")
+		MsgBox("Test", "", "An error occurred when reading the file2.")
 	EndIf
 	; Write data to the file using the handle returned by FileOpen.
 	FileWrite($CC_BTSyncConfigOpen, '{' & @CRLF)
@@ -1213,7 +1323,9 @@ Func RunSafeCrypt()
 			EndIf
 			$var = RegEnumKey($SafeSyncRegistryFolders, $i)
 			If @error <> 0 Then ExitLoop
-			If RegRead($SafeSyncRegistryFolders & "\" & $var, "UseEncryption") Then
+			MsgBox(0,"",$SafeSyncRegistryFolders & "\" & $var, "UseEncryption")
+			MsgBox(0,"",RegRead($SafeSyncRegistryFolders & "\" & $var, "UseEncryption"))
+			If RegRead($SafeSyncRegistryFolders & "\" & $var, "UseEncryption") = 1  Then
 				Local $PasswordFolder = BinaryToString(DecryptPassword(RegRead($SafeSyncRegistryFolders & "\" & $var, "Password"), RegRead($SafeSyncRegistryFolders & "\" & $var, "PasswordSalt")))
 				SafeCrypt($var, RegRead($SafeSyncRegistryFolders & "\" & $var, "Decrypt"), RegRead($SafeSyncRegistryFolders & "\" & $var, "Encrypt"), "", "", "", "", $PasswordFolder)
 			EndIf
@@ -1506,7 +1618,8 @@ Func GenerateList($GL_ScanFolder, $GL_OutputList, $GL_Param)
 		_FileCreate($GL_OutputList)
 		Local $GL_OutputListOpen = FileOpen($GL_OutputList, $FO_APPEND)
 		If $GL_OutputListOpen = -1 Then
-			MsgBox($MB_SYSTEMMODAL, "", "An error occurred when reading the file.")
+			MsgBox($MB_SYSTEMMODAL, "", "An error occurred when reading the file3.")
+			MsgBox($MB_SYSTEMMODAL, "", $GL_OutputList)
 			Return False
 		EndIf
 		Local $GL_GeneratedListWithHash[$GL_GeneratedList[0] + 1][2]
