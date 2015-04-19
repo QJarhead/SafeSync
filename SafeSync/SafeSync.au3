@@ -55,6 +55,9 @@ Global Const $SafeSyncPublisher = "SafeSync - Team"
 #include <Color.au3>
 #include <GDIPlus.au3>
 #include <GuiConstantsEx.au3>
+#include <ButtonConstants.au3>
+#include <GUIConstantsEx.au3>
+#include <MsgBoxConstants.au3>
 
 ; Including files
 FileInstall("C:\include\7z.exe", @AppDataDir & "\SafeCrypt\7z.exe")
@@ -131,11 +134,17 @@ Global Const $7zipInstaller = @TempDir & "\7z938-x64.msi"
 ; For running _PathSplit()
 Global $sDrive = "", $sDir = "", $sFilename = "", $sExtension = ""
 
+ConsoleWrite("Test")
 ReadRegistry()
+ConsoleWrite("Test")
 CheckCommandLine()
+ConsoleWrite("Test")
 CheckSafeSyncUpdate()
+ConsoleWrite("Test")
 CheckInstalledSoftware()
+ConsoleWrite("Test")
 Global $Password = PasswordCheck()
+ConsoleWrite("Test")
 CheckForSafeCrypt()
 RunSafeSyncManagementToolGUI()
 
@@ -328,13 +337,24 @@ Func RunSafeSyncManagementToolGUI()
 	GUICtrlSetState(-1, $GUI_CHECKED)
 	$Radio4 = GUICtrlCreateRadio("Don't use encryption", 32, 60, 113, 17)
 	$Button2 = GUICtrlCreateButton("Button1", 32, 100, 91, 33)
+
+;	$idOptionsContext = ""
+;	Global $idOptionsExit = GUICtrlCreateMenuItem("Common", $idOptionsContext)
+
+	Global $idOptionsDummy = GUICtrlCreateDummy()
+	Global $idOptionsContext = GUICtrlCreateContextMenu($idOptionsDummy)
+	Global $ContextMenu_Info = GUICtrlCreateMenuItem("Info", $idOptionsContext)
+	Global $ContextMenu_Export = GUICtrlCreateMenuItem("Export", $idOptionsContext)
+	Global $ContextMenu_Share = GUICtrlCreateMenuItem("Share", $idOptionsContext)
+	Global $ContextMenu_Delete = GUICtrlCreateMenuItem("Delete", $idOptionsContext)
+
 	GUISwitch($SafeSyncManagementTool)
 	Opt('TrayOnEventMode', 1)
 	Opt('TrayMenuMode', 1)
 	TraySetOnEvent(-7, 'RestoreFromTray')
 	TraySetState(2)
 	While 1
-		$nMsg = GUIGetMsg(1)
+		Global $nMsg = GUIGetMsg(1)
 		$RefreshGUI = RegRead($SafeSyncRegistrySoftwareManagementTool, "RefreshGUI")
 		If $RefreshGUI = 1 Then
 			ReloadListView()
@@ -366,6 +386,19 @@ Func RunSafeSyncManagementToolGUI()
 				GUISetState(@SW_HIDE, $SafeSyncManagementTool)
 			Case $MenuDelete
 				MenuDelete()
+			Case $ContextMenu_Info
+				MsgBox(0,"","Info_TODO")
+			Case $ContextMenu_Export
+				MsgBox(0,"","Export_TODO")
+			Case $ContextMenu_Share
+				$MD_SelectEntry = ControlListView($SafeSyncManagementTool, "", $idListview, "GetSelected")
+				$MD_SelectEntryText = ControlListView($SafeSyncManagementTool, "", $idListview, "GetText", $MD_SelectEntry, 1)
+				$MD_SelectEntry2 = ControlListView($SafeSyncManagementTool, "", $idListview, "GetSelected")
+				$MD_SelectEntryText2 = ControlListView($SafeSyncManagementTool, "", $idListview, "GetText", $MD_SelectEntry, 0)
+				GUISetState(@SW_HIDE, $SafeSyncManagementTool)
+				showKey($MD_SelectEntryText, $MD_SelectEntryText2)
+			Case $ContextMenu_Delete
+				MsgBox(0,"","Delete_TODO")
 			Case $MenuRefresh
 				ReloadListView()
 			Case $MenuExport
@@ -512,6 +545,25 @@ Func WM_NOTIFY($hWnd, $iMsg, $wParam, $lParam)
                     ; No return value
                 Case $NM_RCLICK ; Sent by a list-view control when the user clicks an item with the right mouse button
                     $tInfo = DllStructCreate($tagNMITEMACTIVATE, $lParam)
+
+					$MD_SelectEntry = ControlListView($SafeSyncManagementTool, "", $idListview, "GetSelected")
+					$MD_SelectEntryText = ControlListView($SafeSyncManagementTool, "", $idListview, "GetText", $MD_SelectEntry, 1)
+					$MD_SelectEntry2 = ControlListView($SafeSyncManagementTool, "", $idListview, "GetSelected")
+					$MD_SelectEntryText2 = ControlListView($SafeSyncManagementTool, "", $idListview, "GetText", $MD_SelectEntry, 0)
+
+					If ControlListView($SafeSyncManagementTool, "", $idListview, "GetSelectedCount") = 1 Then
+						Global $idOptionsDummy = GUICtrlCreateDummy()
+						Global $idOptionsContext = GUICtrlCreateContextMenu($idOptionsDummy)
+						Global $ContextMenu_Info = GUICtrlCreateMenuItem("Info", $idOptionsContext)
+						Global $ContextMenu_Export = GUICtrlCreateMenuItem("Export", $idOptionsContext)
+						Global $ContextMenu_Share = GUICtrlCreateMenuItem("Share", $idOptionsContext)
+						Global $ContextMenu_Delete = GUICtrlCreateMenuItem("Delete", $idOptionsContext)
+						ShowMenu($SafeSyncManagementTool, "", $idOptionsContext)
+					EndIf
+
+					;MsgBox(0,"",$MD_SelectEntryText)
+					;MsgBox(0,"",$MD_SelectEntryText2)
+
                     _DebugPrint("$NM_RCLICK" & @CRLF & "--> hWndFrom:" & @TAB & $hWndFrom & @CRLF & _
                             "-->IDFrom:" & @TAB & $iIDFrom & @CRLF & _
                             "-->Code:" & @TAB & $iCode & @CRLF & _
@@ -545,6 +597,41 @@ Func WM_NOTIFY($hWnd, $iMsg, $wParam, $lParam)
     EndSwitch
     Return $GUI_RUNDEFMSG
 EndFunc   ;==>WM_NOTIFY
+
+Func ShowMenu($hWnd, $idCtrl, $idContext)
+    Local $aPos, $x, $y
+    Local $hMenu = GUICtrlGetHandle($idContext)
+
+    $aPos = ControlGetPos($hWnd, "", $idCtrl)
+
+	$fPos = WinGetPos ( "SafeSyncManagementTool" )
+
+	$aPos = MouseGetPos()
+    $x = $aPos[0] - $fPos[0] - 3
+    $y = $aPos[1] - $fPos[1] - 47
+
+    ClientToScreen($hWnd, $x, $y)
+    TrackPopupMenu($hWnd, $hMenu, $x, $y)
+EndFunc   ;==>ShowMenu
+
+; Convert the client (GUI) coordinates to screen (desktop) coordinates
+Func ClientToScreen($hWnd, ByRef $x, ByRef $y)
+    Local $tPoint = DllStructCreate("int;int")
+
+    DllStructSetData($tPoint, 1, $x)
+    DllStructSetData($tPoint, 2, $y)
+
+    DllCall("user32.dll", "int", "ClientToScreen", "hwnd", $hWnd, "ptr", DllStructGetPtr($tPoint))
+
+    $x = DllStructGetData($tPoint, 1)
+    $y = DllStructGetData($tPoint, 2)
+    ; release Struct not really needed as it is a local
+    $tPoint = 0
+EndFunc   ;==>ClientToScreen
+
+Func TrackPopupMenu($hWnd, $hMenu, $x, $y)
+    DllCall("user32.dll", "int", "TrackPopupMenuEx", "hwnd", $hMenu, "int", 0, "int", $x, "int", $y, "hwnd", $hWnd, "ptr", 0)
+EndFunc   ;==>TrackPopupMenu
 
 Func _DebugPrint($s_Text , $sLine = @ScriptLineNumber)
     ConsoleWrite( _
@@ -1323,8 +1410,6 @@ Func RunSafeCrypt()
 			EndIf
 			$var = RegEnumKey($SafeSyncRegistryFolders, $i)
 			If @error <> 0 Then ExitLoop
-			MsgBox(0,"",$SafeSyncRegistryFolders & "\" & $var, "UseEncryption")
-			MsgBox(0,"",RegRead($SafeSyncRegistryFolders & "\" & $var, "UseEncryption"))
 			If RegRead($SafeSyncRegistryFolders & "\" & $var, "UseEncryption") = 1  Then
 				Local $PasswordFolder = BinaryToString(DecryptPassword(RegRead($SafeSyncRegistryFolders & "\" & $var, "Password"), RegRead($SafeSyncRegistryFolders & "\" & $var, "PasswordSalt")))
 				SafeCrypt($var, RegRead($SafeSyncRegistryFolders & "\" & $var, "Decrypt"), RegRead($SafeSyncRegistryFolders & "\" & $var, "Encrypt"), "", "", "", "", $PasswordFolder)
