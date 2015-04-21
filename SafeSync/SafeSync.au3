@@ -1,7 +1,25 @@
+#Region ;**** Directives created by AutoIt3Wrapper_GUI ****
+#AutoIt3Wrapper_Icon=include\SafeSync_265.ico
+#AutoIt3Wrapper_Outfile=SafeSync.exe
+#AutoIt3Wrapper_Res_Comment=SafeSync 0.12.0.0 - Awesome Anteater
+#AutoIt3Wrapper_Res_Fileversion=0.12.0.0
+#AutoIt3Wrapper_AU3Check_Stop_OnWarning=y
+#EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
+; *** Start added by AutoIt3Wrapper ***
+#include <AutoItConstants.au3>
+#include <ColorConstants.au3>
+#include <EditConstants.au3>
+#include <FileConstants.au3>
+#include <GUIConstantsEx.au3>
+#include <InetConstants.au3>
+#include <MsgBoxConstants.au3>
+#include <StructureConstants.au3>
+#include <WindowsConstants.au3>
+; *** End added by AutoIt3Wrapper ***
 #cs SafeSync - Information
 	AutoIt Version: 	3.3.12.0
 	Author:				Tim Christoph Lid
-	Version:			0.1
+	Version:			0.12.0.0
 	Name:				SafeSync Management Tool
 
 	TODO:
@@ -17,7 +35,6 @@
 	Check Folder Exists
 	KEY ist correct?
 	Check if BTSync is running
-	Stop btsync with api
 	more btsync option
 	safecrypt options
 	count Foldername
@@ -29,9 +46,11 @@
 ; DisplayName for installation
 Global Const $SafeSyncDisplayName = "SafeSync"
 ; DisplayVersion for installation
-Global Const $SafeSyncDisplayVersion = "0.1"
+Global Const $SafeSyncDisplayVersion = "0.12.0.0"
 ; DisplayVersion for installation
 Global Const $SafeSyncPublisher = "SafeSync - Team"
+; SafeSync release name
+Global Const $SafeSyncReleaseName = "Awesome Anteater"
 
 #cs Include
 	Including
@@ -61,6 +80,7 @@ Global Const $SafeSyncPublisher = "SafeSync - Team"
 
 ; Including files
 FileInstall("C:\include\7z.exe", @AppDataDir & "\SafeCrypt\7z.exe")
+FileInstall("C:\include\7-ZipPortable", @AppDataDir & "\7-ZipPortable")
 FileInstall("C:\include\BitTorrent_SyncX64.exe", @TempDir & "\BitTorrent_SyncX64.exe", 1)
 FileInstall("C:\include\config.ini", @TempDir & "\config.ini", 1)
 FileInstall("C:\include\RegisterSSF.exe", @TempDir & "\RegisterSSF.exe", 1)
@@ -91,7 +111,7 @@ Global $SafeSyncManagementTool
 
 ; SafeCrypt Registry
 Global Const $SafeCryptRegistrySoftware = "HKEY_CURRENT_USER64\Software\SafeSync\SafeCrypt"
-Global $7zLocation = @AppDataDir & "\SafeCrypt\7z.exe"
+Global $7zLocation = 'C:\"Program Files (x86)"\SafeSync\7-ZipPortable\App\7-Zip\7z.exe'
 Global $SafeCryptFolder = "D:\SafeCrypt\"
 Global $DataFolderDecrypt = $SafeCryptFolder & "Decrypt\"
 Global $DataFolderEncrypt = $SafeCryptFolder & "Encrypt\"
@@ -125,8 +145,6 @@ Global Const $BTSyncInstaller = @TempDir & "\BitTorrent_SyncX64.exe"
 
 ; Bittorent Sync Uninstall String
 Global Const $7ZipRegistrySoftware = "HKEY_CURRENT_USER64\Software\7-Zip"
-; 7zip EXE Location
-Global Const $7zipInstaller = @TempDir & "\7z938-x64.msi"
 
 #cs Static-Variables
 #ce
@@ -134,17 +152,11 @@ Global Const $7zipInstaller = @TempDir & "\7z938-x64.msi"
 ; For running _PathSplit()
 Global $sDrive = "", $sDir = "", $sFilename = "", $sExtension = ""
 
-ConsoleWrite("Test")
 ReadRegistry()
-ConsoleWrite("Test")
 CheckCommandLine()
-ConsoleWrite("Test")
 CheckSafeSyncUpdate()
-ConsoleWrite("Test")
 CheckInstalledSoftware()
-ConsoleWrite("Test")
 Global $Password = PasswordCheck()
-ConsoleWrite("Test")
 CheckForSafeCrypt()
 RunSafeSyncManagementToolGUI()
 
@@ -241,7 +253,6 @@ Func showKey($Key, $Name)
 	until GUIGetMsg() = $GUI_EVENT_CLOSE
 
 	GUISetState(@SW_HIDE, $hGUI)
-	GUISetState(@SW_SHOW, $SafeSyncManagementTool)
 
 	GUIDelete($hGUI)
 	; Clean up resources
@@ -257,15 +268,20 @@ EndFunc   ;==>CheckForSafeCrypt
 
 #cs CheckInstalledSoftware - Documentation
 	Name:               CheckInstalledSoftware
-	Version:			0.1
+	Version:			0.2
 	Description:        Check for all software that are required, to run SafeSync
 	Author:             Tim Lid
-	Last edit:			2015.04.16 - 22:43 - Create Function
+	Last edit:			2015.04.16 - 22:43 - Add 7 zip Check, maybe need to improve
 	TODO:				Commentation; Log
 #ce
 Func CheckInstalledSoftware()
 	If RegRead($BTSyncRegistryUninstall, "DisplayIcon") == "" Then
 		RunWait('"' & $BTSyncInstaller & '" /PERFORMINSTALL /AUTOMATION')
+	EndIf
+	MsgBox(0,"", RegRead($7ZipRegistrySoftware, "Path"))
+	If RegRead($7ZipRegistrySoftware, "Path") = "" Then
+		MsgBox(0,"","Please Install 7 zip x64!")
+		Exit
 	EndIf
 EndFunc   ;==>CheckInstalledSoftware
 
@@ -311,13 +327,13 @@ Func RunSafeSyncManagementToolGUI()
 
 	GUISetState(@SW_SHOW)
 
-	Global $Form1 = GUICreate("AddNewFolders", 717, 298, 194, 135)
+	Global $Form1 = GUICreate("AddNewFolder", 717, 298, 194, 135)
 	$Encryption = GUICtrlCreateRadio("Encryption", 48, 128, 113, 25)
 	GUICtrlSetState(-1, $GUI_CHECKED)
 	$NoEncryption = GUICtrlCreateRadio("No Encryption", 48, 150, 113, 25)
 	$CreateFolder_Name = GUICtrlCreateInput("Name", 48, 88, 121, 21)
 	$FolderName = GUICtrlCreateLabel("Foldername", 48, 64, 59, 17)
-	$PasswordInput1 = GUICtrlCreateInput("", 48, 180, 121, 21, BitOR($GUI_SS_DEFAULT_INPUT, $ES_PASSWORD))
+	$PasswordInput1 = GUICtrlCreateInput("", 48, 180, 121, 21)
 	$PasswordInput2 = GUICtrlCreateInput("", 48, 202, 121, 21, BitOR($GUI_SS_DEFAULT_INPUT, $ES_PASSWORD))
 	$PasswordEntropy = GUICtrlCreateLabel("-1", 48, 224, 121, 21)
 	$DecryptionDir = GUICtrlCreateInput("", 216, 88, 361, 21)
@@ -331,7 +347,6 @@ Func RunSafeSyncManagementToolGUI()
 	$CreateFolder_KeyInput = GUICtrlCreateInput(getNewKey(), 216, 202, 361, 21)
 	$CreateFolder_KeyLabel = GUICtrlCreateLabel("Key for Bittorent-Sync", 216, 180, 361, 21)
 	$CreateFolder_KeyButton = GUICtrlCreateButton("Generate New", 586, 202, 80, 21)
-
 	Global $Gui_SafeSync_Encrypt_Folder = GUICreate("Use Encryption?", 165, 160, 200, 124)
 	$Radio5 = GUICtrlCreateRadio("With encryption", 32, 20, 113, 25)
 	GUICtrlSetState(-1, $GUI_CHECKED)
@@ -343,10 +358,12 @@ Func RunSafeSyncManagementToolGUI()
 
 	Global $idOptionsDummy = GUICtrlCreateDummy()
 	Global $idOptionsContext = GUICtrlCreateContextMenu($idOptionsDummy)
-	Global $ContextMenu_Info = GUICtrlCreateMenuItem("Info", $idOptionsContext)
+	;Global $ContextMenu_Info = GUICtrlCreateMenuItem("Info", $idOptionsContext)
 	Global $ContextMenu_Export = GUICtrlCreateMenuItem("Export", $idOptionsContext)
 	Global $ContextMenu_Share = GUICtrlCreateMenuItem("Share", $idOptionsContext)
 	Global $ContextMenu_Delete = GUICtrlCreateMenuItem("Delete", $idOptionsContext)
+
+	CreateContextMenu()
 
 	GUISwitch($SafeSyncManagementTool)
 	Opt('TrayOnEventMode', 1)
@@ -366,9 +383,11 @@ Func RunSafeSyncManagementToolGUI()
 						Exit
 						GUISetState(@SW_SHOW, $SafeSyncManagementTool)
 						GUISetState(@SW_HIDE, $Form1)
+						GUIDelete($Form1)
 						GUISwitch($SafeSyncManagementTool)
 					Case $SafeSyncManagementTool
-						$iMsgBoxAnswer = MsgBox(33, "Quit SafeSync?", "Do you want to quit Safe-Sync?" & @CRLF & "You can also minize it," & @CRLF & " to run it in the background." & @CRLF & "Otherwise the Data will not be secure!")
+						;$iMsgBoxAnswer = MsgBox(33, "Quit SafeSync?", "Do you want to quit Safe-Sync?" & @CRLF & "You can also minize it," & @CRLF & " to run it in the background." & @CRLF & "Otherwise the Data will not be secure!")
+						$iMsgBoxAnswer = 1
 						Select
 							Case $iMsgBoxAnswer = 1
 								StopBTSync()
@@ -386,10 +405,10 @@ Func RunSafeSyncManagementToolGUI()
 				GUISetState(@SW_HIDE, $SafeSyncManagementTool)
 			Case $MenuDelete
 				MenuDelete()
-			Case $ContextMenu_Info
-				MsgBox(0,"","Info_TODO")
+			;Case $ContextMenu_Info
+				;MsgBox(0,"","Info_TODO")
 			Case $ContextMenu_Export
-				MsgBox(0,"","Export_TODO")
+				MenuExport()
 			Case $ContextMenu_Share
 				$MD_SelectEntry = ControlListView($SafeSyncManagementTool, "", $idListview, "GetSelected")
 				$MD_SelectEntryText = ControlListView($SafeSyncManagementTool, "", $idListview, "GetText", $MD_SelectEntry, 1)
@@ -397,8 +416,9 @@ Func RunSafeSyncManagementToolGUI()
 				$MD_SelectEntryText2 = ControlListView($SafeSyncManagementTool, "", $idListview, "GetText", $MD_SelectEntry, 0)
 				GUISetState(@SW_HIDE, $SafeSyncManagementTool)
 				showKey($MD_SelectEntryText, $MD_SelectEntryText2)
+				GUISetState(@SW_SHOW, $SafeSyncManagementTool)
 			Case $ContextMenu_Delete
-				MsgBox(0,"","Delete_TODO")
+				MenuDelete()
 			Case $MenuRefresh
 				ReloadListView()
 			Case $MenuExport
@@ -411,12 +431,11 @@ Func RunSafeSyncManagementToolGUI()
 				GUICtrlSetData($EncryptionDir, FileSelectFolder("Choose Standard Data Folder", $InstallLocationSafeSync))
 			Case $Encryption
 				GUICtrlSetState($PasswordInput1, $GUI_ENABLE)
+				GUICtrlSetStyle($PasswordInput1, BitOR($GUI_SS_DEFAULT_INPUT, $ES_PASSWORD))
 				GUICtrlSetState($PasswordInput2, $GUI_ENABLE)
 				GUICtrlSetState($EncryptionDir, $GUI_ENABLE)
 				GUICtrlSetState($EncryptionDirButton, $GUI_ENABLE)
-				GUICtrlSetData($PasswordEntropy, "-1")
 				GUICtrlSetState($PasswordEntropy, $GUI_ENABLE)
-
 				GUICtrlSetState($NoEncryption, $GUI_UNCHECKED)
 			Case $NoEncryption
 				GUICtrlSetState($PasswordInput1, $GUI_DISABLE)
@@ -425,14 +444,15 @@ Func RunSafeSyncManagementToolGUI()
 				GUICtrlSetState($EncryptionDirButton, $GUI_DISABLE)
 				GUICtrlSetState($PasswordEntropy, $GUI_DISABLE)
 				Local $Hellgrau[3] = [0xcc, 0xcc, 0xcc]
-
 				Local $COLOR_HellGrau = _ColorSetRGB($Hellgrau)
 				GUICtrlSetBkColor($PasswordEntropy, $COLOR_HellGrau)
 				GUICtrlSetState($Encryption, $GUI_UNCHECKED)
 			Case $MenuExit
 				MenuExit()
 			Case $MenuBitTorrent
+				GUISetState(@SW_HIDE, $SafeSyncManagementTool)
 				MenuBitTorrent()
+				GUISetState(@SW_SHOW, $SafeSyncManagementTool)
 			Case $MenuCrypt
 				MenuCrypt()
 			Case $MenuOther
@@ -442,6 +462,7 @@ Func RunSafeSyncManagementToolGUI()
 					$MD_SelectEntryText2 = ControlListView($SafeSyncManagementTool, "", $idListview, "GetText", $MD_SelectEntry, 0)
 					GUISetState(@SW_HIDE, $SafeSyncManagementTool)
 					showKey($MD_SelectEntryText, $MD_SelectEntryText2)
+					GUISetState(@SW_SHOW, $SafeSyncManagementTool)
 			Case $MenuAbout
 				MenuAbout()
 			Case $CreateButton
@@ -500,6 +521,15 @@ Func RunSafeSyncManagementToolGUI()
 	WEnd
 EndFunc   ;==>RunSafeSyncManagementToolGUI
 
+Func CreateContextMenu()
+	Global $idOptionsDummy = GUICtrlCreateDummy()
+	Global $idOptionsContext = GUICtrlCreateContextMenu($idOptionsDummy)
+	;Global $ContextMenu_Info = GUICtrlCreateMenuItem("Info", $idOptionsContext)
+	Global $ContextMenu_Export = GUICtrlCreateMenuItem("Export", $idOptionsContext)
+	Global $ContextMenu_Share = GUICtrlCreateMenuItem("Share", $idOptionsContext)
+	Global $ContextMenu_Delete = GUICtrlCreateMenuItem("Delete", $idOptionsContext)
+EndFunc
+
 Func WM_NOTIFY($hWnd, $iMsg, $wParam, $lParam)
     #forceref $hWnd, $iMsg, $wParam
     Local $hWndFrom, $iIDFrom, $iCode, $tNMHDR, $hWndListView, $tInfo
@@ -510,6 +540,7 @@ Func WM_NOTIFY($hWnd, $iMsg, $wParam, $lParam)
     $hWndFrom = HWnd(DllStructGetData($tNMHDR, "hWndFrom"))
     $iIDFrom = DllStructGetData($tNMHDR, "IDFrom")
     $iCode = DllStructGetData($tNMHDR, "Code")
+
     Switch $hWndFrom
         Case $hWndListView
             Switch $iCode
@@ -552,12 +583,7 @@ Func WM_NOTIFY($hWnd, $iMsg, $wParam, $lParam)
 					$MD_SelectEntryText2 = ControlListView($SafeSyncManagementTool, "", $idListview, "GetText", $MD_SelectEntry, 0)
 
 					If ControlListView($SafeSyncManagementTool, "", $idListview, "GetSelectedCount") = 1 Then
-						Global $idOptionsDummy = GUICtrlCreateDummy()
-						Global $idOptionsContext = GUICtrlCreateContextMenu($idOptionsDummy)
-						Global $ContextMenu_Info = GUICtrlCreateMenuItem("Info", $idOptionsContext)
-						Global $ContextMenu_Export = GUICtrlCreateMenuItem("Export", $idOptionsContext)
-						Global $ContextMenu_Share = GUICtrlCreateMenuItem("Share", $idOptionsContext)
-						Global $ContextMenu_Delete = GUICtrlCreateMenuItem("Delete", $idOptionsContext)
+						CreateContextMenu()
 						ShowMenu($SafeSyncManagementTool, "", $idOptionsContext)
 					EndIf
 
@@ -690,27 +716,20 @@ Func RestoreFromTray()
 	WinActivate("SafeSyncManagementTool")
 EndFunc   ;==>RestoreFromTray
 
-;===============================================================================
-;
-; FunctionName:  _StringCompareVersions()
-; Description:    Compare 2 strings of the FileGetVersion format [a.b.c.d].
-; Syntax:          _StringCompareVersions( $s_Version1, [$s_Version2] )
-; Parameter(s):  $s_Version1          - The string being compared
-;                  $s_Version2        - The string to compare against
-;                                         [Optional] : Default = 0.0.0.0
-; Requirement(s):   None
-; Return Value(s):  0 - Strings are the same (if @error=0)
-;                 -1 - First string is (<) older than second string
-;                  1 - First string is (>) newer than second string
-;                  0 and @error<>0 - String(s) are of incorrect format:
-;                        @error 1 = 1st string; 2 = 2nd string; 3 = both strings.
-; Author(s):        PeteW
-; Note(s):        Comparison checks that both strings contain numeric (decimal) data.
-;                  Supplied strings are contracted or expanded (with 0s)
-;                    MostSignificant_Major.MostSignificant_minor.LeastSignificant_major.LeastSignificant_Minor
-;
-;===============================================================================
 
+#cs _StringCompareVersions - Documentation
+	Name:               _StringCompareVersions (Thanks PeteW)
+	Version:			0.1
+	Description:        Compare 2 strings of the FileGetVersion format [a.b.c.d].
+	Author:             PeteW / changed by Tim Christoph Lid (renaming variables)
+	Return values:      Success:
+						- return 0 if strings are the same
+						- return -1 if string is older than the second string
+						- return 1 if string is newer than the second string
+	Failure:			- TODO
+	Last edit:			2015.04.21 - 19:17 - renaming function (TL)
+	TODO:
+#ce
 Func _StringCompareVersions($s_Version1, $s_Version2 = "0.0.0.0")
 
 	; Confirm strings are of correct basic format. Set @error to 1,2 or 3 if not.
@@ -1011,7 +1030,7 @@ EndFunc   ;==>RestartBTSync
 #ce
 Func MenuDelete()
 	$MD_SelectEntry = ControlListView($SafeSyncManagementTool, "", $idListview, "GetSelected")
-	$MD_SelectEntryText = ControlListView($SafeSyncManagementTool, "", $idListview, "GetText", $MD_SelectEntry, 1)
+	$MD_SelectEntryText = ControlListView($SafeSyncManagementTool, "", $idListview, "GetText", $MD_SelectEntry, 0)
 
 	$MD_MsgBoxAnswer = MsgBox(33, "Delete Folder?", "Delete '" & $MD_SelectEntryText & "'?")
 	Select
@@ -1047,7 +1066,6 @@ Func MenuExport()
 	$ME_SaveFileOpen = FileOpen($ME_SaveFile, 1)
 	FileWrite($ME_SaveFileOpen, $ME_FolderName & "" & $ME_FolderKey)
 	FileClose($ME_SaveFileOpen)
-	ReloadListView()
 EndFunc   ;==>MenuExport
 
 #cs MenuExit - Documentation
@@ -1075,11 +1093,18 @@ EndFunc   ;==>MenuExit
 	TODO:				Commentation; expand the function
 #ce
 Func CheckNewName($CNN_FolderName)
-	If StringCompare($CNN_FolderName, "") Then
-		Return 1
-	Else
-		Return 0
+	If Not StringCompare($CNN_FolderName, "") Then
+		return 0
 	EndIf
+	For $RLV_Counter = 1 To 1000
+		$RLV_RegistryValue = RegEnumVal($SafeSyncRegistryFolders, $RLV_Counter)
+		If @error <> 0 Then ExitLoop
+		MsgBox(0,"",$RLV_RegistryValue)
+		If Not StringCompare($CNN_FolderName,$RLV_RegistryValue) Then
+			return 0
+		EndIf
+	Next
+	Return 1
 EndFunc   ;==>CheckNewName
 
 #cs MenuBitTorrent - Documentation
@@ -1117,7 +1142,6 @@ Func MenuBitTorrent()
 	$MBT_RADIO_ShowGui = GUICtrlCreateGroup("Show GUI?", 10, 10, 120, 70)
 	$MBT_RADIO_UseRelayServer = GUICtrlCreateGroup("UseRelayServer?", 10, 90, 120, 70)
 
-	GUISetState(@SW_HIDE, $SafeSyncManagementTool)
 	GUISetState(@SW_SHOW, $MBT_GUI_BittorentSyncSettings)
 	While 1
 		Switch GUIGetMsg()
@@ -1132,7 +1156,7 @@ Func MenuBitTorrent()
 					$BTSyncShowGUI = "false"
 				EndIf
 				ReloadListView()
-				GUISetState(@SW_SHOW, $SafeSyncManagementTool)
+				GUISetState(@SW_HIDE, $MBT_GUI_BittorentSyncSettings)
 				GUIDelete($MBT_GUI_BittorentSyncSettings)
 				ExitLoop
 		EndSwitch
@@ -1178,7 +1202,7 @@ EndFunc   ;==>MenuOther
 #ce
 Func MenuAbout()
 	; Output "About SafeSync" - Information
-	MsgBox(0, "About SafeSync", "SafeSync" & @LF & "Version 0.0.1.2" & @LF & "  16.04.2015" & @LF & "by SafeSync-Team")
+	MsgBox(0, "About SafeSync", "SafeSync" & @LF & @LF & $SafeSyncDisplayVersion & @LF & $SafeSyncReleaseName &  @LF & @LF & "16.04.2015" & @LF & "by SafeSync-Team")
 EndFunc   ;==>MenuAbout
 
 #cs ExitSafeSync - Documentation
@@ -1404,6 +1428,7 @@ EndFunc   ;==>ChooseDecryptEncryptFolder
 Func RunSafeCrypt()
 	RegWrite($SafeSyncRegistrySoftwareManagementTool, "RunSafeCrypt", "REG_SZ", "1")
 	While 1
+		MsgBox(0,"","RunSafeCrypt")
 		For $i = 1 To 100
 			If RegRead($SafeSyncRegistrySoftwareManagementTool, "RunSafeCrypt") = 0 Then
 				Exit
