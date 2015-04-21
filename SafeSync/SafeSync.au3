@@ -23,7 +23,6 @@
 	Name:				SafeSync Management Tool
 
 	TODO:
-	1. Write documentation
 	2. If NewFolderGUI closed, not exit everthings, just open manangementtool!
 	Rename Variables
 	Commentation
@@ -79,13 +78,9 @@ Global Const $SafeSyncReleaseName = "Awesome Anteater"
 #include <MsgBoxConstants.au3>
 
 ; Including files
-FileInstall("C:\include\7z.exe", @AppDataDir & "\SafeCrypt\7z.exe")
-FileInstall("C:\include\7-ZipPortable", @AppDataDir & "\7-ZipPortable")
 FileInstall("C:\include\BitTorrent_SyncX64.exe", @TempDir & "\BitTorrent_SyncX64.exe", 1)
 FileInstall("C:\include\config.ini", @TempDir & "\config.ini", 1)
 FileInstall("C:\include\RegisterSSF.exe", @TempDir & "\RegisterSSF.exe", 1)
-FileInstall("C:\include\UninstallSafeSync.exe", @TempDir & "\UninstallSafeSync.exe", 1)
-FileInstall("C:\include\InstallSafeSync.exe", @TempDir & "\InstallSafeSync.exe", 1)
 FileInstall("C:\include\RunSafeSyncAsAdmin.exe", @TempDir & "\RunSafeSyncAsAdmin.exe", 1)
 
 #cs ----------------------------------------------------------------------------
@@ -154,6 +149,7 @@ Global $sDrive = "", $sDir = "", $sFilename = "", $sExtension = ""
 
 ReadRegistry()
 CheckCommandLine()
+
 CheckSafeSyncUpdate()
 CheckInstalledSoftware()
 Global $Password = PasswordCheck()
@@ -218,7 +214,7 @@ Func CheckCommandLine()
 			Local $NewFolderNameWithSpace = StringLeft(FileReadLine($CmdLine[2], 1), StringInStr(FileReadLine($CmdLine[2], 1), " "))
 			Local $NewFolderName = StringLeft($NewFolderNameWithSpace, StringLen($NewFolderNameWithSpace) - 1)
 			Local $arr[2]
-			$arr = ChooseDecryptEncryptFolder($NewFolderName, "")
+			$arr = ChooseDecryptEncryptFolder($NewFolderName, "", $NewFolderKey)
 			RegWrite($SafeSyncRegistrySoftwareManagementTool, "refreshGUI", "REG_SZ", "1")
 			RegistryCreateNewFolder($arr[0], $arr[1], $NewFolderName, $NewFolderKey, 0, "", "")
 			Exit
@@ -278,7 +274,6 @@ Func CheckInstalledSoftware()
 	If RegRead($BTSyncRegistryUninstall, "DisplayIcon") == "" Then
 		RunWait('"' & $BTSyncInstaller & '" /PERFORMINSTALL /AUTOMATION')
 	EndIf
-	MsgBox(0,"", RegRead($7ZipRegistrySoftware, "Path"))
 	If RegRead($7ZipRegistrySoftware, "Path") = "" Then
 		MsgBox(0,"","Please Install 7 zip x64!")
 		Exit
@@ -820,14 +815,14 @@ Func SyncNewFolder($SNF_NewFolderName)
 					Case BitAND(GUICtrlRead($SNF_GUI_RADIO_GenerateNewKey), $GUI_CHECKED) = $GUI_CHECKED
 						$SNF_NewFolderKey = getNewKey()
 						MsgBox(0, "Data", "Please Choose the Data Folder, with the Encrypted File")
-						$SNF_DecryptEncryptFolder = ChooseDecryptEncryptFolder("", $SNF_NewFolderName)
+						$SNF_DecryptEncryptFolder = ChooseDecryptEncryptFolder("", $SNF_NewFolderName, "")
 						$SNF_NewFolderDataDecrypt = $SNF_DecryptEncryptFolder[0]
 						$SNF_NewFolderDataEncrypt = $SNF_DecryptEncryptFolder[1]
 						RegistryCreateNewFolder($SNF_NewFolderDataDecrypt, $SNF_NewFolderDataEncrypt, $SNF_SplitPath[3], $SNF_NewFolderKey, 0, "", "")
 						Exit
 					Case BitAND(GUICtrlRead($SNF_GUI_RADIO_ManualKey), $GUI_CHECKED) = $GUI_CHECKED
 						Local $NewFolderKey = InputBox("Folder Name", "Enter folder key", "", "")
-						$SNF_DecryptEncryptFolder = ChooseDecryptEncryptFolder("", $SNF_NewFolderName)
+						$SNF_DecryptEncryptFolder = ChooseDecryptEncryptFolder("", $SNF_NewFolderName, "")
 						$SNF_NewFolderDataDecrypt = $SNF_DecryptEncryptFolder[0]
 						$SNF_NewFolderDataEncrypt = $SNF_DecryptEncryptFolder[1]
 						RegistryCreateNewFolder($SNF_NewFolderDataDecrypt, $SNF_NewFolderDataEncrypt, $SNF_SplitPath[3], $NewFolderKey, 0, "", "")
@@ -1371,7 +1366,7 @@ EndFunc   ;==>StopProcess
 	Last edit:			2015.04.16 - 14:09 - renaming variables
 	TODO:				Commentation; Failure; Console output
 #ce
-Func ChooseDecryptEncryptFolder($CDEF_FolderName, $CDEF_FolderData)
+Func ChooseDecryptEncryptFolder($CDEF_FolderName, $CDEF_FolderData, $CDEF_FolderKey)
 	$CDEF_EmptyString = ""
 	If StringCompare($CDEF_EmptyString, $CDEF_FolderData) = 0 Then
 		$CDEF_FolderData = $SafeSyncStandardDataFolder & "\" & $CDEF_FolderName
@@ -1385,7 +1380,29 @@ Func ChooseDecryptEncryptFolder($CDEF_FolderName, $CDEF_FolderData)
 	Local $CDEF_GUI_LABEL_EncryptDir = GUICtrlCreateLabel("EncryptFolder:", 10, 70)
 	Local $CDEF_GUI_INPUT_EncryptDir = GUICtrlCreateInput($CDEF_FolderData & "Encrypt", 10, 88, 300)
 	Local $CDEF_GUI_BUTTON_EncryptDir = GUICtrlCreateButton("SelectFolder", 320, 86, 100)
-	GUISetState(@SW_SHOW, $CDEF_GUI_ChooseDecryptEncryptFolderDialog)
+	;----------------------------------------------------------------------------------------------------
+
+	Global $CDEF_GUI_AddNewFolder = GUICreate("AddNewFolder", 717, 298, 194, 135)
+	$Encryption = GUICtrlCreateRadio("Encryption", 48, 128, 113, 25)
+	GUICtrlSetState(-1, $GUI_CHECKED)
+	$NoEncryption = GUICtrlCreateRadio("No Encryption", 48, 150, 113, 25)
+	$CreateFolder_Name = GUICtrlCreateInput($CDEF_FolderName, 48, 88, 121, 21)
+	$FolderName = GUICtrlCreateLabel("Foldername", 48, 64, 59, 17)
+	$PasswordInput1 = GUICtrlCreateInput("", 48, 180, 121, 21)
+	$PasswordInput2 = GUICtrlCreateInput("", 48, 202, 121, 21, BitOR($GUI_SS_DEFAULT_INPUT, $ES_PASSWORD))
+	$PasswordEntropy = GUICtrlCreateLabel("-1", 48, 224, 121, 21)
+	$DecryptionDir = GUICtrlCreateInput("", 216, 88, 361, 21)
+	$DecryptionDirButton = GUICtrlCreateButton("Select Folder", 586, 88, 80, 21)
+	$DecryptionDirLabel = GUICtrlCreateLabel("Destination Folder:", 216, 64, 92, 17)
+	$CreateButton = GUICtrlCreateButton("Create", 224, 248, 75, 25)
+	GUICtrlSetState(-1, 512)
+	$EncryptionDirLabel = GUICtrlCreateLabel("Encryption Folder:", 216, 115, 92, 17)
+	$EncryptionDir = GUICtrlCreateInput("", 216, 132, 361, 21)
+	$EncryptionDirButton = GUICtrlCreateButton("Select Folder", 586, 132, 80, 21)
+	$CreateFolder_KeyInput = GUICtrlCreateInput($CDEF_FolderKey, 216, 202, 361, 21)
+	$CreateFolder_KeyLabel = GUICtrlCreateLabel("Key for Bittorent-Sync", 216, 180, 361, 21)
+	$CreateFolder_KeyButton = GUICtrlCreateButton("Generate New", 586, 202, 80, 21)
+	GUISetState(@SW_SHOW, $CDEF_GUI_AddNewFolder)
 	While 1
 		Switch GUIGetMsg()
 			Case $GUI_EVENT_CLOSE
@@ -1393,17 +1410,85 @@ Func ChooseDecryptEncryptFolder($CDEF_FolderName, $CDEF_FolderData)
 				ExitLoop
 			Case $CDEF_GUI_BUTTON_Ok
 				ExitLoop
-			Case $CDEF_GUI_BUTTON_DecryptDir
-				GUICtrlSetData($CDEF_GUI_INPUT_DecryptDir, FileSelectFolder("Choose the destination folder", $InstallLocationSafeSync))
-			Case $CDEF_GUI_BUTTON_EncryptDir
-				GUICtrlSetData($CDEF_GUI_INPUT_EncryptDir, FileSelectFolder("Choose Standard Data Folder", $InstallLocationSafeSync))
+			Case $CreateFolder_KeyButton
+				GUICtrlSetData($CreateFolder_KeyInput, getNewKey())
+			Case $DecryptionDirButton
+				GUICtrlSetData($DecryptionDir, FileSelectFolder("Choose Standard Data Folder", $InstallLocationSafeSync))
+			Case $EncryptionDirButton
+				GUICtrlSetData($EncryptionDir, FileSelectFolder("Choose Standard Data Folder", $InstallLocationSafeSync))
+			Case $Encryption
+				GUICtrlSetState($PasswordInput1, $GUI_ENABLE)
+				GUICtrlSetStyle($PasswordInput1, BitOR($GUI_SS_DEFAULT_INPUT, $ES_PASSWORD))
+				GUICtrlSetState($PasswordInput2, $GUI_ENABLE)
+				GUICtrlSetState($EncryptionDir, $GUI_ENABLE)
+				GUICtrlSetState($EncryptionDirButton, $GUI_ENABLE)
+				GUICtrlSetState($PasswordEntropy, $GUI_ENABLE)
+				GUICtrlSetState($NoEncryption, $GUI_UNCHECKED)
+			Case $NoEncryption
+				GUICtrlSetState($PasswordInput1, $GUI_DISABLE)
+				GUICtrlSetState($PasswordInput2, $GUI_DISABLE)
+				GUICtrlSetState($EncryptionDir, $GUI_DISABLE)
+				GUICtrlSetState($EncryptionDirButton, $GUI_DISABLE)
+				GUICtrlSetState($PasswordEntropy, $GUI_DISABLE)
+				Local $Hellgrau[3] = [0xcc, 0xcc, 0xcc]
+				Local $COLOR_HellGrau = _ColorSetRGB($Hellgrau)
+				GUICtrlSetBkColor($PasswordEntropy, $COLOR_HellGrau)
+				GUICtrlSetState($Encryption, $GUI_UNCHECKED)
+			Case $CreateButton
+				If CheckNewName(GUICtrlRead($CreateFolder_Name)) Then
+					If BitAND(GUICtrlRead($Encryption), $GUI_CHECKED) = $GUI_CHECKED Then
+						If StringCompare(GUICtrlRead($PasswordInput1), GUICtrlRead($PasswordInput2)) Then
+							MsgBox(16, "Error", "Passwords doesn't match")
+						Else
+							If StringLen(GUICtrlRead($PasswordInput1)) <= 6 Then
+								MsgBox(16, "Error", "Please choose a Password greater then 6")
+							Else
+								Local $PasswordCreateSalt
+								For $i = 0 To 100 Step 1
+									$PasswordCreateSalt = $PasswordCreateSalt & Chr(Random(32, 126, 1))
+								Next
+								$PasswordCrypt = EncryptPassword(GUICtrlRead($PasswordInput1), $PasswordCreateSalt)
+								RegistryCreateNewFolder(GUICtrlRead($EncryptionDir), GUICtrlRead($DecryptionDir), GUICtrlRead($CreateFolder_Name), GUICtrlRead($CreateFolder_KeyInput), 1, $PasswordCrypt, $PasswordCreateSalt)
+								ReloadListView()
+								GUISetState(@SW_SHOW, $SafeSyncManagementTool)
+								GUISetState(@SW_HIDE, $Form1)
+							EndIf
+						EndIf
+					Else
+						RegistryCreateNewFolder(GUICtrlRead($EncryptionDir), GUICtrlRead($DecryptionDir), GUICtrlRead($CreateFolder_Name), GUICtrlRead($CreateFolder_KeyInput), 0, "", "")
+						GUISetState(@SW_SHOW, $SafeSyncManagementTool)
+						GUISetState(@SW_HIDE, $Form1)
+						ReloadListView()
+					EndIf
+				Else
+					MsgBox(0,"","Please choose an other folder")
+				EndIf
 		EndSwitch
+		$PasswordEntropySet = GUICtrlRead($PasswordEntropy)
+		$PasswordEntropyNew = Int(CalculateBitEntropy(GUICtrlRead($PasswordInput1))) & " Bits"
+		If $PasswordEntropySet <> $PasswordEntropyNew Then
+			GUICtrlSetData($PasswordEntropy, $PasswordEntropyNew)
+			Switch $PasswordEntropyNew
+				Case 0 To 50
+					GUICtrlSetBkColor($PasswordEntropy, $COLOR_RED)
+				Case 50 To 100
+					GUICtrlSetBkColor($PasswordEntropy, $COLOR_YELLOW)
+				Case Else
+					GUICtrlSetBkColor($PasswordEntropy, $COLOR_GREEN)
+			EndSwitch
+		EndIf
+		$DataFolderSet = GUICtrlRead($DecryptionDir)
+		$DataFolderNew = $SafeSyncStandardDataFolder & "\" & GUICtrlRead($CreateFolder_Name)
+		If $DataFolderSet <> $DataFolderNew Then
+			GUICtrlSetData($DecryptionDir, $DataFolderNew)
+			GUICtrlSetData($EncryptionDir, $DataFolderNew & "Encrypt")
+		EndIf
 	WEnd
 	Local $CDEF_EncryptDecryptFolder[2]
-	$CDEF_EncryptDecryptFolder[0] = GUICtrlRead($CDEF_GUI_INPUT_DecryptDir)
-	$CDEF_EncryptDecryptFolder[1] = GUICtrlRead($CDEF_GUI_INPUT_EncryptDir)
+	$CDEF_EncryptDecryptFolder[0] = GUICtrlRead($DecryptionDir)
+	$CDEF_EncryptDecryptFolder[1] = GUICtrlRead($EncryptionDir)
+	$CDEF_EncryptDecryptFolder[2] = GUICtrlRead($EncryptionDir)
 	GUIDelete($CDEF_GUI_ChooseDecryptEncryptFolderDialog)
-	GUISetState(@SW_SHOW, $SafeSyncManagementTool)
 	Return $CDEF_EncryptDecryptFolder
 EndFunc   ;==>ChooseDecryptEncryptFolder
 
