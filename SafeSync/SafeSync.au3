@@ -106,7 +106,14 @@ Global $SafeSyncManagementTool
 
 ; SafeCrypt Registry
 Global Const $SafeCryptRegistrySoftware = "HKEY_CURRENT_USER64\Software\SafeSync\SafeCrypt"
-Global $7zLocation = 'C:\"Program Files (x86)"\SafeSync\7-ZipPortable\App\7-Zip\7z.exe'
+
+If @OSArch = 'x86' Then
+	Global $7zLocation = 'C:\"Program Files"\SafeSync\7-ZipPortable\App\7-Zip\7z.exe'
+Else
+	Global $7zLocation = 'C:\"Program Files (x86)"\SafeSync\7-ZipPortable\App\7-Zip\7z.exe'
+EndIf
+MsgBox(0,"",$7zLocation)
+
 Global $SafeCryptFolder = "D:\SafeCrypt\"
 Global $DataFolderDecrypt = $SafeCryptFolder & "Decrypt\"
 Global $DataFolderEncrypt = $SafeCryptFolder & "Encrypt\"
