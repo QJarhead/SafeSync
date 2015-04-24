@@ -19,7 +19,7 @@
 #cs SafeSync - Information
 	AutoIt Version: 	3.3.12.0
 	Author:				Tim Christoph Lid
-	Version:			0.12.0.0
+	Version:			0.12.0.1
 	Name:				SafeSync Management Tool
 
 	TODO:
@@ -1520,7 +1520,6 @@ EndFunc   ;==>ChooseDecryptEncryptFolder
 Func RunSafeCrypt()
 	RegWrite($SafeSyncRegistrySoftwareManagementTool, "RunSafeCrypt", "REG_SZ", "1")
 	While 1
-		MsgBox(0,"","RunSafeCrypt")
 		For $i = 1 To 100
 			If RegRead($SafeSyncRegistrySoftwareManagementTool, "RunSafeCrypt") = 0 Then
 				Exit
