@@ -112,7 +112,6 @@ If @OSArch = 'x86' Then
 Else
 	Global $7zLocation = 'C:\"Program Files (x86)"\SafeSync\7-ZipPortable\App\7-Zip\7z.exe'
 EndIf
-MsgBox(0,"",$7zLocation)
 
 Global $SafeCryptFolder = "D:\SafeCrypt\"
 Global $DataFolderDecrypt = $SafeCryptFolder & "Decrypt\"
@@ -154,8 +153,10 @@ Global Const $7ZipRegistrySoftware = "HKEY_CURRENT_USER64\Software\7-Zip"
 ; For running _PathSplit()
 Global $sDrive = "", $sDir = "", $sFilename = "", $sExtension = ""
 
+
 ReadRegistry()
 CheckCommandLine()
+
 
 CheckSafeSyncUpdate()
 CheckInstalledSoftware()
@@ -1799,7 +1800,7 @@ EndFunc   ;==>CheckChangedFiles
 
 #cs GenerateList - Documentation
 	Name:               GenerateList
-	Version:			0.1
+	Version:			0.2
 	Description:        Function, List all the files or folders in the desktop directory using the default parameters and return the array.
 	Author:             Tim Lid
 	Parameters:         $GL_ScanFolder			- String: The folder to scan
@@ -1809,31 +1810,32 @@ EndFunc   ;==>CheckChangedFiles
 	$GL_SplitPath			- Array[String] The Path splited into their elements
 	Return values:      Success:				- String: Generated list of Files/Folders in an array
 	Failure:				- TODO
-	Last edit:			2015.04.16 - 08:51 - Documentation
+	Last edit:			2015.04.24 - 18:36 - Change to ArrayWrite Function, for better performance!
 	TODO:				Commentation; Failure; rename variables
 #ce
 Func GenerateList($GL_ScanFolder, $GL_OutputList, $GL_Param)
-	FileDelete($GL_OutputList)
 	Local $GL_GeneratedList = _FileListToArrayRec($GL_ScanFolder, "*|.sync|.sync", $GL_Param, 1, Default, 2)
 	If Not @error Then
-		_FileCreate($GL_OutputList)
-		Local $GL_OutputListOpen = FileOpen($GL_OutputList, $FO_APPEND)
-		If $GL_OutputListOpen = -1 Then
-			MsgBox($MB_SYSTEMMODAL, "", "An error occurred when reading the file3.")
-			MsgBox($MB_SYSTEMMODAL, "", $GL_OutputList)
-			Return False
-		EndIf
+		;Outcomment @ 24.04.2015_17:31 by TL - Local $GL_OutputListOpen = FileOpen($GL_OutputList, $FO_APPEND)
+		;Outcomment @ 24.04.2015_17:31 by TL - If $GL_OutputListOpen = -1 Then
+		;Outcomment @ 24.04.2015_17:31 by TL - 	MsgBox($MB_SYSTEMMODAL, "", "An error occurred when reading the file3.")
+		;Outcomment @ 24.04.2015_17:31 by TL - 	MsgBox($MB_SYSTEMMODAL, "", $GL_OutputList)
+		;Outcomment @ 24.04.2015_17:31 by TL - 	Return False
+		;Outcomment @ 24.04.2015_17:31 by TL - EndIf
 		Local $GL_GeneratedListWithHash[$GL_GeneratedList[0] + 1][2]
+		Local $GL_ArrayForFile[1+$GL_GeneratedList[0]*3]
 		For $i = 1 To $GL_GeneratedList[0]
 			$GL_GeneratedListWithHash[$i][0] = $GL_GeneratedList[$i]
 			$GL_GeneratedListWithHash[$i][1] = _Crypt_HashFile($GL_GeneratedList[$i], $CALG_MD5)
 			Local $GL_SplitPath = _PathSplit($GL_GeneratedList[$i], $sDrive, $sDir, $sFilename, $sExtension)
-			FileWriteLine($GL_OutputListOpen, $GL_SplitPath[1] & $GL_SplitPath[2] & @CRLF)
-			FileWriteLine($GL_OutputListOpen, $GL_SplitPath[3] & $GL_SplitPath[4] & @CRLF)
-			FileWriteLine($GL_OutputListOpen, $GL_GeneratedListWithHash[$i][1] & @CRLF)
+			$GL_ArrayForFile[$i*3-(3)+1] = $GL_SplitPath[1] & $GL_SplitPath[2]
+			$GL_ArrayForFile[$i*3-(2)+1] = $GL_SplitPath[3] & $GL_SplitPath[4]
+			$GL_ArrayForFile[$i*3-(1)+1] = $GL_GeneratedListWithHash[$i][1]
 		Next
-		FileClose($GL_OutputListOpen)
 	EndIf
+	FileDelete($GL_OutputList)
+	_FileCreate($GL_OutputList)
+	_FileWriteFromArray( $GL_OutputList, $GL_ArrayForFile, 1)
 	Return $GL_GeneratedList
 EndFunc   ;==>GenerateList
 
