@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<DOCUMENT Type="Advanced Installer" CreateVersion="11.9" version="11.9" Modules="simple" RootPath="." Language="en" Id="{1DB1CF80-F6BC-4656-B66C-C589B9746125}">
+<DOCUMENT Type="Advanced Installer" CreateVersion="11.9" version="12.0" Modules="simple" RootPath="." Language="en" Id="{1DB1CF80-F6BC-4656-B66C-C589B9746125}">
   <COMPONENT cid="caphyon.advinst.msicomp.MsiPropsComponent">
     <ROW Property="AI_BITMAP_DISPLAY_MODE" Value="0"/>
     <ROW Property="ALLUSERS" Value="1"/>
@@ -10,10 +10,10 @@
     <ROW Property="ARPURLUPDATEINFO" Value="safesync.no-ip.org/download/safesync/latest"/>
     <ROW Property="CTRLS" Value="3"/>
     <ROW Property="Manufacturer" Value="SafeSync"/>
-    <ROW Property="ProductCode" Value="1033:{D7D2F0B1-B639-4A0A-8B7A-58D6874743D2} " Type="16"/>
+    <ROW Property="ProductCode" Value="1033:{06862DDD-36F1-4CC2-92AB-A93719BAAEDE} " Type="16"/>
     <ROW Property="ProductLanguage" Value="1033"/>
     <ROW Property="ProductName" Value="SafeSync - ManagementTool"/>
-    <ROW Property="ProductVersion" Value="0.12.0.0" Type="32"/>
+    <ROW Property="ProductVersion" Value="0.12.1.0" Type="32"/>
     <ROW Property="REBOOT" MultiBuildValue="DefaultBuild:ReallySuppress"/>
     <ROW Property="RUNAPPLICATION" Value="1" Type="4"/>
     <ROW Property="SecureCustomProperties" Value="OLDPRODUCTS;AI_NEWERPRODUCTFOUND"/>
@@ -57,165 +57,165 @@
     <ROW Component="SHORTCUTDIR" ComponentId="{A838A576-8603-4D02-9458-5C9D1B90A79F}" Directory_="SHORTCUTDIR" Attributes="0"/>
     <ROW Component="SafeSync" ComponentId="{C84B47B0-901B-4D17-BB60-C32A65C82FE3}" Directory_="APPDIR" Attributes="4" KeyPath="SafeSync"/>
     <ROW Component="SafeSync.exe" ComponentId="{8E7EC15C-3B4B-4488-BAB5-6100A92379D3}" Directory_="ManagementTool_Dir" Attributes="0" KeyPath="SafeSync.exe"/>
-    <ROW Component="ZipPortable.exe" ComponentId="{EACE7527-9393-48DA-B558-12B9BFF8696D}" Directory_="ZipPortable_Dir" Attributes="0" KeyPath="ZipPortable.exe"/>
-    <ROW Component="ZipPortable.ini" ComponentId="{CCB91339-56B8-4C72-B9E4-E4922EEAEB85}" Directory_="Source_Dir" Attributes="0" KeyPath="ZipPortable.ini" Type="0"/>
-    <ROW Component="af.txt" ComponentId="{4FF75287-C52A-457A-BCB8-4F8E9318E538}" Directory_="Lang_Dir" Attributes="0" KeyPath="af.txt" Type="0"/>
-    <ROW Component="appicon.ico" ComponentId="{79837B80-3778-4401-8629-1BB8C66751FC}" Directory_="AppInfo_Dir" Attributes="0" KeyPath="appicon.ico" Type="0"/>
-    <ROW Component="donation_button.png" ComponentId="{0141FFDF-7BD5-41FB-8672-AB27C9FF0A23}" Directory_="images_Dir" Attributes="0" KeyPath="donation_button.png" Type="0"/>
-    <ROW Component="help.html" ComponentId="{DED50735-9094-4C09-960A-8D56DC5FDA8C}" Directory_="ZipPortable_Dir" Attributes="0" KeyPath="help.html" Type="0"/>
-    <ROW Component="readme.txt" ComponentId="{B48502FE-5B61-4C26-AC4E-0246290C88AC}" Directory_="App_Dir" Attributes="0" KeyPath="readme.txt_3" Type="0"/>
-    <ROW Component="z.dll" ComponentId="{A4B9809B-87E0-4ED9-8772-DA409CCCCD5E}" Directory_="Zip_Dir" Attributes="0" KeyPath="z.dll"/>
-    <ROW Component="z.dll_1" ComponentId="{791CC8A4-C0E2-4071-B6A8-5E0609F71E0B}" Directory_="Zip64_Dir" Attributes="256" KeyPath="z.dll_1"/>
-    <ROW Component="z.exe" ComponentId="{23B8C74D-B8F1-41B8-8EBC-A23C05DF557F}" Directory_="Zip_Dir" Attributes="0" KeyPath="z.exe"/>
-    <ROW Component="z.exe_1" ComponentId="{7B720A30-6205-441B-B821-28638AEC475A}" Directory_="Zip64_Dir" Attributes="256" KeyPath="z.exe_1"/>
-    <ROW Component="z.sfx" ComponentId="{F4B24697-AC95-4826-802C-134594B144F3}" Directory_="Zip_Dir" Attributes="0" KeyPath="z.sfx" Type="0"/>
-    <ROW Component="z.sfx_1" ComponentId="{8C2D5E48-0739-41DD-87CA-6D124D15D88D}" Directory_="Zip64_Dir" Attributes="0" KeyPath="z.sfx_1" Type="0"/>
-    <ROW Component="zFM.exe" ComponentId="{2EC9E217-7ED6-4DF7-BF47-FF35FC1382C1}" Directory_="Zip_Dir" Attributes="0" KeyPath="zFM.exe"/>
-    <ROW Component="zFM.exe_1" ComponentId="{05C70053-EC78-445E-8D43-B978F9E21AE6}" Directory_="Zip64_Dir" Attributes="256" KeyPath="zFM.exe_1"/>
-    <ROW Component="zG.exe" ComponentId="{2078AFBC-C207-4BCF-8EEB-DCB86C8CB2F7}" Directory_="Zip_Dir" Attributes="0" KeyPath="zG.exe"/>
-    <ROW Component="zG.exe_1" ComponentId="{FFB97CCE-DBD6-45AE-BD3C-047237878F49}" Directory_="Zip64_Dir" Attributes="256" KeyPath="zG.exe_1"/>
-    <ROW Component="zip.chm" ComponentId="{90D54D31-0A6A-4111-93AE-B3818D797AE7}" Directory_="Zip_Dir" Attributes="0" KeyPath="zip.chm" Type="1"/>
-    <ROW Component="zip.chm_1" ComponentId="{34DBBAF4-1FF0-49D4-B99B-D12861089BB7}" Directory_="Zip64_Dir" Attributes="0" KeyPath="zip.chm_1" Type="1"/>
-    <ROW Component="zip.dll" ComponentId="{E53DD34B-A720-4BD4-AA22-CD4729459F45}" Directory_="Zip_Dir" Attributes="0" KeyPath="zip.dll"/>
-    <ROW Component="zip.dll_1" ComponentId="{A36675A0-DE25-4D12-892B-E8250D9B77A8}" Directory_="Zip64_Dir" Attributes="256" KeyPath="zip.dll_1"/>
-    <ROW Component="zip_portable.reg" ComponentId="{247BD1DB-5A2E-4207-8EAD-52A5607F3165}" Directory_="settings_Dir" Attributes="0" KeyPath="zip_portable.reg" Type="0"/>
+    <ROW Component="ZipPortable.exe" ComponentId="{24FCCAFB-C5DD-47B3-98EE-B1F40735800D}" Directory_="ZipPortable_Dir" Attributes="0" KeyPath="ZipPortable.exe"/>
+    <ROW Component="ZipPortable.ini" ComponentId="{976378C6-4962-4575-B3F8-AC008FDE37E6}" Directory_="Source_Dir" Attributes="0" KeyPath="ZipPortable.ini" Type="0"/>
+    <ROW Component="af.txt" ComponentId="{84DCDF61-A018-4308-859F-1A3016AA5E00}" Directory_="Lang_Dir" Attributes="0" KeyPath="af.txt" Type="0"/>
+    <ROW Component="appicon.ico" ComponentId="{66F1195C-DC56-4953-B5A1-85DDA3E609FB}" Directory_="AppInfo_Dir" Attributes="0" KeyPath="appicon.ico" Type="0"/>
+    <ROW Component="donation_button.png" ComponentId="{2673419A-4D50-4A4F-B3A7-48F56B892205}" Directory_="images_Dir" Attributes="0" KeyPath="donation_button.png" Type="0"/>
+    <ROW Component="help.html" ComponentId="{030D181C-DAA3-4B7C-ACBD-05F071AC70F0}" Directory_="ZipPortable_Dir" Attributes="0" KeyPath="help.html" Type="0"/>
+    <ROW Component="readme.txt" ComponentId="{47B5AD8E-234D-45F8-B690-7B75EB266C2E}" Directory_="App_Dir" Attributes="0" KeyPath="readme.txt_3" Type="0"/>
+    <ROW Component="z.dll" ComponentId="{6BC4B043-E6B2-4A4A-9CA9-66BC8032DB47}" Directory_="Zip_Dir" Attributes="0" KeyPath="z.dll"/>
+    <ROW Component="z.dll_1" ComponentId="{A0B8A40C-A1D4-4FDC-96B1-34CB15187928}" Directory_="Zip64_Dir" Attributes="256" KeyPath="z.dll_1"/>
+    <ROW Component="z.exe" ComponentId="{2EB926DC-65F0-4143-8B6C-CB96FC140F4A}" Directory_="Zip_Dir" Attributes="0" KeyPath="z.exe"/>
+    <ROW Component="z.exe_1" ComponentId="{F2592C6D-17A7-4621-A2E0-DC81DA351C1B}" Directory_="Zip64_Dir" Attributes="256" KeyPath="z.exe_1"/>
+    <ROW Component="z.sfx" ComponentId="{F94F5E32-389D-43EE-960C-D70ED0F8C89D}" Directory_="Zip_Dir" Attributes="0" KeyPath="z.sfx" Type="0"/>
+    <ROW Component="z.sfx_1" ComponentId="{22ED1C79-6224-42A1-BBCE-9D52FFA0BC14}" Directory_="Zip64_Dir" Attributes="0" KeyPath="z.sfx_1" Type="0"/>
+    <ROW Component="zFM.exe" ComponentId="{992EB6CE-AADE-4523-AF49-1FBE2195FA4B}" Directory_="Zip_Dir" Attributes="0" KeyPath="zFM.exe"/>
+    <ROW Component="zFM.exe_1" ComponentId="{DBC56ABC-A64D-4EC6-BACF-0AB93BD0C78B}" Directory_="Zip64_Dir" Attributes="256" KeyPath="zFM.exe_1"/>
+    <ROW Component="zG.exe" ComponentId="{791A3C6A-B783-46F0-A3F8-AF5062077834}" Directory_="Zip_Dir" Attributes="0" KeyPath="zG.exe"/>
+    <ROW Component="zG.exe_1" ComponentId="{53D2F0CD-6FC9-4262-86DB-1CDBC0B25391}" Directory_="Zip64_Dir" Attributes="256" KeyPath="zG.exe_1"/>
+    <ROW Component="zip.chm" ComponentId="{C7363729-4E2A-4DFC-A831-10BBEB04EFB2}" Directory_="Zip_Dir" Attributes="0" KeyPath="zip.chm" Type="1"/>
+    <ROW Component="zip.chm_1" ComponentId="{C124A3CA-2190-40DA-A827-EA73CA3C7BA7}" Directory_="Zip64_Dir" Attributes="0" KeyPath="zip.chm_1" Type="1"/>
+    <ROW Component="zip.dll" ComponentId="{1D328730-653E-437B-A45B-F64709B034C5}" Directory_="Zip_Dir" Attributes="0" KeyPath="zip.dll"/>
+    <ROW Component="zip.dll_1" ComponentId="{CEA6DAA9-AAA4-45F4-9D90-C82D957D66F3}" Directory_="Zip64_Dir" Attributes="256" KeyPath="zip.dll_1"/>
+    <ROW Component="zip_portable.reg" ComponentId="{53135DDD-1386-4F5F-931A-C21CDD339583}" Directory_="settings_Dir" Attributes="0" KeyPath="zip_portable.reg" Type="0"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiFeatsComponent">
     <ROW Feature="MainFeature" Title="MainFeature" Description="Description" Display="1" Level="1" Directory_="APPDIR" Attributes="0" Components="InstallDir ManagementTool ProductInformation README.txt SHORTCUTDIR SafeSync SafeSync.exe ZipPortable.exe ZipPortable.ini af.txt appicon.ico donation_button.png help.html readme.txt z.dll z.dll_1 z.exe z.exe_1 z.sfx z.sfx_1 zFM.exe zFM.exe_1 zG.exe zG.exe_1 zip.chm zip.chm_1 zip.dll zip.dll_1 zip_portable.reg"/>
     <ATTRIBUTE name="CurrentFeature" value="MainFeature"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiFilesComponent">
-    <ROW File="CheckForPlatformSplashDisable.nsh" Component_="ZipPortable.ini" FileName="CHECKF~1.NSH|CheckForPlatformSplashDisable.nsh" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\Other\Source\CheckForPlatformSplashDisable.nsh" SelfReg="false" NextFile="License.txt_2"/>
-    <ROW File="History.txt" Component_="z.sfx" FileName="History.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip\History.txt" SelfReg="false" NextFile="License.txt"/>
-    <ROW File="History.txt_1" Component_="z.sfx_1" FileName="History.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\History.txt" SelfReg="false" NextFile="af.txt"/>
-    <ROW File="License.txt" Component_="z.sfx" FileName="License.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip\License.txt" SelfReg="false" NextFile="readme.txt_1"/>
-    <ROW File="License.txt_1" Component_="z.sfx_1" FileName="License.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\License.txt" SelfReg="false" NextFile="readme.txt_2"/>
-    <ROW File="License.txt_2" Component_="ZipPortable.ini" FileName="License.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\Other\Source\License.txt" SelfReg="false" NextFile="PortableApps.comInstallerCustom.nsh"/>
-    <ROW File="PortableApps.comInstallerCustom.nsh" Component_="ZipPortable.ini" FileName="PORTAB~1.NSH|PortableApps.comInstallerCustom.nsh" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\Other\Source\PortableApps.comInstallerCustom.nsh" SelfReg="false" NextFile="PortableApps.comLauncherLANG_ENGLISH.nsh"/>
-    <ROW File="PortableApps.comLauncherLANG_ENGLISH.nsh" Component_="ZipPortable.ini" FileName="PORTAB~2.NSH|PortableApps.comLauncherLANG_ENGLISH.nsh" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\Other\Source\PortableApps.comLauncherLANG_ENGLISH.nsh" SelfReg="false" NextFile="ReadINIStrWithDefault.nsh"/>
+    <ROW File="CheckForPlatformSplashDisable.nsh" Component_="ZipPortable.ini" FileName="CHECKF~1.NSH|CheckForPlatformSplashDisable.nsh" Attributes="0" SourcePath="include\7-ZipPortable\Other\Source\CheckForPlatformSplashDisable.nsh" SelfReg="false" NextFile="License.txt_2"/>
+    <ROW File="History.txt" Component_="z.sfx" FileName="History.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip\History.txt" SelfReg="false" NextFile="License.txt"/>
+    <ROW File="History.txt_1" Component_="z.sfx_1" FileName="History.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\History.txt" SelfReg="false" NextFile="af.txt"/>
+    <ROW File="License.txt" Component_="z.sfx" FileName="License.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip\License.txt" SelfReg="false" NextFile="readme.txt_1"/>
+    <ROW File="License.txt_1" Component_="z.sfx_1" FileName="License.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\License.txt" SelfReg="false" NextFile="readme.txt_2"/>
+    <ROW File="License.txt_2" Component_="ZipPortable.ini" FileName="License.txt" Attributes="0" SourcePath="include\7-ZipPortable\Other\Source\License.txt" SelfReg="false" NextFile="PortableApps.comInstallerCustom.nsh"/>
+    <ROW File="PortableApps.comInstallerCustom.nsh" Component_="ZipPortable.ini" FileName="PORTAB~1.NSH|PortableApps.comInstallerCustom.nsh" Attributes="0" SourcePath="include\7-ZipPortable\Other\Source\PortableApps.comInstallerCustom.nsh" SelfReg="false" NextFile="PortableApps.comLauncherLANG_ENGLISH.nsh"/>
+    <ROW File="PortableApps.comLauncherLANG_ENGLISH.nsh" Component_="ZipPortable.ini" FileName="PORTAB~2.NSH|PortableApps.comLauncherLANG_ENGLISH.nsh" Attributes="0" SourcePath="include\7-ZipPortable\Other\Source\PortableApps.comLauncherLANG_ENGLISH.nsh" SelfReg="false" NextFile="ReadINIStrWithDefault.nsh"/>
     <ROW File="README.txt" Component_="README.txt" FileName="README.txt" Attributes="0" SourcePath="README.txt" SelfReg="false" NextFile="ZipPortable.exe"/>
-    <ROW File="ReadINIStrWithDefault.nsh" Component_="ZipPortable.ini" FileName="READIN~1.NSH|ReadINIStrWithDefault.nsh" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\Other\Source\ReadINIStrWithDefault.nsh" SelfReg="false" NextFile="Readme.txt_4"/>
-    <ROW File="Readme.txt_4" Component_="ZipPortable.ini" FileName="Readme.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\Other\Source\Readme.txt" SelfReg="false" NextFile="ReplaceInFileWithTextReplace.nsh"/>
-    <ROW File="ReplaceInFileWithTextReplace.nsh" Component_="ZipPortable.ini" FileName="REPLAC~1.NSH|ReplaceInFileWithTextReplace.nsh" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\Other\Source\ReplaceInFileWithTextReplace.nsh" SelfReg="false"/>
+    <ROW File="ReadINIStrWithDefault.nsh" Component_="ZipPortable.ini" FileName="READIN~1.NSH|ReadINIStrWithDefault.nsh" Attributes="0" SourcePath="include\7-ZipPortable\Other\Source\ReadINIStrWithDefault.nsh" SelfReg="false" NextFile="Readme.txt_4"/>
+    <ROW File="Readme.txt_4" Component_="ZipPortable.ini" FileName="Readme.txt" Attributes="0" SourcePath="include\7-ZipPortable\Other\Source\Readme.txt" SelfReg="false" NextFile="ReplaceInFileWithTextReplace.nsh"/>
+    <ROW File="ReplaceInFileWithTextReplace.nsh" Component_="ZipPortable.ini" FileName="REPLAC~1.NSH|ReplaceInFileWithTextReplace.nsh" Attributes="0" SourcePath="include\7-ZipPortable\Other\Source\ReplaceInFileWithTextReplace.nsh" SelfReg="false"/>
     <ROW File="SafeSync.exe" Component_="SafeSync.exe" FileName="SafeSync.exe" Attributes="0" SourcePath="SafeSync.exe" SelfReg="false" NextFile="README.txt" DigSign="true"/>
-    <ROW File="Thumbs.db" Component_="appicon.ico" FileName="Thumbs.db" Attributes="6" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\AppInfo\Thumbs.db" SelfReg="false" NextFile="zip_portable.reg"/>
-    <ROW File="ZipPortable.exe" Component_="ZipPortable.exe" FileName="7-ZIPP~1.EXE|7-ZipPortable.exe" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\7-ZipPortable.exe" SelfReg="false" NextFile="zip.chm" DigSign="true"/>
-    <ROW File="ZipPortable.ini" Component_="ZipPortable.ini" FileName="7-ZIPP~1.INI|7-ZipPortable.ini" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\Other\Source\7-ZipPortable.ini" SelfReg="false" NextFile="ZipPortable.jpg"/>
-    <ROW File="ZipPortable.jpg" Component_="ZipPortable.ini" FileName="7-ZIPP~1.JPG|7-ZipPortable.jpg" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\Other\Source\7-ZipPortable.jpg" SelfReg="false" NextFile="ZipPortableU.nsi"/>
-    <ROW File="ZipPortableU.nsi" Component_="ZipPortable.ini" FileName="7-ZIPP~1.NSI|7-ZipPortableU.nsi" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\Other\Source\7-ZipPortableU.nsi" SelfReg="false" NextFile="CheckForPlatformSplashDisable.nsh"/>
-    <ROW File="af.txt" Component_="af.txt" FileName="af.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\af.txt" SelfReg="false" NextFile="ar.txt"/>
-    <ROW File="appicon.ico" Component_="appicon.ico" FileName="appicon.ico" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\AppInfo\appicon.ico" SelfReg="false" NextFile="appicon_128.png"/>
-    <ROW File="appicon_128.png" Component_="appicon.ico" FileName="APPICO~1.PNG|appicon_128.png" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\AppInfo\appicon_128.png" SelfReg="false" NextFile="appicon_16.png"/>
-    <ROW File="appicon_16.png" Component_="appicon.ico" FileName="APPICO~2.PNG|appicon_16.png" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\AppInfo\appicon_16.png" SelfReg="false" NextFile="appicon_32.png"/>
-    <ROW File="appicon_32.png" Component_="appicon.ico" FileName="APPICO~3.PNG|appicon_32.png" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\AppInfo\appicon_32.png" SelfReg="false" NextFile="appinfo.ini"/>
-    <ROW File="appinfo.ini" Component_="appicon.ico" FileName="appinfo.ini" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\AppInfo\appinfo.ini" SelfReg="false" NextFile="Thumbs.db"/>
-    <ROW File="ar.txt" Component_="af.txt" FileName="ar.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\ar.txt" SelfReg="false" NextFile="ast.txt"/>
-    <ROW File="ast.txt" Component_="af.txt" FileName="ast.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\ast.txt" SelfReg="false" NextFile="az.txt"/>
-    <ROW File="az.txt" Component_="af.txt" FileName="az.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\az.txt" SelfReg="false" NextFile="ba.txt"/>
-    <ROW File="ba.txt" Component_="af.txt" FileName="ba.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\ba.txt" SelfReg="false" NextFile="be.txt"/>
-    <ROW File="be.txt" Component_="af.txt" FileName="be.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\be.txt" SelfReg="false" NextFile="bg.txt"/>
-    <ROW File="bg.txt" Component_="af.txt" FileName="bg.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\bg.txt" SelfReg="false" NextFile="bn.txt"/>
-    <ROW File="bn.txt" Component_="af.txt" FileName="bn.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\bn.txt" SelfReg="false" NextFile="br.txt"/>
-    <ROW File="br.txt" Component_="af.txt" FileName="br.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\br.txt" SelfReg="false" NextFile="ca.txt"/>
-    <ROW File="ca.txt" Component_="af.txt" FileName="ca.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\ca.txt" SelfReg="false" NextFile="cs.txt"/>
-    <ROW File="cs.txt" Component_="af.txt" FileName="cs.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\cs.txt" SelfReg="false" NextFile="cy.txt"/>
-    <ROW File="cy.txt" Component_="af.txt" FileName="cy.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\cy.txt" SelfReg="false" NextFile="da.txt"/>
-    <ROW File="da.txt" Component_="af.txt" FileName="da.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\da.txt" SelfReg="false" NextFile="de.txt"/>
-    <ROW File="de.txt" Component_="af.txt" FileName="de.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\de.txt" SelfReg="false" NextFile="el.txt"/>
-    <ROW File="descript.ion" Component_="z.sfx" FileName="descript.ion" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip\descript.ion" SelfReg="false" NextFile="History.txt"/>
-    <ROW File="descript.ion_1" Component_="z.sfx_1" FileName="descript.ion" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\descript.ion" SelfReg="false" NextFile="History.txt_1"/>
-    <ROW File="donation_button.png" Component_="donation_button.png" FileName="DONATI~1.PNG|donation_button.png" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\Other\Help\images\donation_button.png" SelfReg="false" NextFile="favicon.ico"/>
-    <ROW File="el.txt" Component_="af.txt" FileName="el.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\el.txt" SelfReg="false" NextFile="en.ttt"/>
-    <ROW File="en.ttt" Component_="af.txt" FileName="en.ttt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\en.ttt" SelfReg="false" NextFile="eo.txt"/>
-    <ROW File="eo.txt" Component_="af.txt" FileName="eo.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\eo.txt" SelfReg="false" NextFile="es.txt"/>
-    <ROW File="es.txt" Component_="af.txt" FileName="es.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\es.txt" SelfReg="false" NextFile="et.txt"/>
-    <ROW File="et.txt" Component_="af.txt" FileName="et.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\et.txt" SelfReg="false" NextFile="eu.txt"/>
-    <ROW File="eu.txt" Component_="af.txt" FileName="eu.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\eu.txt" SelfReg="false" NextFile="ext.txt"/>
-    <ROW File="ext.txt" Component_="af.txt" FileName="ext.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\ext.txt" SelfReg="false" NextFile="fa.txt"/>
-    <ROW File="fa.txt" Component_="af.txt" FileName="fa.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\fa.txt" SelfReg="false" NextFile="fi.txt"/>
-    <ROW File="favicon.ico" Component_="donation_button.png" FileName="favicon.ico" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\Other\Help\images\favicon.ico" SelfReg="false" NextFile="help_background_footer.png"/>
-    <ROW File="fi.txt" Component_="af.txt" FileName="fi.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\fi.txt" SelfReg="false" NextFile="fr.txt"/>
-    <ROW File="fr.txt" Component_="af.txt" FileName="fr.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\fr.txt" SelfReg="false" NextFile="fur.txt"/>
-    <ROW File="fur.txt" Component_="af.txt" FileName="fur.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\fur.txt" SelfReg="false" NextFile="fy.txt"/>
-    <ROW File="fy.txt" Component_="af.txt" FileName="fy.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\fy.txt" SelfReg="false" NextFile="gl.txt"/>
-    <ROW File="gl.txt" Component_="af.txt" FileName="gl.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\gl.txt" SelfReg="false" NextFile="gu.txt"/>
-    <ROW File="gu.txt" Component_="af.txt" FileName="gu.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\gu.txt" SelfReg="false" NextFile="he.txt"/>
-    <ROW File="he.txt" Component_="af.txt" FileName="he.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\he.txt" SelfReg="false" NextFile="hi.txt"/>
-    <ROW File="help.html" Component_="help.html" FileName="HELP~1.HTM|help.html" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\help.html" SelfReg="false" NextFile="donation_button.png"/>
-    <ROW File="help_background_footer.png" Component_="donation_button.png" FileName="HELP_B~1.PNG|help_background_footer.png" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\Other\Help\images\help_background_footer.png" SelfReg="false" NextFile="help_background_header.png"/>
-    <ROW File="help_background_header.png" Component_="donation_button.png" FileName="HELP_B~2.PNG|help_background_header.png" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\Other\Help\images\help_background_header.png" SelfReg="false" NextFile="help_logo_top.png"/>
-    <ROW File="help_logo_top.png" Component_="donation_button.png" FileName="HELP_L~1.PNG|help_logo_top.png" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\Other\Help\images\help_logo_top.png" SelfReg="false" NextFile="ZipPortable.ini"/>
-    <ROW File="hi.txt" Component_="af.txt" FileName="hi.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\hi.txt" SelfReg="false" NextFile="hr.txt"/>
-    <ROW File="hr.txt" Component_="af.txt" FileName="hr.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\hr.txt" SelfReg="false" NextFile="hu.txt"/>
-    <ROW File="hu.txt" Component_="af.txt" FileName="hu.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\hu.txt" SelfReg="false" NextFile="hy.txt"/>
-    <ROW File="hy.txt" Component_="af.txt" FileName="hy.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\hy.txt" SelfReg="false" NextFile="id.txt"/>
-    <ROW File="id.txt" Component_="af.txt" FileName="id.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\id.txt" SelfReg="false" NextFile="io.txt"/>
-    <ROW File="io.txt" Component_="af.txt" FileName="io.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\io.txt" SelfReg="false" NextFile="is.txt"/>
-    <ROW File="is.txt" Component_="af.txt" FileName="is.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\is.txt" SelfReg="false" NextFile="it.txt"/>
-    <ROW File="it.txt" Component_="af.txt" FileName="it.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\it.txt" SelfReg="false" NextFile="ja.txt"/>
-    <ROW File="ja.txt" Component_="af.txt" FileName="ja.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\ja.txt" SelfReg="false" NextFile="ka.txt"/>
-    <ROW File="ka.txt" Component_="af.txt" FileName="ka.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\ka.txt" SelfReg="false" NextFile="kk.txt"/>
-    <ROW File="kk.txt" Component_="af.txt" FileName="kk.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\kk.txt" SelfReg="false" NextFile="ko.txt"/>
-    <ROW File="ko.txt" Component_="af.txt" FileName="ko.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\ko.txt" SelfReg="false" NextFile="kuckb.txt"/>
-    <ROW File="ku.txt" Component_="af.txt" FileName="ku.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\ku.txt" SelfReg="false" NextFile="lt.txt"/>
-    <ROW File="kuckb.txt" Component_="af.txt" FileName="ku-ckb.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\ku-ckb.txt" SelfReg="false" NextFile="ku.txt"/>
-    <ROW File="lt.txt" Component_="af.txt" FileName="lt.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\lt.txt" SelfReg="false" NextFile="lv.txt"/>
-    <ROW File="lv.txt" Component_="af.txt" FileName="lv.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\lv.txt" SelfReg="false" NextFile="mk.txt"/>
-    <ROW File="mk.txt" Component_="af.txt" FileName="mk.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\mk.txt" SelfReg="false" NextFile="mn.txt"/>
-    <ROW File="mn.txt" Component_="af.txt" FileName="mn.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\mn.txt" SelfReg="false" NextFile="mr.txt"/>
-    <ROW File="mr.txt" Component_="af.txt" FileName="mr.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\mr.txt" SelfReg="false" NextFile="ms.txt"/>
-    <ROW File="ms.txt" Component_="af.txt" FileName="ms.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\ms.txt" SelfReg="false" NextFile="nb.txt"/>
-    <ROW File="nb.txt" Component_="af.txt" FileName="nb.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\nb.txt" SelfReg="false" NextFile="ne.txt"/>
-    <ROW File="ne.txt" Component_="af.txt" FileName="ne.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\ne.txt" SelfReg="false" NextFile="nl.txt"/>
-    <ROW File="nl.txt" Component_="af.txt" FileName="nl.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\nl.txt" SelfReg="false" NextFile="nn.txt"/>
-    <ROW File="nn.txt" Component_="af.txt" FileName="nn.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\nn.txt" SelfReg="false" NextFile="pain.txt"/>
-    <ROW File="pain.txt" Component_="af.txt" FileName="pa-in.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\pa-in.txt" SelfReg="false" NextFile="pl.txt"/>
-    <ROW File="pl.txt" Component_="af.txt" FileName="pl.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\pl.txt" SelfReg="false" NextFile="ps.txt"/>
-    <ROW File="ps.txt" Component_="af.txt" FileName="ps.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\ps.txt" SelfReg="false" NextFile="ptbr.txt"/>
-    <ROW File="pt.txt" Component_="af.txt" FileName="pt.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\pt.txt" SelfReg="false" NextFile="ro.txt"/>
-    <ROW File="ptbr.txt" Component_="af.txt" FileName="pt-br.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\pt-br.txt" SelfReg="false" NextFile="pt.txt"/>
-    <ROW File="readme.txt_1" Component_="z.sfx" FileName="readme.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip\readme.txt" SelfReg="false" NextFile="zip.chm_1"/>
-    <ROW File="readme.txt_2" Component_="z.sfx_1" FileName="readme.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\readme.txt" SelfReg="false" NextFile="appicon.ico"/>
-    <ROW File="readme.txt_3" Component_="readme.txt" FileName="readme.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\readme.txt" SelfReg="false" NextFile="help.html"/>
-    <ROW File="ro.txt" Component_="af.txt" FileName="ro.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\ro.txt" SelfReg="false" NextFile="ru.txt"/>
-    <ROW File="ru.txt" Component_="af.txt" FileName="ru.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\ru.txt" SelfReg="false" NextFile="sa.txt"/>
-    <ROW File="sa.txt" Component_="af.txt" FileName="sa.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\sa.txt" SelfReg="false" NextFile="si.txt"/>
-    <ROW File="settings_readme.txt" Component_="zip_portable.reg" FileName="SETTIN~1.TXT|settings_readme.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\DefaultData\settings\settings_readme.txt" SelfReg="false" NextFile="readme.txt_3"/>
-    <ROW File="si.txt" Component_="af.txt" FileName="si.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\si.txt" SelfReg="false" NextFile="sk.txt"/>
-    <ROW File="sk.txt" Component_="af.txt" FileName="sk.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\sk.txt" SelfReg="false" NextFile="sl.txt"/>
-    <ROW File="sl.txt" Component_="af.txt" FileName="sl.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\sl.txt" SelfReg="false" NextFile="sq.txt"/>
-    <ROW File="sq.txt" Component_="af.txt" FileName="sq.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\sq.txt" SelfReg="false" NextFile="srspc.txt"/>
-    <ROW File="srspc.txt" Component_="af.txt" FileName="sr-spc.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\sr-spc.txt" SelfReg="false" NextFile="srspl.txt"/>
-    <ROW File="srspl.txt" Component_="af.txt" FileName="sr-spl.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\sr-spl.txt" SelfReg="false" NextFile="sv.txt"/>
-    <ROW File="sv.txt" Component_="af.txt" FileName="sv.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\sv.txt" SelfReg="false" NextFile="ta.txt"/>
-    <ROW File="ta.txt" Component_="af.txt" FileName="ta.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\ta.txt" SelfReg="false" NextFile="th.txt"/>
-    <ROW File="th.txt" Component_="af.txt" FileName="th.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\th.txt" SelfReg="false" NextFile="tr.txt"/>
-    <ROW File="tr.txt" Component_="af.txt" FileName="tr.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\tr.txt" SelfReg="false" NextFile="tt.txt"/>
-    <ROW File="tt.txt" Component_="af.txt" FileName="tt.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\tt.txt" SelfReg="false" NextFile="ug.txt"/>
-    <ROW File="ug.txt" Component_="af.txt" FileName="ug.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\ug.txt" SelfReg="false" NextFile="uk.txt"/>
-    <ROW File="uk.txt" Component_="af.txt" FileName="uk.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\uk.txt" SelfReg="false" NextFile="uz.txt"/>
-    <ROW File="uz.txt" Component_="af.txt" FileName="uz.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\uz.txt" SelfReg="false" NextFile="va.txt"/>
-    <ROW File="va.txt" Component_="af.txt" FileName="va.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\va.txt" SelfReg="false" NextFile="vi.txt"/>
-    <ROW File="vi.txt" Component_="af.txt" FileName="vi.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\vi.txt" SelfReg="false" NextFile="zhcn.txt"/>
-    <ROW File="z.dll" Component_="z.dll" FileName="7z.dll" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip\7z.dll" SelfReg="false" NextFile="z.exe"/>
-    <ROW File="z.dll_1" Component_="z.dll_1" FileName="7z.dll" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\7z.dll" SelfReg="false" NextFile="z.exe_1"/>
-    <ROW File="z.exe" Component_="z.exe" FileName="7z.exe" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip\7z.exe" SelfReg="false" NextFile="z.sfx" DigSign="true"/>
-    <ROW File="z.exe_1" Component_="z.exe_1" FileName="7z.exe" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\7z.exe" SelfReg="false" NextFile="z.sfx_1" DigSign="true"/>
-    <ROW File="z.sfx" Component_="z.sfx" FileName="7z.sfx" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip\7z.sfx" SelfReg="false" NextFile="zCon.sfx"/>
-    <ROW File="z.sfx_1" Component_="z.sfx_1" FileName="7z.sfx" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\7z.sfx" SelfReg="false" NextFile="zCon.sfx_1"/>
-    <ROW File="zCon.sfx" Component_="z.sfx" FileName="7zCon.sfx" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip\7zCon.sfx" SelfReg="false" NextFile="zFM.exe"/>
-    <ROW File="zCon.sfx_1" Component_="z.sfx_1" FileName="7zCon.sfx" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\7zCon.sfx" SelfReg="false" NextFile="zFM.exe_1"/>
-    <ROW File="zFM.exe" Component_="zFM.exe" FileName="7zFM.exe" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip\7zFM.exe" SelfReg="false" NextFile="zG.exe" DigSign="true"/>
-    <ROW File="zFM.exe_1" Component_="zFM.exe_1" FileName="7zFM.exe" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\7zFM.exe" SelfReg="false" NextFile="zG.exe_1" DigSign="true"/>
-    <ROW File="zG.exe" Component_="zG.exe" FileName="7zG.exe" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip\7zG.exe" SelfReg="false" NextFile="descript.ion" DigSign="true"/>
-    <ROW File="zG.exe_1" Component_="zG.exe_1" FileName="7zG.exe" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\7zG.exe" SelfReg="false" NextFile="descript.ion_1" DigSign="true"/>
-    <ROW File="zhcn.txt" Component_="af.txt" FileName="zh-cn.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\zh-cn.txt" SelfReg="false" NextFile="zhtw.txt"/>
-    <ROW File="zhtw.txt" Component_="af.txt" FileName="zh-tw.txt" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\Lang\zh-tw.txt" SelfReg="false" NextFile="License.txt_1"/>
-    <ROW File="zip.chm" Component_="zip.chm" FileName="7-zip.chm" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip\7-zip.chm" SelfReg="false" NextFile="zip.dll"/>
-    <ROW File="zip.chm_1" Component_="zip.chm_1" FileName="7-zip.chm" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\7-zip.chm" SelfReg="false" NextFile="zip.dll_1"/>
-    <ROW File="zip.dll" Component_="zip.dll" FileName="7-zip.dll" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip\7-zip.dll" SelfReg="false" NextFile="z.dll"/>
-    <ROW File="zip.dll_1" Component_="zip.dll_1" FileName="7-zip.dll" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\7-Zip64\7-zip.dll" SelfReg="false" NextFile="z.dll_1"/>
-    <ROW File="zip_portable.reg" Component_="zip_portable.reg" FileName="7ZIP_P~1.REG|7zip_portable.reg" Attributes="0" SourcePath="C:\Users\Tim\Downloads\7-ZipPortable\App\DefaultData\settings\7zip_portable.reg" SelfReg="false" NextFile="settings_readme.txt"/>
+    <ROW File="Thumbs.db" Component_="appicon.ico" FileName="Thumbs.db" Attributes="0" SourcePath="include\7-ZipPortable\App\AppInfo\Thumbs.db" SelfReg="false" NextFile="zip_portable.reg"/>
+    <ROW File="ZipPortable.exe" Component_="ZipPortable.exe" FileName="7-ZIPP~1.EXE|7-ZipPortable.exe" Attributes="0" SourcePath="include\7-ZipPortable\7-ZipPortable.exe" SelfReg="false" NextFile="zip.chm" DigSign="true"/>
+    <ROW File="ZipPortable.ini" Component_="ZipPortable.ini" FileName="7-ZIPP~1.INI|7-ZipPortable.ini" Attributes="0" SourcePath="include\7-ZipPortable\Other\Source\7-ZipPortable.ini" SelfReg="false" NextFile="ZipPortable.jpg"/>
+    <ROW File="ZipPortable.jpg" Component_="ZipPortable.ini" FileName="7-ZIPP~1.JPG|7-ZipPortable.jpg" Attributes="0" SourcePath="include\7-ZipPortable\Other\Source\7-ZipPortable.jpg" SelfReg="false" NextFile="ZipPortableU.nsi"/>
+    <ROW File="ZipPortableU.nsi" Component_="ZipPortable.ini" FileName="7-ZIPP~1.NSI|7-ZipPortableU.nsi" Attributes="0" SourcePath="include\7-ZipPortable\Other\Source\7-ZipPortableU.nsi" SelfReg="false" NextFile="CheckForPlatformSplashDisable.nsh"/>
+    <ROW File="af.txt" Component_="af.txt" FileName="af.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\af.txt" SelfReg="false" NextFile="ar.txt"/>
+    <ROW File="appicon.ico" Component_="appicon.ico" FileName="appicon.ico" Attributes="0" SourcePath="include\7-ZipPortable\App\AppInfo\appicon.ico" SelfReg="false" NextFile="appicon_128.png"/>
+    <ROW File="appicon_128.png" Component_="appicon.ico" FileName="APPICO~1.PNG|appicon_128.png" Attributes="0" SourcePath="include\7-ZipPortable\App\AppInfo\appicon_128.png" SelfReg="false" NextFile="appicon_16.png"/>
+    <ROW File="appicon_16.png" Component_="appicon.ico" FileName="APPICO~2.PNG|appicon_16.png" Attributes="0" SourcePath="include\7-ZipPortable\App\AppInfo\appicon_16.png" SelfReg="false" NextFile="appicon_32.png"/>
+    <ROW File="appicon_32.png" Component_="appicon.ico" FileName="APPICO~3.PNG|appicon_32.png" Attributes="0" SourcePath="include\7-ZipPortable\App\AppInfo\appicon_32.png" SelfReg="false" NextFile="appinfo.ini"/>
+    <ROW File="appinfo.ini" Component_="appicon.ico" FileName="appinfo.ini" Attributes="0" SourcePath="include\7-ZipPortable\App\AppInfo\appinfo.ini" SelfReg="false" NextFile="Thumbs.db"/>
+    <ROW File="ar.txt" Component_="af.txt" FileName="ar.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\ar.txt" SelfReg="false" NextFile="ast.txt"/>
+    <ROW File="ast.txt" Component_="af.txt" FileName="ast.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\ast.txt" SelfReg="false" NextFile="az.txt"/>
+    <ROW File="az.txt" Component_="af.txt" FileName="az.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\az.txt" SelfReg="false" NextFile="ba.txt"/>
+    <ROW File="ba.txt" Component_="af.txt" FileName="ba.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\ba.txt" SelfReg="false" NextFile="be.txt"/>
+    <ROW File="be.txt" Component_="af.txt" FileName="be.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\be.txt" SelfReg="false" NextFile="bg.txt"/>
+    <ROW File="bg.txt" Component_="af.txt" FileName="bg.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\bg.txt" SelfReg="false" NextFile="bn.txt"/>
+    <ROW File="bn.txt" Component_="af.txt" FileName="bn.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\bn.txt" SelfReg="false" NextFile="br.txt"/>
+    <ROW File="br.txt" Component_="af.txt" FileName="br.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\br.txt" SelfReg="false" NextFile="ca.txt"/>
+    <ROW File="ca.txt" Component_="af.txt" FileName="ca.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\ca.txt" SelfReg="false" NextFile="cs.txt"/>
+    <ROW File="cs.txt" Component_="af.txt" FileName="cs.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\cs.txt" SelfReg="false" NextFile="cy.txt"/>
+    <ROW File="cy.txt" Component_="af.txt" FileName="cy.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\cy.txt" SelfReg="false" NextFile="da.txt"/>
+    <ROW File="da.txt" Component_="af.txt" FileName="da.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\da.txt" SelfReg="false" NextFile="de.txt"/>
+    <ROW File="de.txt" Component_="af.txt" FileName="de.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\de.txt" SelfReg="false" NextFile="el.txt"/>
+    <ROW File="descript.ion" Component_="z.sfx" FileName="descript.ion" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip\descript.ion" SelfReg="false" NextFile="History.txt"/>
+    <ROW File="descript.ion_1" Component_="z.sfx_1" FileName="descript.ion" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\descript.ion" SelfReg="false" NextFile="History.txt_1"/>
+    <ROW File="donation_button.png" Component_="donation_button.png" FileName="DONATI~1.PNG|donation_button.png" Attributes="0" SourcePath="include\7-ZipPortable\Other\Help\images\donation_button.png" SelfReg="false" NextFile="favicon.ico"/>
+    <ROW File="el.txt" Component_="af.txt" FileName="el.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\el.txt" SelfReg="false" NextFile="en.ttt"/>
+    <ROW File="en.ttt" Component_="af.txt" FileName="en.ttt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\en.ttt" SelfReg="false" NextFile="eo.txt"/>
+    <ROW File="eo.txt" Component_="af.txt" FileName="eo.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\eo.txt" SelfReg="false" NextFile="es.txt"/>
+    <ROW File="es.txt" Component_="af.txt" FileName="es.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\es.txt" SelfReg="false" NextFile="et.txt"/>
+    <ROW File="et.txt" Component_="af.txt" FileName="et.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\et.txt" SelfReg="false" NextFile="eu.txt"/>
+    <ROW File="eu.txt" Component_="af.txt" FileName="eu.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\eu.txt" SelfReg="false" NextFile="ext.txt"/>
+    <ROW File="ext.txt" Component_="af.txt" FileName="ext.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\ext.txt" SelfReg="false" NextFile="fa.txt"/>
+    <ROW File="fa.txt" Component_="af.txt" FileName="fa.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\fa.txt" SelfReg="false" NextFile="fi.txt"/>
+    <ROW File="favicon.ico" Component_="donation_button.png" FileName="favicon.ico" Attributes="0" SourcePath="include\7-ZipPortable\Other\Help\images\favicon.ico" SelfReg="false" NextFile="help_background_footer.png"/>
+    <ROW File="fi.txt" Component_="af.txt" FileName="fi.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\fi.txt" SelfReg="false" NextFile="fr.txt"/>
+    <ROW File="fr.txt" Component_="af.txt" FileName="fr.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\fr.txt" SelfReg="false" NextFile="fur.txt"/>
+    <ROW File="fur.txt" Component_="af.txt" FileName="fur.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\fur.txt" SelfReg="false" NextFile="fy.txt"/>
+    <ROW File="fy.txt" Component_="af.txt" FileName="fy.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\fy.txt" SelfReg="false" NextFile="gl.txt"/>
+    <ROW File="gl.txt" Component_="af.txt" FileName="gl.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\gl.txt" SelfReg="false" NextFile="gu.txt"/>
+    <ROW File="gu.txt" Component_="af.txt" FileName="gu.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\gu.txt" SelfReg="false" NextFile="he.txt"/>
+    <ROW File="he.txt" Component_="af.txt" FileName="he.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\he.txt" SelfReg="false" NextFile="hi.txt"/>
+    <ROW File="help.html" Component_="help.html" FileName="HELP~1.HTM|help.html" Attributes="0" SourcePath="include\7-ZipPortable\help.html" SelfReg="false" NextFile="donation_button.png"/>
+    <ROW File="help_background_footer.png" Component_="donation_button.png" FileName="HELP_B~1.PNG|help_background_footer.png" Attributes="0" SourcePath="include\7-ZipPortable\Other\Help\images\help_background_footer.png" SelfReg="false" NextFile="help_background_header.png"/>
+    <ROW File="help_background_header.png" Component_="donation_button.png" FileName="HELP_B~2.PNG|help_background_header.png" Attributes="0" SourcePath="include\7-ZipPortable\Other\Help\images\help_background_header.png" SelfReg="false" NextFile="help_logo_top.png"/>
+    <ROW File="help_logo_top.png" Component_="donation_button.png" FileName="HELP_L~1.PNG|help_logo_top.png" Attributes="0" SourcePath="include\7-ZipPortable\Other\Help\images\help_logo_top.png" SelfReg="false" NextFile="ZipPortable.ini"/>
+    <ROW File="hi.txt" Component_="af.txt" FileName="hi.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\hi.txt" SelfReg="false" NextFile="hr.txt"/>
+    <ROW File="hr.txt" Component_="af.txt" FileName="hr.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\hr.txt" SelfReg="false" NextFile="hu.txt"/>
+    <ROW File="hu.txt" Component_="af.txt" FileName="hu.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\hu.txt" SelfReg="false" NextFile="hy.txt"/>
+    <ROW File="hy.txt" Component_="af.txt" FileName="hy.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\hy.txt" SelfReg="false" NextFile="id.txt"/>
+    <ROW File="id.txt" Component_="af.txt" FileName="id.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\id.txt" SelfReg="false" NextFile="io.txt"/>
+    <ROW File="io.txt" Component_="af.txt" FileName="io.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\io.txt" SelfReg="false" NextFile="is.txt"/>
+    <ROW File="is.txt" Component_="af.txt" FileName="is.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\is.txt" SelfReg="false" NextFile="it.txt"/>
+    <ROW File="it.txt" Component_="af.txt" FileName="it.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\it.txt" SelfReg="false" NextFile="ja.txt"/>
+    <ROW File="ja.txt" Component_="af.txt" FileName="ja.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\ja.txt" SelfReg="false" NextFile="ka.txt"/>
+    <ROW File="ka.txt" Component_="af.txt" FileName="ka.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\ka.txt" SelfReg="false" NextFile="kk.txt"/>
+    <ROW File="kk.txt" Component_="af.txt" FileName="kk.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\kk.txt" SelfReg="false" NextFile="ko.txt"/>
+    <ROW File="ko.txt" Component_="af.txt" FileName="ko.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\ko.txt" SelfReg="false" NextFile="kuckb.txt"/>
+    <ROW File="ku.txt" Component_="af.txt" FileName="ku.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\ku.txt" SelfReg="false" NextFile="lt.txt"/>
+    <ROW File="kuckb.txt" Component_="af.txt" FileName="ku-ckb.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\ku-ckb.txt" SelfReg="false" NextFile="ku.txt"/>
+    <ROW File="lt.txt" Component_="af.txt" FileName="lt.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\lt.txt" SelfReg="false" NextFile="lv.txt"/>
+    <ROW File="lv.txt" Component_="af.txt" FileName="lv.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\lv.txt" SelfReg="false" NextFile="mk.txt"/>
+    <ROW File="mk.txt" Component_="af.txt" FileName="mk.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\mk.txt" SelfReg="false" NextFile="mn.txt"/>
+    <ROW File="mn.txt" Component_="af.txt" FileName="mn.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\mn.txt" SelfReg="false" NextFile="mr.txt"/>
+    <ROW File="mr.txt" Component_="af.txt" FileName="mr.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\mr.txt" SelfReg="false" NextFile="ms.txt"/>
+    <ROW File="ms.txt" Component_="af.txt" FileName="ms.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\ms.txt" SelfReg="false" NextFile="nb.txt"/>
+    <ROW File="nb.txt" Component_="af.txt" FileName="nb.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\nb.txt" SelfReg="false" NextFile="ne.txt"/>
+    <ROW File="ne.txt" Component_="af.txt" FileName="ne.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\ne.txt" SelfReg="false" NextFile="nl.txt"/>
+    <ROW File="nl.txt" Component_="af.txt" FileName="nl.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\nl.txt" SelfReg="false" NextFile="nn.txt"/>
+    <ROW File="nn.txt" Component_="af.txt" FileName="nn.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\nn.txt" SelfReg="false" NextFile="pain.txt"/>
+    <ROW File="pain.txt" Component_="af.txt" FileName="pa-in.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\pa-in.txt" SelfReg="false" NextFile="pl.txt"/>
+    <ROW File="pl.txt" Component_="af.txt" FileName="pl.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\pl.txt" SelfReg="false" NextFile="ps.txt"/>
+    <ROW File="ps.txt" Component_="af.txt" FileName="ps.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\ps.txt" SelfReg="false" NextFile="ptbr.txt"/>
+    <ROW File="pt.txt" Component_="af.txt" FileName="pt.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\pt.txt" SelfReg="false" NextFile="ro.txt"/>
+    <ROW File="ptbr.txt" Component_="af.txt" FileName="pt-br.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\pt-br.txt" SelfReg="false" NextFile="pt.txt"/>
+    <ROW File="readme.txt_1" Component_="z.sfx" FileName="readme.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip\readme.txt" SelfReg="false" NextFile="zip.chm_1"/>
+    <ROW File="readme.txt_2" Component_="z.sfx_1" FileName="readme.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\readme.txt" SelfReg="false" NextFile="appicon.ico"/>
+    <ROW File="readme.txt_3" Component_="readme.txt" FileName="readme.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\readme.txt" SelfReg="false" NextFile="help.html"/>
+    <ROW File="ro.txt" Component_="af.txt" FileName="ro.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\ro.txt" SelfReg="false" NextFile="ru.txt"/>
+    <ROW File="ru.txt" Component_="af.txt" FileName="ru.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\ru.txt" SelfReg="false" NextFile="sa.txt"/>
+    <ROW File="sa.txt" Component_="af.txt" FileName="sa.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\sa.txt" SelfReg="false" NextFile="si.txt"/>
+    <ROW File="settings_readme.txt" Component_="zip_portable.reg" FileName="SETTIN~1.TXT|settings_readme.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\DefaultData\settings\settings_readme.txt" SelfReg="false" NextFile="readme.txt_3"/>
+    <ROW File="si.txt" Component_="af.txt" FileName="si.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\si.txt" SelfReg="false" NextFile="sk.txt"/>
+    <ROW File="sk.txt" Component_="af.txt" FileName="sk.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\sk.txt" SelfReg="false" NextFile="sl.txt"/>
+    <ROW File="sl.txt" Component_="af.txt" FileName="sl.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\sl.txt" SelfReg="false" NextFile="sq.txt"/>
+    <ROW File="sq.txt" Component_="af.txt" FileName="sq.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\sq.txt" SelfReg="false" NextFile="srspc.txt"/>
+    <ROW File="srspc.txt" Component_="af.txt" FileName="sr-spc.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\sr-spc.txt" SelfReg="false" NextFile="srspl.txt"/>
+    <ROW File="srspl.txt" Component_="af.txt" FileName="sr-spl.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\sr-spl.txt" SelfReg="false" NextFile="sv.txt"/>
+    <ROW File="sv.txt" Component_="af.txt" FileName="sv.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\sv.txt" SelfReg="false" NextFile="ta.txt"/>
+    <ROW File="ta.txt" Component_="af.txt" FileName="ta.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\ta.txt" SelfReg="false" NextFile="th.txt"/>
+    <ROW File="th.txt" Component_="af.txt" FileName="th.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\th.txt" SelfReg="false" NextFile="tr.txt"/>
+    <ROW File="tr.txt" Component_="af.txt" FileName="tr.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\tr.txt" SelfReg="false" NextFile="tt.txt"/>
+    <ROW File="tt.txt" Component_="af.txt" FileName="tt.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\tt.txt" SelfReg="false" NextFile="ug.txt"/>
+    <ROW File="ug.txt" Component_="af.txt" FileName="ug.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\ug.txt" SelfReg="false" NextFile="uk.txt"/>
+    <ROW File="uk.txt" Component_="af.txt" FileName="uk.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\uk.txt" SelfReg="false" NextFile="uz.txt"/>
+    <ROW File="uz.txt" Component_="af.txt" FileName="uz.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\uz.txt" SelfReg="false" NextFile="va.txt"/>
+    <ROW File="va.txt" Component_="af.txt" FileName="va.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\va.txt" SelfReg="false" NextFile="vi.txt"/>
+    <ROW File="vi.txt" Component_="af.txt" FileName="vi.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\vi.txt" SelfReg="false" NextFile="zhcn.txt"/>
+    <ROW File="z.dll" Component_="z.dll" FileName="7z.dll" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip\7z.dll" SelfReg="false" NextFile="z.exe"/>
+    <ROW File="z.dll_1" Component_="z.dll_1" FileName="7z.dll" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\7z.dll" SelfReg="false" NextFile="z.exe_1"/>
+    <ROW File="z.exe" Component_="z.exe" FileName="7z.exe" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip\7z.exe" SelfReg="false" NextFile="z.sfx" DigSign="true"/>
+    <ROW File="z.exe_1" Component_="z.exe_1" FileName="7z.exe" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\7z.exe" SelfReg="false" NextFile="z.sfx_1" DigSign="true"/>
+    <ROW File="z.sfx" Component_="z.sfx" FileName="7z.sfx" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip\7z.sfx" SelfReg="false" NextFile="zCon.sfx"/>
+    <ROW File="z.sfx_1" Component_="z.sfx_1" FileName="7z.sfx" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\7z.sfx" SelfReg="false" NextFile="zCon.sfx_1"/>
+    <ROW File="zCon.sfx" Component_="z.sfx" FileName="7zCon.sfx" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip\7zCon.sfx" SelfReg="false" NextFile="zFM.exe"/>
+    <ROW File="zCon.sfx_1" Component_="z.sfx_1" FileName="7zCon.sfx" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\7zCon.sfx" SelfReg="false" NextFile="zFM.exe_1"/>
+    <ROW File="zFM.exe" Component_="zFM.exe" FileName="7zFM.exe" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip\7zFM.exe" SelfReg="false" NextFile="zG.exe" DigSign="true"/>
+    <ROW File="zFM.exe_1" Component_="zFM.exe_1" FileName="7zFM.exe" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\7zFM.exe" SelfReg="false" NextFile="zG.exe_1" DigSign="true"/>
+    <ROW File="zG.exe" Component_="zG.exe" FileName="7zG.exe" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip\7zG.exe" SelfReg="false" NextFile="descript.ion" DigSign="true"/>
+    <ROW File="zG.exe_1" Component_="zG.exe_1" FileName="7zG.exe" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\7zG.exe" SelfReg="false" NextFile="descript.ion_1" DigSign="true"/>
+    <ROW File="zhcn.txt" Component_="af.txt" FileName="zh-cn.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\zh-cn.txt" SelfReg="false" NextFile="zhtw.txt"/>
+    <ROW File="zhtw.txt" Component_="af.txt" FileName="zh-tw.txt" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\Lang\zh-tw.txt" SelfReg="false" NextFile="License.txt_1"/>
+    <ROW File="zip.chm" Component_="zip.chm" FileName="7-zip.chm" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip\7-zip.chm" SelfReg="false" NextFile="zip.dll"/>
+    <ROW File="zip.chm_1" Component_="zip.chm_1" FileName="7-zip.chm" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\7-zip.chm" SelfReg="false" NextFile="zip.dll_1"/>
+    <ROW File="zip.dll" Component_="zip.dll" FileName="7-zip.dll" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip\7-zip.dll" SelfReg="false" NextFile="z.dll"/>
+    <ROW File="zip.dll_1" Component_="zip.dll_1" FileName="7-zip.dll" Attributes="0" SourcePath="include\7-ZipPortable\App\7-Zip64\7-zip.dll" SelfReg="false" NextFile="z.dll_1"/>
+    <ROW File="zip_portable.reg" Component_="zip_portable.reg" FileName="7ZIP_P~1.REG|7zip_portable.reg" Attributes="0" SourcePath="include\7-ZipPortable\App\DefaultData\settings\7zip_portable.reg" SelfReg="false" NextFile="settings_readme.txt"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.BuildComponent">
     <ROW BuildKey="DefaultBuild" BuildName="DefaultBuild" BuildOrder="1" BuildType="0" PackageFolder="SafeSync\ManagementTool" PackageFileName="SafeSync" Languages="en" InstallationType="4" UseLargeSchema="true"/>

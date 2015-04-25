@@ -1,8 +1,9 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=include\SafeSync_265.ico
 #AutoIt3Wrapper_Outfile=SafeSync.exe
+#AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Comment=SafeSync 0.12.0.0 - Awesome Anteater
-#AutoIt3Wrapper_Res_Fileversion=0.12.0.0
+#AutoIt3Wrapper_Res_Fileversion=0.12.1.0
 #AutoIt3Wrapper_AU3Check_Stop_OnWarning=y
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 ; *** Start added by AutoIt3Wrapper ***
@@ -19,7 +20,7 @@
 #cs SafeSync - Information
 	AutoIt Version: 	3.3.12.0
 	Author:				Tim Christoph Lid
-	Version:			0.12.0.1
+	Version:			0.12.1.0
 	Name:				SafeSync Management Tool
 
 	TODO:
