@@ -10,10 +10,10 @@
     <ROW Property="ARPURLUPDATEINFO" Value="safesync.no-ip.org/download/safesync/latest"/>
     <ROW Property="CTRLS" Value="3"/>
     <ROW Property="Manufacturer" Value="SafeSync"/>
-    <ROW Property="ProductCode" Value="1033:{1BE22C9D-84E0-47BA-93E9-4B3B5A3C8C5F} " Type="16"/>
+    <ROW Property="ProductCode" Value="1033:{7EE6AB3B-D73F-4C76-83E2-CBDC6BE42274} " Type="16"/>
     <ROW Property="ProductLanguage" Value="1033"/>
     <ROW Property="ProductName" Value="SafeSync - ManagementTool"/>
-    <ROW Property="ProductVersion" Value="0.12.2.0" Type="32"/>
+    <ROW Property="ProductVersion" Value="0.12.4.0" Type="32"/>
     <ROW Property="REBOOT" MultiBuildValue="DefaultBuild:ReallySuppress"/>
     <ROW Property="RUNAPPLICATION" Value="1" Type="4"/>
     <ROW Property="SecureCustomProperties" Value="OLDPRODUCTS;AI_NEWERPRODUCTFOUND"/>

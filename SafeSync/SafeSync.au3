@@ -1,9 +1,8 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=include\SafeSync_265.ico
 #AutoIt3Wrapper_Outfile=SafeSync.exe
-#AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Comment=SafeSync 0.12.0.0 - Awesome Anteater
-#AutoIt3Wrapper_Res_Fileversion=0.12.1.0
+#AutoIt3Wrapper_Res_Fileversion=0.12.4.0
 #AutoIt3Wrapper_AU3Check_Stop_OnWarning=y
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 ; *** Start added by AutoIt3Wrapper ***
@@ -20,7 +19,7 @@
 #cs SafeSync - Information
 	AutoIt Version: 	3.3.12.0
 	Author:				Tim Christoph Lid
-	Version:			0.12.1.0
+	Version:			0.12.4.0
 	Name:				SafeSync Management Tool
 
 	TODO:
@@ -46,7 +45,7 @@
 ; DisplayName for installation
 Global Const $SafeSyncDisplayName = "SafeSync"
 ; DisplayVersion for installation
-Global Const $SafeSyncDisplayVersion = "0.12.0.0"
+Global Const $SafeSyncDisplayVersion = "0.12.4.0"
 ; DisplayVersion for installation
 Global Const $SafeSyncPublisher = "SafeSync - Team"
 ; SafeSync release name
@@ -1516,7 +1515,7 @@ EndFunc   ;==>ChooseDecryptEncryptFolder
 	$SC_PasswordFolder			- String: Password of the folder
 	Return values:      Success:				- Delete files on the other location
 	Failure:				- TODO
-	Last edit:			2015.04.16 - 12:27 - renaming variables
+	Last edit:			2015.04.26 - 22:59 - Delete Msgbox
 	TODO:				Commentation; Failure; Console output
 #ce
 Func RunSafeCrypt()
@@ -1651,6 +1650,7 @@ Func CopyFilesOrFolder($CFOF_LeftFolder, $CFOF_RightFolder, $CFOF_Param, $CFOF_D
 	$CFOF_FileList = _FileListToArrayRec($CFOF_LeftFolder, "*|.sync|.sync", $CFOF_Param, 1, Default, 2)
 	If Not @error Then
 		For $i = 1 To $CFOF_FileList[0] Step 1
+			ConsoleWrite("File " & $i & " " & $CFOF_FileList[$i] & @CRLF)
 			If $CFOF_Param = 1 Then
 				$CFOF_SplitPath = _PathSplit(StringReplace($CFOF_FileList[$i], $CFOF_LeftFolder, $CFOF_RightFolder, 1), $sDrive, $sDir, $sFilename, $sExtension)
 				If $CFOF_Decrypt Then
@@ -1699,6 +1699,7 @@ Func CheckDeletedFilesOrFolders($CDFOF_Param, $CDFOF_DataFolderDecrypt, $CDFOF_D
 		_FileReadToArray($CDFOF_LogListFileDecrypt, $CDFOF_ListDecrypt)
 		If Not @error Then
 			For $i = 1 To $CDFOF_ListDecrypt[0] Step 3
+				ConsoleWrite("File " & $i & " " & $CDFOF_ListDecrypt[$i] & @CRLF)
 				If Not FileExists($CDFOF_ListDecrypt[$i] & $CDFOF_ListDecrypt[$i + 1]) Then
 					Local $CDFOF_EncryptFile = StringReplace($CDFOF_ListDecrypt[$i], $CDFOF_DataFolderDecrypt, $CDFOF_DataFolderEncrypt, 1) & $CDFOF_ListDecrypt[$i + 1] & ".7z"
 					If FileExists($CDFOF_EncryptFile) Then
@@ -1711,6 +1712,7 @@ Func CheckDeletedFilesOrFolders($CDFOF_Param, $CDFOF_DataFolderDecrypt, $CDFOF_D
 		_FileReadToArray($CDFOF_LogListFileEncrypt, $CDFOF_ListEncrypt)
 		If Not @error Then
 			For $i = 1 To $CDFOF_ListEncrypt[0] Step 3
+				ConsoleWrite("round " & $i)
 				If Not FileExists($CDFOF_ListEncrypt[$i] & $CDFOF_ListEncrypt[$i + 1]) Then
 					$PathSplit = _PathSplit(StringReplace($CDFOF_ListEncrypt[$i], $CDFOF_DataFolderEncrypt, $CDFOF_DataFolderDecrypt, 1) & $CDFOF_ListEncrypt[$i + 1], $sDrive, $sDir, $sFilename, $sExtension)
 					$CDFOF_DecryptFile = $PathSplit[1] & $PathSplit[2] & $PathSplit[3]
@@ -1725,6 +1727,7 @@ Func CheckDeletedFilesOrFolders($CDFOF_Param, $CDFOF_DataFolderDecrypt, $CDFOF_D
 		_FileReadToArray($CDFOF_LogListFolderDecrypt, $CDFOF_ListDecrypt)
 		If Not @error Then
 			For $i = 1 To $CDFOF_ListDecrypt[0] Step 3
+				ConsoleWrite("File " & $i & " " & $CDFOF_ListDecrypt[$i] & @CRLF)
 				DirGetSize($CDFOF_ListDecrypt[$i] & $CDFOF_ListDecrypt[$i + 1])
 				If @error Then
 					ConsoleWrite("Delete Folder1: " & StringReplace($CDFOF_ListDecrypt[$i], $CDFOF_DataFolderDecrypt, $CDFOF_DataFolderEncrypt, 1) & $CDFOF_ListDecrypt[$i + 1] & @CRLF)
@@ -1767,6 +1770,7 @@ Func CheckChangedFiles($CCF_LogListFileDecrypt, $CCF_LogListFileEncrypt, $CCF_Da
 	_FileReadToArray($CCF_LogListFileEncrypt, $CCF_LeftFolder)
 	If Not @error Then
 		For $i = 1 To $CCF_LeftFolder[0] Step 3
+			ConsoleWrite("File " & $i & " " & $CCF_LeftFolder[$i] & @CRLF)
 			$NewHash = _Crypt_HashFile($CCF_LeftFolder[$i] & $CCF_LeftFolder[$i + 1], $CALG_MD5)
 			$OldHash = $CCF_LeftFolder[$i + 2]
 			$PathSplit = _PathSplit(StringReplace($CCF_LeftFolder[$i], $CCF_DataFolderEncrypt, $CCF_DataFolderDecrypt, 1) & $CCF_LeftFolder[$i + 1], $sDrive, $sDir, $sFilename, $sExtension)
@@ -1787,6 +1791,7 @@ Func CheckChangedFiles($CCF_LogListFileDecrypt, $CCF_LogListFileEncrypt, $CCF_Da
 	_FileReadToArray($CCF_LogListFileDecrypt, $CCF_RightFolder)
 	If Not @error Then
 		For $i = 1 To $CCF_RightFolder[0] Step 3
+			ConsoleWrite("File " & $i & " " & $CCF_RightFolder[$i] & @CRLF)
 			$NewHash = _Crypt_HashFile($CCF_RightFolder[$i] & $CCF_RightFolder[$i + 1], $CALG_MD5)
 			$OldHash = $CCF_RightFolder[$i + 2]
 			If $OldHash <> $NewHash Then
