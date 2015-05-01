@@ -1519,7 +1519,6 @@ EndFunc   ;==>ChooseDecryptEncryptFolder
 	TODO:				Commentation; Failure; Console output
 #ce
 Func RunSafeCrypt()
-	MsgBox(0,"","Start SafeCrypt!")
 	RegWrite($SafeSyncRegistrySoftwareManagementTool, "RunSafeCrypt", "REG_SZ", "1")
 	While 1
 		For $i = 1 To 100
