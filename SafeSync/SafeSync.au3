@@ -203,7 +203,7 @@ EndFunc   ;==>ReadRegistry
 
 #cs CheckCommandLine - Documentation
 	Name:               CheckCommandLine
-	Version:			0.1
+	Version:			0.2
 	Description:        Read command line parameters
 	Author:             Tim Lid
 	Last edit:			2015.04.16 - 22:43 - Create Function
