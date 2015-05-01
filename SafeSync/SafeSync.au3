@@ -1,8 +1,10 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=include\SafeSync_265.ico
 #AutoIt3Wrapper_Outfile=SafeSync.exe
-#AutoIt3Wrapper_Res_Comment=SafeSync 0.12.0.0 - Awesome Anteater
-#AutoIt3Wrapper_Res_Fileversion=0.12.4.0
+#AutoIt3Wrapper_Res_Comment=SafeSync 0.12.5.0 - Awesome Anteater
+#AutoIt3Wrapper_Res_Fileversion=0.12.5.0
+#AutoIt3Wrapper_Res_Language=1031
+#AutoIt3Wrapper_Run_AU3Check=n
 #AutoIt3Wrapper_AU3Check_Stop_OnWarning=y
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 ; *** Start added by AutoIt3Wrapper ***
@@ -266,8 +268,7 @@ Func showKey($Key, $Name)
 EndFunc
 
 Func CheckForSafeCrypt()
-	ConsoleWrite(@ComSpec & ' /c "' & @ScriptFullPath & ' ' & 'SafeCrypt Start ' & $Password & '"')
-	Run(@ComSpec & ' /c "' & @ScriptFullPath & ' ' & 'SafeCrypt Start ' & $Password & '"', @TempDir, @SW_HIDE)
+	Run(@ComSpec & ' /c ' & '"' & @ScriptFullPath & '"' & ' ' & 'SafeCrypt Start ' & $Password & '', @TempDir, @SW_HIDE)
 EndFunc   ;==>CheckForSafeCrypt
 
 #cs CheckInstalledSoftware - Documentation
@@ -336,7 +337,7 @@ Func RunSafeSyncManagementToolGUI()
 	$NoEncryption = GUICtrlCreateRadio("No Encryption", 48, 150, 113, 25)
 	$CreateFolder_Name = GUICtrlCreateInput("Name", 48, 88, 121, 21)
 	$FolderName = GUICtrlCreateLabel("Foldername", 48, 64, 59, 17)
-	$PasswordInput1 = GUICtrlCreateInput("", 48, 180, 121, 21)
+	$PasswordInput1 = GUICtrlCreateInput("", 48, 180, 121, 21, BitOR($GUI_SS_DEFAULT_INPUT, $ES_PASSWORD))
 	$PasswordInput2 = GUICtrlCreateInput("", 48, 202, 121, 21, BitOR($GUI_SS_DEFAULT_INPUT, $ES_PASSWORD))
 	$PasswordEntropy = GUICtrlCreateLabel("-1", 48, 224, 121, 21)
 	$DecryptionDir = GUICtrlCreateInput("", 216, 88, 361, 21)
@@ -1102,7 +1103,6 @@ Func CheckNewName($CNN_FolderName)
 	For $RLV_Counter = 1 To 1000
 		$RLV_RegistryValue = RegEnumVal($SafeSyncRegistryFolders, $RLV_Counter)
 		If @error <> 0 Then ExitLoop
-		MsgBox(0,"",$RLV_RegistryValue)
 		If Not StringCompare($CNN_FolderName,$RLV_RegistryValue) Then
 			return 0
 		EndIf
@@ -1396,7 +1396,7 @@ Func ChooseDecryptEncryptFolder($CDEF_FolderName, $CDEF_FolderData, $CDEF_Folder
 	$NoEncryption = GUICtrlCreateRadio("No Encryption", 48, 150, 113, 25)
 	$CreateFolder_Name = GUICtrlCreateInput($CDEF_FolderName, 48, 88, 121, 21)
 	$FolderName = GUICtrlCreateLabel("Foldername", 48, 64, 59, 17)
-	$PasswordInput1 = GUICtrlCreateInput("", 48, 180, 121, 21)
+	$PasswordInput1 = GUICtrlCreateInput("", 48, 180, 121, 21, BitOR($GUI_SS_DEFAULT_INPUT, $ES_PASSWORD))
 	$PasswordInput2 = GUICtrlCreateInput("", 48, 202, 121, 21, BitOR($GUI_SS_DEFAULT_INPUT, $ES_PASSWORD))
 	$PasswordEntropy = GUICtrlCreateLabel("-1", 48, 224, 121, 21)
 	$DecryptionDir = GUICtrlCreateInput("", 216, 88, 361, 21)
@@ -1519,6 +1519,7 @@ EndFunc   ;==>ChooseDecryptEncryptFolder
 	TODO:				Commentation; Failure; Console output
 #ce
 Func RunSafeCrypt()
+	MsgBox(0,"","Start SafeCrypt!")
 	RegWrite($SafeSyncRegistrySoftwareManagementTool, "RunSafeCrypt", "REG_SZ", "1")
 	While 1
 		For $i = 1 To 100
@@ -1555,7 +1556,6 @@ EndFunc   ;==>RunSafeCrypt
 	TODO:				Commentation; Failure; Console output
 #ce
 Func SafeCrypt($SC_FolderName, $SC_DataFolderDecrypt, $SC_DataFolderEncrypt, $SC_LogListFolderDecrypt, $SC_LogListFolderEncrypt, $SC_LogListFileDecrypt, $SC_LogListFileEncrypt, $SC_PasswordFolder)
-
 	DirGetSize($SC_DataFolderDecrypt)
 	If @error Then
 		ConsoleWrite("Folder not exists: " & $SC_DataFolderDecrypt & @CRLF)
@@ -1589,9 +1589,12 @@ Func SafeCrypt($SC_FolderName, $SC_DataFolderDecrypt, $SC_DataFolderEncrypt, $SC
 				_FileCreate($SC_LogListFileEncrypt)
 			EndIf
 
+
 			; Check Deleted Folder
 			ConsoleWrite("Check Deleted Folder" & @CRLF)
 			CheckDeletedFilesOrFolders(2, $SC_DataFolderDecrypt, $SC_DataFolderEncrypt, $SC_LogListFileEncrypt, $SC_LogListFileDecrypt, $SC_LogListFolderEncrypt, $SC_LogListFolderDecrypt)
+
+
 
 			; Check Deleted Files
 			ConsoleWrite("Check Deleted Files" & @CRLF)
@@ -1626,6 +1629,7 @@ Func SafeCrypt($SC_FolderName, $SC_DataFolderDecrypt, $SC_DataFolderEncrypt, $SC
 			GenerateList($SC_DataFolderDecrypt, $SC_LogListFolderDecrypt, 2)
 			GenerateList($SC_DataFolderEncrypt, $SC_LogListFolderEncrypt, 2)
 			ConsoleWrite("Generate Lists End" & @CRLF)
+
 		EndIf
 	EndIf
 EndFunc   ;==>SafeCrypt
@@ -1806,7 +1810,7 @@ EndFunc   ;==>CheckChangedFiles
 
 #cs GenerateList - Documentation
 	Name:               GenerateList
-	Version:			0.2
+	Version:			0.4
 	Description:        Function, List all the files or folders in the desktop directory using the default parameters and return the array.
 	Author:             Tim Lid
 	Parameters:         $GL_ScanFolder			- String: The folder to scan
@@ -1816,20 +1820,14 @@ EndFunc   ;==>CheckChangedFiles
 	$GL_SplitPath			- Array[String] The Path splited into their elements
 	Return values:      Success:				- String: Generated list of Files/Folders in an array
 	Failure:				- TODO
-	Last edit:			2015.04.24 - 18:36 - Change to ArrayWrite Function, for better performance!
+	Last edit:			2015.05.01 - 10:56 - Bugfix while empty array
 	TODO:				Commentation; Failure; rename variables
 #ce
 Func GenerateList($GL_ScanFolder, $GL_OutputList, $GL_Param)
-	Local $GL_GeneratedList = _FileListToArrayRec($GL_ScanFolder, "*|.sync|.sync", $GL_Param, 1, Default, 2)
-	If Not @error Then
-		;Outcomment @ 24.04.2015_17:31 by TL - Local $GL_OutputListOpen = FileOpen($GL_OutputList, $FO_APPEND)
-		;Outcomment @ 24.04.2015_17:31 by TL - If $GL_OutputListOpen = -1 Then
-		;Outcomment @ 24.04.2015_17:31 by TL - 	MsgBox($MB_SYSTEMMODAL, "", "An error occurred when reading the file3.")
-		;Outcomment @ 24.04.2015_17:31 by TL - 	MsgBox($MB_SYSTEMMODAL, "", $GL_OutputList)
-		;Outcomment @ 24.04.2015_17:31 by TL - 	Return False
-		;Outcomment @ 24.04.2015_17:31 by TL - EndIf
+	$GL_GeneratedList = _FileListToArrayRec($GL_ScanFolder, "*|.sync|.sync", $GL_Param, 1, Default, 2)
+	if Not @error Then
 		Local $GL_GeneratedListWithHash[$GL_GeneratedList[0] + 1][2]
-		Local $GL_ArrayForFile[1+$GL_GeneratedList[0]*3]
+		Global $GL_ArrayForFile[1+$GL_GeneratedList[0]*3]
 		For $i = 1 To $GL_GeneratedList[0]
 			$GL_GeneratedListWithHash[$i][0] = $GL_GeneratedList[$i]
 			$GL_GeneratedListWithHash[$i][1] = _Crypt_HashFile($GL_GeneratedList[$i], $CALG_MD5)
@@ -1838,10 +1836,16 @@ Func GenerateList($GL_ScanFolder, $GL_OutputList, $GL_Param)
 			$GL_ArrayForFile[$i*3-(2)+1] = $GL_SplitPath[3] & $GL_SplitPath[4]
 			$GL_ArrayForFile[$i*3-(1)+1] = $GL_GeneratedListWithHash[$i][1]
 		Next
+		FileDelete($GL_OutputList)
+		_FileCreate($GL_OutputList)
+		_FileWriteFromArray( $GL_OutputList, $GL_ArrayForFile, 1)
+		If @error Then
+			MsgBox(0,"","Fehler2")
+		EndIf
+	Else
+		FileDelete($GL_OutputList)
+		_FileCreate($GL_OutputList)
 	EndIf
-	FileDelete($GL_OutputList)
-	_FileCreate($GL_OutputList)
-	_FileWriteFromArray( $GL_OutputList, $GL_ArrayForFile, 1)
 	Return $GL_GeneratedList
 EndFunc   ;==>GenerateList
 
