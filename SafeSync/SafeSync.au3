@@ -1,11 +1,7 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=include\SafeSync_265.ico
-#AutoIt3Wrapper_Outfile=SafeSync.exe
-#AutoIt3Wrapper_Res_Comment=SafeSync 0.12.5.0 - Awesome Anteater
-#AutoIt3Wrapper_Res_Fileversion=0.12.5.0
-#AutoIt3Wrapper_Res_Language=1031
-#AutoIt3Wrapper_Run_AU3Check=n
-#AutoIt3Wrapper_AU3Check_Stop_OnWarning=y
+#AutoIt3Wrapper_Outfile=C:\Users\Tim\Desktop\SafeSync.exe
+#AutoIt3Wrapper_Res_Fileversion=0.12.6.0
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 ; *** Start added by AutoIt3Wrapper ***
 #include <AutoItConstants.au3>
@@ -21,7 +17,7 @@
 #cs SafeSync - Information
 	AutoIt Version: 	3.3.12.0
 	Author:				Tim Christoph Lid
-	Version:			0.12.4.0
+	Version:			0.12.6.0
 	Name:				SafeSync Management Tool
 
 	TODO:
@@ -47,7 +43,7 @@
 ; DisplayName for installation
 Global Const $SafeSyncDisplayName = "SafeSync"
 ; DisplayVersion for installation
-Global Const $SafeSyncDisplayVersion = "0.12.4.0"
+Global Const $SafeSyncDisplayVersion = "0.12.6.0"
 ; DisplayVersion for installation
 Global Const $SafeSyncPublisher = "SafeSync - Team"
 ; SafeSync release name
@@ -183,7 +179,7 @@ Func ReadRegistry()
 		RegWrite("HKEY_CURRENT_USER64\Software\SafeSync\ManagementTool", "DataDir", "REG_SZ", $SafeSyncStandardDataFolder)
 	EndIf
 	; Read SafeCrypt Location from Registry
-	Global $InstallLocationSafeSync = RegRead($SafeSyncRegistrySoftwareManagementTool, "InstallDir")
+	Global $InstallLocationSafeSync = "C:\"
 	; Read BTSyncShowGUI show GUI Option
 	Global $BTSyncShowGUI = RegRead($SafeSyncRegistrySoftwareManagementTool, "ShowGUI")
 	If $BTSyncShowGUI = "" Then
@@ -680,12 +676,12 @@ EndFunc
 
 #cs CheckSafeSyncUpdate - Documentation
 	Name:               CheckSafeSyncUpdate
-	Version:			0.1
+	Version:			0.2
 	Description:        Check for update and popup a tray tip
 	Author:             Tim Lid
 	Return values:      Success:			- The GUI will be display in the Front and there's no longer a trayicon
 	Failure:			- TODO
-	Last edit:			2015.04.17 - 15:58 - create function
+	Last edit:			2015.05.02 - 17:19 - Create autostart of update function
 	TODO:				Commentation; Log
 #ce
 Func CheckSafeSyncUpdate()
@@ -699,8 +695,19 @@ Func CheckSafeSyncUpdate()
 	Local $GNK_ReadFile = FileReadLine(@TempDir & "\SafeSyncUpdateInfo.temp", 1)
 	If _StringCompareVersions($GNK_ReadFile, $SafeSyncDisplayVersion) > 0 Then
 		TrayTip("Update", "There a new version of SafeSync: " & $GNK_ReadFile, 4)
-	Else
-		TrayTip("No Update", "Thers no new update for version: " & $GNK_ReadFile, 4)
+		$MD_MsgBoxAnswer = MsgBox(33, "Update available", "Update SafeSync to Version: " & $GNK_ReadFile & "?")
+		Select
+			Case $MD_MsgBoxAnswer = 1
+				If FileExists(@TempDir & "\SafeSync.msi") Then
+					FileDelete(@TempDir & "\SafeSync.msi")
+				EndIf
+				Local $GNK_Download = InetGet("http://safesync.no-ip.org/download/SafeSync/latest/SafeSync.msi", @TempDir & "\SafeSync.msi", $INET_FORCERELOAD, $INET_DOWNLOADBACKGROUND)
+				Do
+					Sleep(100)
+				Until InetGetInfo($GNK_Download, $INET_DOWNLOADCOMPLETE)
+				Run(@ComSpec & ' /c ' & '"' & @TempDir & "\SafeSync.msi", @TempDir, @SW_HIDE)
+				Exit
+		EndSelect
 	EndIf
 EndFunc   ;==>CheckSafeSyncUpdate
 
