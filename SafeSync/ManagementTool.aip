@@ -10,10 +10,10 @@
     <ROW Property="ARPURLUPDATEINFO" Value="safesync.no-ip.org/download/safesync/latest"/>
     <ROW Property="CTRLS" Value="3"/>
     <ROW Property="Manufacturer" Value="SafeSync"/>
-    <ROW Property="ProductCode" Value="1033:{7EE6AB3B-D73F-4C76-83E2-CBDC6BE42274} " Type="16"/>
+    <ROW Property="ProductCode" Value="1033:{20DDA053-078F-431E-8DBB-1EABD1F6C318} " Type="16"/>
     <ROW Property="ProductLanguage" Value="1033"/>
     <ROW Property="ProductName" Value="SafeSync - ManagementTool"/>
-    <ROW Property="ProductVersion" Value="0.12.4.0" Type="32"/>
+    <ROW Property="ProductVersion" Value="0.12.6.0" Type="32"/>
     <ROW Property="REBOOT" MultiBuildValue="DefaultBuild:ReallySuppress"/>
     <ROW Property="RUNAPPLICATION" Value="1" Type="4"/>
     <ROW Property="SecureCustomProperties" Value="OLDPRODUCTS;AI_NEWERPRODUCTFOUND"/>
@@ -50,8 +50,6 @@
     <ROW Directory="settings_Dir" Directory_Parent="DefaultData_Dir" DefaultDir="settings"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiCompsComponent">
-    <ROW Component="InstallDir" ComponentId="{C45E2229-42D6-47A8-BB5E-282EECDCBDBC}" Directory_="APPDIR" Attributes="4" KeyPath="InstallDir"/>
-    <ROW Component="ManagementTool" ComponentId="{9009EAE3-7CD4-4C14-B2BB-50D2DB6CE8A9}" Directory_="APPDIR" Attributes="4" KeyPath="ManagementTool"/>
     <ROW Component="ProductInformation" ComponentId="{78B83E3D-03CF-4F77-83EF-DBF832F7733D}" Directory_="APPDIR" Attributes="4" KeyPath="Version"/>
     <ROW Component="README.txt" ComponentId="{862732A0-8041-4E82-9A20-F513E4CE9E6E}" Directory_="ManagementTool_Dir" Attributes="0" KeyPath="README.txt" Type="0"/>
     <ROW Component="SHORTCUTDIR" ComponentId="{A838A576-8603-4D02-9458-5C9D1B90A79F}" Directory_="SHORTCUTDIR" Attributes="0"/>
@@ -81,7 +79,7 @@
     <ROW Component="zip_portable.reg" ComponentId="{53135DDD-1386-4F5F-931A-C21CDD339583}" Directory_="settings_Dir" Attributes="0" KeyPath="zip_portable.reg" Type="0"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiFeatsComponent">
-    <ROW Feature="MainFeature" Title="MainFeature" Description="Description" Display="1" Level="1" Directory_="APPDIR" Attributes="0" Components="InstallDir ManagementTool ProductInformation README.txt SHORTCUTDIR SafeSync SafeSync.exe ZipPortable.exe ZipPortable.ini af.txt appicon.ico donation_button.png help.html readme.txt z.dll z.dll_1 z.exe z.exe_1 z.sfx z.sfx_1 zFM.exe zFM.exe_1 zG.exe zG.exe_1 zip.chm zip.chm_1 zip.dll zip.dll_1 zip_portable.reg"/>
+    <ROW Feature="MainFeature" Title="MainFeature" Description="Description" Display="1" Level="1" Directory_="APPDIR" Attributes="0" Components="ProductInformation README.txt SHORTCUTDIR SafeSync SafeSync.exe ZipPortable.exe ZipPortable.ini af.txt appicon.ico donation_button.png help.html readme.txt z.dll z.dll_1 z.exe z.exe_1 z.sfx z.sfx_1 zFM.exe zFM.exe_1 zG.exe zG.exe_1 zip.chm zip.chm_1 zip.dll zip.dll_1 zip_portable.reg"/>
     <ATTRIBUTE name="CurrentFeature" value="MainFeature"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiFilesComponent">
@@ -97,7 +95,7 @@
     <ROW File="ReadINIStrWithDefault.nsh" Component_="ZipPortable.ini" FileName="READIN~1.NSH|ReadINIStrWithDefault.nsh" Attributes="0" SourcePath="include\7-ZipPortable\Other\Source\ReadINIStrWithDefault.nsh" SelfReg="false" NextFile="Readme.txt_4"/>
     <ROW File="Readme.txt_4" Component_="ZipPortable.ini" FileName="Readme.txt" Attributes="0" SourcePath="include\7-ZipPortable\Other\Source\Readme.txt" SelfReg="false" NextFile="ReplaceInFileWithTextReplace.nsh"/>
     <ROW File="ReplaceInFileWithTextReplace.nsh" Component_="ZipPortable.ini" FileName="REPLAC~1.NSH|ReplaceInFileWithTextReplace.nsh" Attributes="0" SourcePath="include\7-ZipPortable\Other\Source\ReplaceInFileWithTextReplace.nsh" SelfReg="false"/>
-    <ROW File="SafeSync.exe" Component_="SafeSync.exe" FileName="SafeSync.exe" Attributes="0" SourcePath="SafeSync.exe" SelfReg="false" NextFile="README.txt" DigSign="true"/>
+    <ROW File="SafeSync.exe" Component_="SafeSync.exe" FileName="SafeSync.exe" Attributes="0" SourcePath="C:\Users\Tim\Desktop\SafeSync.exe" SelfReg="false" NextFile="README.txt" DigSign="true"/>
     <ROW File="Thumbs.db" Component_="appicon.ico" FileName="Thumbs.db" Attributes="0" SourcePath="include\7-ZipPortable\App\AppInfo\Thumbs.db" SelfReg="false" NextFile="zip_portable.reg"/>
     <ROW File="ZipPortable.exe" Component_="ZipPortable.exe" FileName="7-ZIPP~1.EXE|7-ZipPortable.exe" Attributes="0" SourcePath="include\7-ZipPortable\7-ZipPortable.exe" SelfReg="false" NextFile="zip.chm" DigSign="true"/>
     <ROW File="ZipPortable.ini" Component_="ZipPortable.ini" FileName="7-ZIPP~1.INI|7-ZipPortable.ini" Attributes="0" SourcePath="include\7-ZipPortable\Other\Source\7-ZipPortable.ini" SelfReg="false" NextFile="ZipPortable.jpg"/>
@@ -299,8 +297,6 @@
     <ROW Condition="VersionNT" Description="[ProductName] cannot be installed on [WindowsType9XDisplay]" DescriptionLocId="AI.LaunchCondition.No9X" IsPredefined="true" Builds="DefaultBuild"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiRegsComponent">
-    <ROW Registry="InstallDir" Root="1" Key="Software\SafeSync\ManagementTool" Name="InstallDir" Value="[ManagementTool_Dir]" Component_="InstallDir"/>
-    <ROW Registry="ManagementTool" Root="1" Key="Software\SafeSync\ManagementTool" Name="*" Component_="ManagementTool"/>
     <ROW Registry="Path" Root="-1" Key="Software\[Manufacturer]\[ProductName]" Name="Path" Value="[APPDIR]" Component_="ProductInformation"/>
     <ROW Registry="SafeSync" Root="1" Key="Software\SafeSync" Name="+" Component_="SafeSync"/>
     <ROW Registry="Version" Root="-1" Key="Software\[Manufacturer]\[ProductName]" Name="Version" Value="[ProductVersion]" Component_="ProductInformation"/>
