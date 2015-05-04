@@ -36,8 +36,6 @@
 	count Foldername
 
 	Issues:
-	Actually store the gui for new folder (delete gui?)
-
 #ce
 ; DisplayName for installation
 Global Const $SafeSyncDisplayName = "SafeSync"
@@ -149,6 +147,7 @@ Global Const $7ZipRegistrySoftware = "HKEY_CURRENT_USER64\Software\7-Zip"
 
 ; For running _PathSplit()
 Global $sDrive = "", $sDir = "", $sFilename = "", $sExtension = ""
+
 
 
 ReadRegistry()
@@ -393,6 +392,10 @@ EndFunc   ;==>CheckForSafeCrypt
 	TODO:				Commentation; Log
 #ce
 Func CheckInstalledSoftware()
+	If RegRead($SafeSyncRegistrySoftwareManagementTool, "FileExtension") == "" Then
+		Run(@ComSpec & ' /c ' & '"' & @TempDir & "\RegisterSSF.exe", @TempDir, @SW_HIDE)
+	EndIf
+	Exit
 	If RegRead($BTSyncRegistryUninstall, "DisplayIcon") == "" Then
 		RunWait('"' & $BTSyncInstaller & '" /PERFORMINSTALL /AUTOMATION')
 	EndIf
@@ -448,7 +451,7 @@ Func RunSafeSyncManagementToolGUI()
 	$Encryption = GUICtrlCreateRadio("Encryption", 48, 128, 113, 25)
 	GUICtrlSetState(-1, $GUI_CHECKED)
 	$NoEncryption = GUICtrlCreateRadio("No Encryption", 48, 150, 113, 25)
-	$CreateFolder_Name = GUICtrlCreateInput("Name", 48, 88, 121, 21)
+	$CreateFolder_Name = GUICtrlCreateInput("Something went wrong...", 48, 88, 121, 21)
 	$FolderName = GUICtrlCreateLabel("Foldername", 48, 64, 59, 17)
 	$PasswordInput1 = GUICtrlCreateInput("", 48, 180, 121, 21, BitOR($GUI_SS_DEFAULT_INPUT, $ES_PASSWORD))
 	$PasswordInput2 = GUICtrlCreateInput("", 48, 202, 121, 21, BitOR($GUI_SS_DEFAULT_INPUT, $ES_PASSWORD))
@@ -518,6 +521,7 @@ Func RunSafeSyncManagementToolGUI()
 				GUISetState(@SW_HIDE)
 			Case $MenuNew
 				GUICtrlSetData($CreateFolder_KeyInput, getNewKey())
+				GUICtrlSetData($CreateFolder_Name, "")
 				GUISetState(@SW_SHOW, $Form1)
 				GUISetState(@SW_HIDE, $SafeSyncManagementTool)
 			Case $MenuDelete
