@@ -72,19 +72,30 @@ Global Const $SafeSyncReleaseName = "Awesome Anteater"
 
 ; Including files
 FileInstall("C:\include\BitTorrent_SyncX64.exe", @TempDir & "\BitTorrent_SyncX64.exe", 1)
+FileInstall("C:\include\BitTorrent_SyncX86.exe", @TempDir & "\BitTorrent_SyncX86.exe", 1)
 FileInstall("C:\include\config.ini", @TempDir & "\config.ini", 1)
 FileInstall("C:\include\RegisterSSF.exe", @TempDir & "\RegisterSSF.exe", 1)
 FileInstall("C:\include\RunSafeSyncAsAdmin.exe", @TempDir & "\RunSafeSyncAsAdmin.exe", 1)
+
+; Choise for x64 / x86
+
+$Architecture = ""
+
+If @OSArch = 'x86' Then
+	$Architecture = ""
+Else
+	$Architecture = "64"
+EndIf
 
 #cs ----------------------------------------------------------------------------
 	Static-Variables SafeSync
 #ce ----------------------------------------------------------------------------
 ; SafeSync Registry Uninstall
-Global Const $SafeSyncRegistryUninstall = "HKEY_CURRENT_USER64\Software\Microsoft\Windows\CurrentVersion\Uninstall\SafeSync"
+Global Const $SafeSyncRegistryUninstall = "HKEY_CURRENT_USER" & $Architecture & "\Software\Microsoft\Windows\CurrentVersion\Uninstall\SafeSync"
 ; SafeSync Registry
-Global Const $SafeSyncRegistrySoftware = "HKEY_CURRENT_USER64\Software\SafeSync"
+Global Const $SafeSyncRegistrySoftware = "HKEY_CURRENT_USER" & $Architecture & "\Software\SafeSync"
 ; SafeSyncManagementool Registry
-Global Const $SafeSyncRegistrySoftwareManagementTool = "HKEY_CURRENT_USER64\Software\SafeSync\ManagementTool"
+Global Const $SafeSyncRegistrySoftwareManagementTool = "HKEY_CURRENT_USER" & $Architecture & "\Software\SafeSync\ManagementTool"
 ; SafeSync Folders
 Global Const $SafeSyncRegistryFolders = $SafeSyncRegistrySoftware & "\Folders"
 ; Run SafeSyncAsAdmin
@@ -98,7 +109,7 @@ Global $SafeSyncManagementTool
 #ce ----------------------------------------------------------------------------
 
 ; SafeCrypt Registry
-Global Const $SafeCryptRegistrySoftware = "HKEY_CURRENT_USER64\Software\SafeSync\SafeCrypt"
+Global Const $SafeCryptRegistrySoftware = "HKEY_CURRENT_USER" & $Architecture & "\Software\SafeSync\SafeCrypt"
 
 If @OSArch = 'x86' Then
 	Global $7zLocation = 'C:\"Program Files"\SafeSync\7-ZipPortable\App\7-Zip\7z.exe'
@@ -124,7 +135,7 @@ Global $CreateDecryptionDir
 #ce ----------------------------------------------------------------------------
 
 ; Bittorent Sync Uninstall String
-Global Const $BTSyncRegistryUninstall = "HKEY_LOCAL_MACHINE64\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\BitTorrent Sync"
+Global Const $BTSyncRegistryUninstall = "HKEY_LOCAL_MACHINE" & $Architecture & "\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\BitTorrent Sync"
 ; InstallationLocationBTSync
 Global Const $InstallationLocationBTSync = @UserProfileDir & "\Program Files\BitTorrent Sync"
 ; ConfigFile for BitTorrentSync
@@ -138,7 +149,7 @@ Global Const $BTSyncInstaller = @TempDir & "\BitTorrent_SyncX64.exe"
 #ce
 
 ; Bittorent Sync Uninstall String
-Global Const $7ZipRegistrySoftware = "HKEY_CURRENT_USER64\Software\7-Zip"
+Global Const $7ZipRegistrySoftware = "HKEY_CURRENT_USER" & $Architecture & "\Software\7-Zip"
 
 #cs Static-Variables
 #ce
@@ -168,11 +179,11 @@ RunSafeSyncManagementToolGUI()
 #ce
 Func ReadRegistry()
 	; Read SafeSync Standard Data Folder
-	Global $SafeSyncStandardDataFolder = RegRead("HKEY_CURRENT_USER64\Software\SafeSync\ManagementTool", "DataDir")
+	Global $SafeSyncStandardDataFolder = RegRead("HKEY_CURRENT_USER" & $Architecture & "\Software\SafeSync\ManagementTool", "DataDir")
 	If $SafeSyncStandardDataFolder = "" Then
 		MsgBox(0, "Warning", "Please choose a Folder, for your Data")
 		$SafeSyncStandardDataFolder = FileSelectFolder("Choose the destination folder", "C:\")
-		RegWrite("HKEY_CURRENT_USER64\Software\SafeSync\ManagementTool", "DataDir", "REG_SZ", $SafeSyncStandardDataFolder)
+		RegWrite("HKEY_CURRENT_USER" & $Architecture & "\Software\SafeSync\ManagementTool", "DataDir", "REG_SZ", $SafeSyncStandardDataFolder)
 	EndIf
 	; Read SafeCrypt Location from Registry
 	Global $InstallLocationSafeSync = "C:\"
@@ -398,7 +409,11 @@ Func CheckInstalledSoftware()
 		RunWait('"' & $BTSyncInstaller & '" /PERFORMINSTALL /AUTOMATION')
 	EndIf
 	If RegRead($7ZipRegistrySoftware, "Path") = "" Then
-		MsgBox(0,"","Please Install 7 zip x64!")
+		If @OSArch = 'x86' Then
+			MsgBox(0,"",'Please download and install the "7-Zip for 32-bit Windows .msi"!')
+		Else
+			MsgBox(0,"",'Please download and install the "7-Zip for 64-bit Windows x64 (Intel 64 oder AMD64)"')
+		EndIf
 		Exit
 	EndIf
 EndFunc   ;==>CheckInstalledSoftware
