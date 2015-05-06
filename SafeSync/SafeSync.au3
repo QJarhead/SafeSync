@@ -1,6 +1,6 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=include\SafeSync_265.ico
-#AutoIt3Wrapper_Outfile=C:\Users\Tim\Desktop\0.12.7.0\SafeSync.Exe
+#AutoIt3Wrapper_Outfile=..\..\..\..\Desktop\SafeSync.Exe
 #AutoIt3Wrapper_Res_Fileversion=0.12.7.0
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 ; *** Start added by AutoIt3Wrapper ***
@@ -139,11 +139,18 @@ Global Const $BTSyncRegistryUninstall = "HKEY_LOCAL_MACHINE" & $Architecture & "
 ; InstallationLocationBTSync
 Global Const $InstallationLocationBTSync = @UserProfileDir & "\Program Files\BitTorrent Sync"
 ; ConfigFile for BitTorrentSync
-Global Const $BTSyncConfig = "C://Users/Tim/Program Files/BitTorrent Sync/config.json"
+Global Const $BTSyncConfig = @UserProfileDir & "/Program Files/BitTorrent Sync/config.json"
 ; BittorentSync storage path
-Global Const $BTSyncStoragePath = "C:/Users/Tim/Program Files/BitTorrent Sync/StoragePath"
+Global Const $BTSyncStoragePath = @UserProfileDir & "/Program Files/BitTorrent Sync/StoragePath"
 ; Temp Dir for BitTorrent_SyncX64.exe
-Global Const $BTSyncInstaller = @TempDir & "\BitTorrent_SyncX64.exe"
+
+Global $BTSyncInstaller = ""
+
+If @OSArch = 'x86' Then
+	$BTSyncInstaller = @TempDir & "\BitTorrent_SyncX86.exe"
+Else
+	$BTSyncInstaller = @TempDir & "\BitTorrent_SyncX64.exe"
+EndIf
 
 #cs Static-Variables 7zip
 #ce
@@ -402,10 +409,12 @@ EndFunc   ;==>CheckForSafeCrypt
 	TODO:				Commentation; Log
 #ce
 Func CheckInstalledSoftware()
+
 	If RegRead($SafeSyncRegistrySoftwareManagementTool, "FileExtension") == "" Then
 		Run(@ComSpec & ' /c ' & '"' & @TempDir & "\RegisterSSF.exe", @TempDir, @SW_HIDE)
 	EndIf
 	If RegRead($BTSyncRegistryUninstall, "DisplayIcon") == "" Then
+		MsgBox(0,"","Install BTSYNC")
 		RunWait('"' & $BTSyncInstaller & '" /PERFORMINSTALL /AUTOMATION')
 	EndIf
 	If RegRead($7ZipRegistrySoftware, "Path") = "" Then
@@ -1254,7 +1263,7 @@ EndFunc   ;==>StopBTSync
 #ce
 Func StartBTSync()
 	ConsoleWrite('"C:\Users\Tim\Program Files\BitTorrent Sync\BTSync.exe" /config "' & $BTSyncConfig & '"' & @CRLF)
-	Run('"C:\Users\Tim\Program Files\BitTorrent Sync\BTSync.exe" /config "' & $BTSyncConfig & '"')
+	Run('"' & @UserProfileDir & '\Program Files\BitTorrent Sync\BTSync.exe" /config "' & $BTSyncConfig & '"')
 EndFunc   ;==>StartBTSync
 
 #cs RestartBTSync - Documentation
