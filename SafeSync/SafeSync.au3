@@ -1,7 +1,7 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=include\SafeSync_265.ico
-#AutoIt3Wrapper_Outfile=..\..\..\..\Desktop\SafeSync.Exe
-#AutoIt3Wrapper_Res_Fileversion=0.12.7.0
+#AutoIt3Wrapper_Outfile=C:\Users\Tim\Desktop\12.9\SafeSync.Exe
+#AutoIt3Wrapper_Res_Fileversion=0.12.9.0
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 ; *** Start added by AutoIt3Wrapper ***
 #include <AutoItConstants.au3>
@@ -38,7 +38,7 @@
 ; DisplayName for installation
 Global Const $SafeSyncDisplayName = "SafeSync"
 ; DisplayVersion for installation
-Global Const $SafeSyncDisplayVersion = "0.12.7.0"
+Global Const $SafeSyncDisplayVersion = "0.12.9.0"
 ; DisplayVersion for installation
 Global Const $SafeSyncPublisher = "SafeSync - Team"
 ; SafeSync release name
