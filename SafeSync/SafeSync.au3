@@ -56,6 +56,7 @@ Global Const $SafeSyncReleaseName = "Awesome Anteater"
 #include <IE.au3>
 #include <INet.au3>
 #include <Array.au3>
+#include <String.au3>
 #include <MsgBoxConstants.au3>
 #include <Crypt.au3>
 #include <ComboConstants.au3>
@@ -139,10 +140,15 @@ Global Const $BTSyncRegistryUninstall = "HKEY_LOCAL_MACHINE" & $Architecture & "
 ; InstallationLocationBTSync
 Global Const $InstallationLocationBTSync = @UserProfileDir & "\Program Files\BitTorrent Sync"
 ; ConfigFile for BitTorrentSync
-Global Const $BTSyncConfig = @UserProfileDir & "/Program Files/BitTorrent Sync/config.json"
+Global $BTSyncConfig = @UserProfileDir & "/Program Files/BitTorrent Sync/config.json"
+$BTSyncConfig = _StringInsert( $BTSyncConfig, "/", 2)
+$BTSyncConfig = StringReplace( $BTSyncConfig, "\", "/")
+
 ; BittorentSync storage path
-Global Const $BTSyncStoragePath = @UserProfileDir & "/Program Files/BitTorrent Sync/StoragePath"
+Global $BTSyncStoragePath = @UserProfileDir & "/Program Files/BitTorrent Sync/StoragePath"
 ; Temp Dir for BitTorrent_SyncX64.exe
+
+$BTSyncStoragePath = StringReplace( $BTSyncStoragePath, "\", "/")
 
 Global $BTSyncInstaller = ""
 
@@ -411,7 +417,9 @@ EndFunc   ;==>CheckForSafeCrypt
 Func CheckInstalledSoftware()
 
 	If RegRead($SafeSyncRegistrySoftwareManagementTool, "FileExtension") == "" Then
+		MsgBox(0,"",$SafeSyncRegistrySoftwareManagementTool)
 		Run(@ComSpec & ' /c ' & '"' & @TempDir & "\RegisterSSF.exe", @TempDir, @SW_HIDE)
+		RegWrite($SafeSyncRegistrySoftwareManagementTool, "FileExtension", "REG_SZ", 1)
 	EndIf
 	If RegRead($BTSyncRegistryUninstall, "DisplayIcon") == "" Then
 		MsgBox(0,"","Install BTSYNC")
@@ -1264,7 +1272,7 @@ EndFunc   ;==>StopBTSync
 #ce
 Func StartBTSync()
 	ConsoleWrite('"C:\Users\Tim\Program Files\BitTorrent Sync\BTSync.exe" /config "' & $BTSyncConfig & '"' & @CRLF)
-	Run('"' & @UserProfileDir & '\Program Files\BitTorrent Sync\BTSync.exe" /config "' & $BTSyncConfig & '"')
+	Run('"C:\Users\Tim\Program Files\BitTorrent Sync\BTSync.exe" /config "' & $BTSyncConfig & '"')
 EndFunc   ;==>StartBTSync
 
 #cs RestartBTSync - Documentation
