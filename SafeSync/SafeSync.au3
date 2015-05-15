@@ -436,6 +436,7 @@ EndFunc   ;==>CheckInstalledSoftware
 	TODO:				Commentation; Log
 #ce
 Func RunSafeSyncManagementToolGUI()
+	StartBTSync()
 	; Settings Menu entries
 	$SafeSyncManagementTool = GUICreate("SafeSyncManagementTool", 915, 437, 195, 124)
 	$MenuFile = GUICtrlCreateMenu("&File")
