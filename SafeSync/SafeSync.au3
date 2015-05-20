@@ -1,7 +1,7 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=include\SafeSync_265.ico
-#AutoIt3Wrapper_Outfile=C:\Users\Tim\Desktop\12.9\SafeSync.Exe
-#AutoIt3Wrapper_Res_Fileversion=0.12.9.0
+#AutoIt3Wrapper_Outfile=C:\Users\Tim\Desktop\13.1\SafeSync.exe
+#AutoIt3Wrapper_Res_Fileversion=0.13.1.0
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 ; *** Start added by AutoIt3Wrapper ***
 #include <AutoItConstants.au3>
@@ -25,8 +25,6 @@
 	Output log file, with function for output file, and console output
 
 	Maybe:
-	Write registry for ssf-support in the msi
-	Check Folder Exists
 	KEY ist correct?
 	Check if BTSync is running
 	more btsync option
@@ -38,7 +36,7 @@
 ; DisplayName for installation
 Global Const $SafeSyncDisplayName = "SafeSync"
 ; DisplayVersion for installation
-Global Const $SafeSyncDisplayVersion = "0.12.9.0"
+Global Const $SafeSyncDisplayVersion = "0.13.1.0"
 ; DisplayVersion for installation
 Global Const $SafeSyncPublisher = "SafeSync - Team"
 ; SafeSync release name
@@ -537,15 +535,8 @@ Func RunSafeSyncManagementToolGUI()
 						GUISwitch($SafeSyncManagementTool)
 					Case $SafeSyncManagementTool
 						;$iMsgBoxAnswer = MsgBox(33, "Quit SafeSync?", "Do you want to quit Safe-Sync?" & @CRLF & "You can also minize it," & @CRLF & " to run it in the background." & @CRLF & "Otherwise the Data will not be secure!")
-						$iMsgBoxAnswer = 1
-						Select
-							Case $iMsgBoxAnswer = 1
-								StopBTSync()
-								RegWrite($SafeSyncRegistrySoftwareManagementTool, "RunSafeCrypt", "REG_SZ", "0")
-								GUISetState(@SW_HIDE, $SafeSyncManagementTool)
-								ExitLoop
-							Case $iMsgBoxAnswer = 2
-						EndSelect
+						TraySetState(1)
+						GUISetState(@SW_HIDE)
 				EndSwitch
 			Case $GUI_EVENT_MINIMIZE
 				TraySetState(1)
