@@ -1,7 +1,7 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=include\SafeSync_265.ico
-#AutoIt3Wrapper_Outfile=C:\Users\Tim\Desktop\13.1\SafeSync.exe
-#AutoIt3Wrapper_Res_Fileversion=0.13.1.0
+#AutoIt3Wrapper_Outfile=C:\Users\Tim\Desktop\SafeSync.exe
+#AutoIt3Wrapper_Res_Fileversion=1.0.0.0
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 ; *** Start added by AutoIt3Wrapper ***
 #include <AutoItConstants.au3>
@@ -36,7 +36,7 @@
 ; DisplayName for installation
 Global Const $SafeSyncDisplayName = "SafeSync"
 ; DisplayVersion for installation
-Global Const $SafeSyncDisplayVersion = "0.13.1.0"
+Global Const $SafeSyncDisplayVersion = "1.0.0.0"
 ; DisplayVersion for installation
 Global Const $SafeSyncPublisher = "SafeSync - Team"
 ; SafeSync release name
@@ -362,7 +362,6 @@ Func CheckCommandLine()
 			Exit
 		ElseIf $CmdLine[1] == "SyncNewFolder" Then
 			SyncNewFolder($CmdLine[2])
-			MsgBox(0,"","")
 			Exit
 		EndIf
 	EndIf
@@ -1053,6 +1052,7 @@ Func SyncNewFolder($SNF_NewFolderName)
 						EndIf
 					Else
 						RegistryCreateNewFolder(GUICtrlRead($EncryptionDir), GUICtrlRead($DecryptionDir), GUICtrlRead($CreateFolder_Name), GUICtrlRead($CreateFolder_KeyInput), 0, "", "")
+						RegWrite($SafeSyncRegistrySoftwareManagementTool, "refreshGUI", "REG_SZ", "1")
 						GUISetState(@SW_HIDE, $Form3)
 						GUIDelete($Form3)
 						Exit
@@ -1101,7 +1101,6 @@ Func SyncNewFolder($SNF_NewFolderName)
 			GUICtrlSetData($EncryptionDir, $DataFolderNew & "Encrypt")
 		EndIf
 	WEnd
-
 	ReloadListView()
 EndFunc   ;==>SyncNewFolder
 

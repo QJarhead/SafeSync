@@ -4,16 +4,16 @@
     <ROW Property="AI_BITMAP_DISPLAY_MODE" Value="0"/>
     <ROW Property="ALLUSERS" Value="1"/>
     <ROW Property="ARPCOMMENTS" Value="This installer database contains the logic and data required to install [|ProductName]." ValueLocId="*"/>
-    <ROW Property="ARPHELPLINK" Value="safesync.no-ip.org/support"/>
+    <ROW Property="ARPHELPLINK" Value="safesync.no-ip.org"/>
     <ROW Property="ARPPRODUCTICON" Value="SafeSync_64.exe" Type="8"/>
     <ROW Property="ARPURLINFOABOUT" Value="safesync.no-ip.org"/>
     <ROW Property="ARPURLUPDATEINFO" Value="safesync.no-ip.org/download/safesync/latest"/>
     <ROW Property="CTRLS" Value="3"/>
     <ROW Property="Manufacturer" Value="SafeSync"/>
-    <ROW Property="ProductCode" Value="1033:{D6519FB0-E37B-4C48-AFCE-3C3B2FCB6A04} " Type="16"/>
+    <ROW Property="ProductCode" Value="1033:{2CE8EEB7-FD9D-4765-8C1B-43A90D9F26F0} " Type="16"/>
     <ROW Property="ProductLanguage" Value="1033"/>
     <ROW Property="ProductName" Value="SafeSync - ManagementTool"/>
-    <ROW Property="ProductVersion" Value="0.13.1.0" Type="32"/>
+    <ROW Property="ProductVersion" Value="1.0.0.0" Type="32"/>
     <ROW Property="REBOOT" MultiBuildValue="DefaultBuild:ReallySuppress"/>
     <ROW Property="RUNAPPLICATION" Value="1" Type="4"/>
     <ROW Property="SecureCustomProperties" Value="OLDPRODUCTS;AI_NEWERPRODUCTFOUND"/>
@@ -96,7 +96,7 @@
     <ROW File="ReadINIStrWithDefault.nsh" Component_="ZipPortable.ini" FileName="READIN~1.NSH|ReadINIStrWithDefault.nsh" Attributes="0" SourcePath="include\7-ZipPortable\Other\Source\ReadINIStrWithDefault.nsh" SelfReg="false" NextFile="Readme.txt_4"/>
     <ROW File="Readme.txt_4" Component_="ZipPortable.ini" FileName="Readme.txt" Attributes="0" SourcePath="include\7-ZipPortable\Other\Source\Readme.txt" SelfReg="false" NextFile="ReplaceInFileWithTextReplace.nsh"/>
     <ROW File="ReplaceInFileWithTextReplace.nsh" Component_="ZipPortable.ini" FileName="REPLAC~1.NSH|ReplaceInFileWithTextReplace.nsh" Attributes="0" SourcePath="include\7-ZipPortable\Other\Source\ReplaceInFileWithTextReplace.nsh" SelfReg="false"/>
-    <ROW File="SafeSync.exe" Component_="SafeSync.exe" FileName="SafeSync.exe" Attributes="0" SourcePath="C:\Users\Tim\Desktop\13.1\SafeSync.exe" SelfReg="false" NextFile="README.txt" DigSign="true"/>
+    <ROW File="SafeSync.exe" Component_="SafeSync.exe" FileName="SafeSync.exe" Attributes="0" SourcePath="C:\Users\Tim\Desktop\SafeSync.exe" SelfReg="false" NextFile="README.txt" DigSign="true"/>
     <ROW File="Thumbs.db" Component_="appicon.ico" FileName="Thumbs.db" Attributes="0" SourcePath="include\7-ZipPortable\App\AppInfo\Thumbs.db" SelfReg="false" NextFile="zip_portable.reg"/>
     <ROW File="ZipPortable.exe" Component_="ZipPortable.exe" FileName="7-ZIPP~1.EXE|7-ZipPortable.exe" Attributes="0" SourcePath="include\7-ZipPortable\7-ZipPortable.exe" SelfReg="false" NextFile="zip.chm" DigSign="true"/>
     <ROW File="ZipPortable.ini" Component_="ZipPortable.ini" FileName="7-ZIPP~1.INI|7-ZipPortable.ini" Attributes="0" SourcePath="include\7-ZipPortable\Other\Source\7-ZipPortable.ini" SelfReg="false" NextFile="ZipPortable.jpg"/>
