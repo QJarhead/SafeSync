@@ -1221,7 +1221,7 @@ EndFunc   ;==>DecryptPassword
 	Description:        Function delete a Folder from the Registry
 	Author:             Tim Lid
 	Parameters:			$RDF_FolderName		- String: Foldername
-	Return values:      Success:			- Delete the folder
+	Return values:      Success:
 	Failure:			- TODO
 	Last edit:			2015.04.16 - 17:00 - renaming variables
 	TODO:				Commentation
@@ -1238,7 +1238,7 @@ EndFunc   ;==>RegistryDeleteFolder
 	Version:			0.1
 	Description:        Function stop the BTSync programm
 	Author:             Tim Lid
-	Return values:      Success:			- Delete the folder
+	Return values:      Success:
 	Failure:			- TODO
 	Last edit:			2015.04.18 - 13:30 - The api stops now the btsync process.
 	TODO:				Commentation
@@ -1255,14 +1255,15 @@ EndFunc   ;==>StopBTSync
 	Version:			0.1
 	Description:        Function start the BTSync programm
 	Author:             Tim Lid
-	Return values:      Success:			- Delete the folder
+	Return values:      Success:
 	Failure:			- TODO
 	Last edit:			2015.04.16 - 16:58 - renaming variables
+						2015.11.21 - 21:28 - Change the Userprofilename to Variable
 	TODO:				Commentation
 #ce
 Func StartBTSync()
-	ConsoleWrite('"C:\Users\Tim\Program Files\BitTorrent Sync\BTSync.exe" /config "' & $BTSyncConfig & '"' & @CRLF)
-	Run('"C:\Users\Tim\Program Files\BitTorrent Sync\BTSync.exe" /config "' & $BTSyncConfig & '"')
+	ConsoleWrite('"' & @UserProfileDir & '\Program Files\BitTorrent Sync\BTSync.exe" /config "' & $BTSyncConfig & '"' & @CRLF)
+	Run('"' & @UserProfileDir & '\Program Files\BitTorrent Sync\BTSync.exe" /config "' & $BTSyncConfig & '"')
 EndFunc   ;==>StartBTSync
 
 #cs RestartBTSync - Documentation
@@ -1270,7 +1271,7 @@ EndFunc   ;==>StartBTSync
 	Version:			0.1
 	Description:        Function restart the BTSync programm
 	Author:             Tim Lid
-	Return values:      Success:			- Delete the folder
+	Return values:      Success:
 	Failure:			- TODO
 	Last edit:			2015.04.16 - 16:57 - renaming variables
 	TODO:				Commentation
@@ -1289,7 +1290,8 @@ EndFunc   ;==>RestartBTSync
 	Parameters:         $MD_SelectEntry			- ContorlListView: the choosen entry
 	$MD_SelectEntryText		- String: the name of the folder
 	$MD_MsgBoxAnswer		- Integer: Answer from the MsgBox
-	Return values:      Success:			- Delete the folder
+	Return values:
+	Success:			- Delete the folder
 	Failure:			- TODO
 	Last edit:			2015.04.16 - 16:52 - renaming variables
 	TODO:				Commentation; expand the function
